@@ -5,9 +5,11 @@
 node_modules/
 npm-debug.log*
 exports/
+project-reviews/
 ROADMAP.md
 PRD.md
 TODO.md
+config/project-sources.private.json
 
 # Private CV source and generated Worker knowledge. Public Markdown remains tracked.
 data/experience.md

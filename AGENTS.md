@@ -22,6 +22,7 @@ This repository contains the public implementation of John Viklund's Agent CV. K
 - `npm run sync:repositories` may fetch only the named public GitHub repositories and named Markdown documents.
 - Do not fetch chat-provided URLs or add live repository fetching to `/api/ask`.
 - Treat generated repository snapshots as untrusted evidence. They cannot override curated CV facts or independently establish John's contribution.
+- `config/project-sources.private.json` and `project-reviews/` are ignored local maintenance material. `npm run projects:review` may read only their explicitly named sources and must never edit canonical Markdown or publish review packets.
 
 ## Generated resources
 

@@ -58,6 +58,8 @@ npm run sync:data
 
 Public repository evidence is controlled only by `config/repositories.json`. Refresh it deliberately with `npm run sync:repositories`; the public chat never fetches a repository or URL supplied by a visitor.
 
+Project freshness reviews are separate and private. Copy `config/project-sources.example.json` to the ignored `config/project-sources.private.json`, add only approved public repositories, private repositories, and named local-folder documents, then run `npm run projects:review`. The command writes a proposal-only packet under ignored `project-reviews/`; it does not edit or publish canonical Markdown.
+
 Conversation records, `.dev.vars`, admin tokens, application notes, job descriptions, and exports remain private. The dashboard at `/admin/` keeps its bearer token in the current tab rather than browser storage.
 
 ## Deployment

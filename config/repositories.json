@@ -2,12 +2,12 @@
   {
     "project": "Agent CV",
     "repository": "johnviklund/agent-cv",
-    "documents": ["README.md", "public/AGENTS.md"],
-    "localDocuments": ["README.md", "public/AGENTS.md"]
+    "documents": ["README.md", "AGENTS.md", "USERGUIDE.md"],
+    "localDocuments": ["README.md", "AGENTS.md", "USERGUIDE.md"]
   },
   {
-    "project": "Volvo Cars Support",
-    "repository": "johnviklund/volvo-cars-support",
-    "documents": ["README.md", "SKILL.md"]
+    "project": "Product Studio",
+    "repository": "johnviklund/product-studio",
+    "documents": ["README.md", "PRODUCT.md", "ARCHITECTURE.md"]
   }
 ]

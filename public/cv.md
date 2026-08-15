@@ -56,7 +56,7 @@ Progressed from Product Specialist to Product Manager and Senior Product Manager
 
 ### Product Studio
 
-Active personal project: a governed, local-first multi-agent execution loop with deterministic state, cross-vendor review, bounded autonomy, permission controls, durable artifacts, and crash-recoverable execution. Approximately 999 tracked files and 49,000 lines as of August 2026.
+Active local-first personal system with a public repository: a governed multi-agent execution loop with durable file truth, deterministic state and evidence checks, cross-vendor review, bounded autonomy, permission controls, a connected ACP runtime, and a rebuildable SQLite projection. The complete public Git tree contained 1,127 tracked files and 44 test files on 15 August 2026.
 
 ### CX Intelligence
 

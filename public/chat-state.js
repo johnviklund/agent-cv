@@ -1,6 +1,12 @@
 export const MAX_REQUEST_MESSAGES = 10;
 export const PENDING_PROMPT_KEY = "agent-cv:pending-prompt";
-export const PENDING_APPLICATION_KEY = "agent-cv:pending-application";
+const PENDING_APPLICATION_KEY = "agent-cv:pending-application";
+
+export function applicationSlugFromPath(pathname) {
+  return typeof pathname === "string"
+    ? pathname.match(/^\/a\/([a-z0-9_-]{10,32})\/?$/i)?.[1]?.toLowerCase() || ""
+    : "";
+}
 
 export function canAddUserTurn(messages) {
   if (!Array.isArray(messages)) return false;

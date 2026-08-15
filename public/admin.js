@@ -1,3 +1,5 @@
+import { createLink } from "./dom.js";
+
 let adminToken = "";
 
 const authForm = document.querySelector("[data-admin-form]");
@@ -124,13 +126,6 @@ function renderApplications(applications) {
     item.append(copy, revoke);
     return item;
   }));
-}
-
-function createLink(text, href) {
-  const link = document.createElement("a");
-  link.textContent = text;
-  link.href = href;
-  return link;
 }
 
 function renderStats(stats) {

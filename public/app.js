@@ -1,6 +1,8 @@
 import { consumeEventStream } from "./stream.js";
 import { renderMarkdown } from "./markdown.js";
+import { createLink } from "./dom.js";
 import {
+  applicationSlugFromPath,
   canAddUserTurn,
   messagesForRequest,
   rollbackUnpairedUserTurn,
@@ -282,10 +284,6 @@ function readPendingApplication() {
   }
 }
 
-function applicationSlugFromPath(pathname) {
-  return pathname.match(/^\/a\/([a-z0-9_-]{10,32})\/?$/i)?.[1]?.toLowerCase() || "";
-}
-
 function readPendingPrompt() {
   try {
     return takePendingPrompt(window.sessionStorage);
@@ -305,13 +303,6 @@ async function loadContact(element) {
   } catch {
     // The static fallback remains visible.
   }
-}
-
-function createLink(text, href) {
-  const link = document.createElement("a");
-  link.textContent = text;
-  link.href = href;
-  return link;
 }
 
 function createSessionId() {

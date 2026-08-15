@@ -1,7 +1,7 @@
-import { storePendingApplication } from "./chat-state.js";
+import { applicationSlugFromPath } from "./chat-state.js";
 
 const page = document.querySelector("[data-application-page]");
-const slug = window.location.pathname.match(/^\/a\/([a-z0-9_-]{10,32})\/?$/i)?.[1]?.toLowerCase();
+const slug = applicationSlugFromPath(window.location.pathname);
 if (page && slug) loadApplication(page, slug);
 
 async function loadApplication(container, applicationSlug) {
@@ -9,7 +9,6 @@ async function loadApplication(container, applicationSlug) {
     const response = await fetch(`/api/application/${applicationSlug}`);
     if (!response.ok) throw new Error("This application link has expired or been revoked.");
     const application = await response.json();
-    storePendingApplication(window.sessionStorage, application.slug);
     container.querySelector("[data-application-company]").textContent = application.company.toUpperCase();
     container.querySelector("[data-application-role]").textContent = application.role;
     container.querySelector("[data-application-heading]").textContent = `${application.role} · ${application.company}`;

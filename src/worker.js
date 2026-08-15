@@ -1,8 +1,8 @@
 import {
   buildUntrustedTranscript,
   ChatInputError,
+  isLikelyBot,
   LIMITS,
-  logRecord,
   publicErrorMessage,
   validateChatPayload,
 } from "./chat-core.js";
@@ -50,7 +50,7 @@ export async function handleRequest(
   { fetchImpl = fetch, systemPrompt = "" } = {},
 ) {
   const url = new URL(request.url);
-  const adminApplicationMatch = url.pathname.match(/^\/api\/admin\/applications(?:\/([a-z0-9_-]{10,32})\/(revoke))?$/);
+  const adminApplicationMatch = url.pathname.match(/^\/api\/admin\/applications(?:\/([a-z0-9_-]{10,32})\/revoke)?$/);
   const publicApplicationMatch = url.pathname.match(/^\/api\/application\/([a-z0-9_-]{10,32})$/);
   const applicationPageMatch = url.pathname.match(/^\/a\/([a-z0-9_-]{10,32})\/?$/);
 
@@ -83,7 +83,7 @@ export async function handleRequest(
   }
 
   if (adminApplicationMatch) {
-    return handleAdminApplications(request, env, adminApplicationMatch[1], adminApplicationMatch[2]);
+    return handleAdminApplications(request, env, adminApplicationMatch[1]);
   }
 
   if (publicApplicationMatch) {
@@ -177,9 +177,11 @@ export async function handleAsk(
 
   const model = env.OPENAI_MODEL || DEFAULT_OPENAI_MODEL;
   const question = input.messages.at(-1).content;
-  const baseRecord = logRecord({ question, sessionId: input.sessionId, source: input.source, request });
-  let archiveRecord = createConversationRecord({
-    ...baseRecord,
+  const archiveRecord = createConversationRecord({
+    question,
+    sessionId: input.sessionId,
+    source: input.source,
+    visitorType: isLikelyBot(request.headers.get("user-agent") || "") ? "bot" : "human",
     turnId: crypto.randomUUID(),
     model,
     applicationSlug: input.applicationSlug,
@@ -197,13 +199,13 @@ export async function handleAsk(
   const finalizeArchive = (outcome) => {
     if (!env.ARCHIVE || archived) return;
     archived = true;
-    archiveRecord = {
+    const finalRecord = {
       ...archiveRecord,
       answer: archivedAnswer,
       outcome,
       updatedAt: new Date().toISOString(),
     };
-    archiveTail = archiveTail.then(() => storeConversationRecord(env, archiveRecord)).catch((error) => {
+    archiveTail = archiveTail.then(() => storeConversationRecord(env, finalRecord)).catch((error) => {
       console.error("Conversation archive update failed", error);
     });
     context.waitUntil(archiveTail);
@@ -246,7 +248,8 @@ export async function handleAsk(
     console.error("OpenAI stream issue", eventType, code);
   }, {
     onDelta(delta) {
-      archivedAnswer = `${archivedAnswer}${delta}`.slice(0, MAX_ARCHIVED_ANSWER_CHARACTERS);
+      const remaining = MAX_ARCHIVED_ANSWER_CHARACTERS - archivedAnswer.length;
+      if (remaining > 0) archivedAnswer += delta.slice(0, remaining);
     },
     onTerminal: finalizeArchive,
   });

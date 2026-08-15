@@ -1,38 +1,39 @@
-import { privateJson, readRecords, requireAdmin } from "./archive.js";
+import { countBy, readRecords, requireAdmin } from "./archive.js";
+import { noStoreJson } from "./http.js";
 
 const SLUG_PATTERN = /^[a-z0-9_-]{10,32}$/;
 const MAX_JOB_DESCRIPTION_CHARACTERS = 24_000;
 const MAX_PRIVATE_NOTES_CHARACTERS = 4_000;
 
-export async function handleAdminApplications(request, env, slug = "", action = "") {
+export async function handleAdminApplications(request, env, slug = "") {
   const denied = await requireAdmin(request, env);
   if (denied) return denied;
-  if (!env.ARCHIVE) return privateJson({ error: "Application storage is not configured." }, 503);
+  if (!env.ARCHIVE) return noStoreJson({ error: "Application storage is not configured." }, 503);
 
-  if (slug && action === "revoke") return revokeApplication(request, env, slug);
-  if (slug || action) return privateJson({ error: "Application route not found." }, 404);
+  if (slug) return revokeApplication(request, env, slug);
   if (request.method === "GET") {
     const [applications, turns] = await Promise.all([
       readRecords(env.ARCHIVE, "application:"),
       readRecords(env.ARCHIVE, "conversation:"),
     ]);
     applications.sort((left, right) => right.createdAt.localeCompare(left.createdAt));
-    return privateJson({
+    const questionCounts = countBy(turns, "applicationSlug");
+    return noStoreJson({
       applications: applications.map((application) => ({
         ...application,
-        questions: turns.filter(({ applicationSlug }) => applicationSlug === application.slug).length,
+        questions: questionCounts[application.slug] || 0,
       })),
     });
   }
   if (request.method !== "POST") {
-    return privateJson({ error: "Use GET or POST." }, 405, { allow: "GET, POST" });
+    return noStoreJson({ error: "Use GET or POST." }, 405, { allow: "GET, POST" });
   }
 
   let input;
   try {
     input = await request.json();
   } catch {
-    return privateJson({ error: "Send valid JSON." }, 400);
+    return noStoreJson({ error: "Send valid JSON." }, 400);
   }
   const company = cleanText(input?.company, 100);
   const role = cleanText(input?.role, 140);
@@ -40,7 +41,7 @@ export async function handleAdminApplications(request, env, slug = "", action = 
   const privateNotes = cleanText(input?.privateNotes, MAX_PRIVATE_NOTES_CHARACTERS);
   const expiresDays = boundedExpiryDays(input?.expiresDays);
   if (!company || !role || !jobDescription) {
-    return privateJson({ error: "Company, role, and job description are required." }, 400);
+    return noStoreJson({ error: "Company, role, and job description are required." }, 400);
   }
 
   const now = new Date();
@@ -60,7 +61,7 @@ export async function handleAdminApplications(request, env, slug = "", action = 
     views: 0,
   };
   await storeApplication(env, application);
-  return privateJson({
+  return noStoreJson({
     slug: application.slug,
     url: `/a/${application.slug}/`,
     expiresAt: application.expiresAt,
@@ -68,9 +69,9 @@ export async function handleAdminApplications(request, env, slug = "", action = 
 }
 
 export async function handlePublicApplication(request, env, slug) {
-  if (request.method !== "GET") return privateJson({ error: "Use GET." }, 405, { allow: "GET" });
+  if (request.method !== "GET") return noStoreJson({ error: "Use GET." }, 405, { allow: "GET" });
   const result = await loadApplication(env, slug);
-  if (!result.application) return privateJson({ error: result.error }, result.status);
+  if (!result.application) return noStoreJson({ error: result.error }, result.status);
 
   const application = {
     ...result.application,
@@ -78,7 +79,7 @@ export async function handlePublicApplication(request, env, slug) {
     updatedAt: new Date().toISOString(),
   };
   await storeApplication(env, application);
-  return privateJson({
+  return noStoreJson({
     slug: application.slug,
     company: application.company,
     role: application.role,
@@ -106,15 +107,15 @@ ${escapeText(application.jobDescription)}
 }
 
 async function revokeApplication(request, env, slug) {
-  if (request.method !== "POST") return privateJson({ error: "Use POST." }, 405, { allow: "POST" });
-  if (!SLUG_PATTERN.test(slug)) return privateJson({ error: "Application not found." }, 404);
+  if (request.method !== "POST") return noStoreJson({ error: "Use POST." }, 405, { allow: "POST" });
+  if (!SLUG_PATTERN.test(slug)) return noStoreJson({ error: "Application not found." }, 404);
   const raw = await env.ARCHIVE.get(`application:${slug}`);
-  if (!raw) return privateJson({ error: "Application not found." }, 404);
+  if (!raw) return noStoreJson({ error: "Application not found." }, 404);
   const application = JSON.parse(raw);
   application.revoked = true;
   application.updatedAt = new Date().toISOString();
   await storeApplication(env, application);
-  return privateJson({ revoked: true });
+  return noStoreJson({ revoked: true });
 }
 
 async function loadApplication(env, slug, now = new Date()) {

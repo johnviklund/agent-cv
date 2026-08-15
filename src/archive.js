@@ -1,16 +1,11 @@
 import { isLikelyBot } from "./chat-core.js";
+import { noStoreJson } from "./http.js";
 
 const DEFAULT_RETENTION_DAYS = 90;
 const MAX_RETENTION_DAYS = 365;
 const MAX_EXPORT_RECORDS = 5_000;
 const TURN_ID_PATTERN = /^[a-zA-Z0-9_-]{8,80}$/;
 const FEEDBACK_RATINGS = new Set(["helpful", "not_helpful"]);
-
-const PRIVATE_JSON_HEADERS = {
-  "content-type": "application/json; charset=utf-8",
-  "cache-control": "no-store",
-  "x-content-type-options": "nosniff",
-};
 
 export function createConversationRecord({ turnId, question, sessionId, source, visitorType, model, applicationSlug = "", now = new Date() }) {
   const createdAt = now.toISOString();
@@ -50,46 +45,46 @@ export async function storeResourceAccess(env, path, request, now = new Date()) 
 }
 
 export async function handleFeedback(request, env) {
-  if (request.method !== "POST") return privateJson({ error: "Use POST /api/feedback." }, 405, { allow: "POST" });
-  if (!env.ARCHIVE) return privateJson({ error: "Feedback storage is not configured." }, 503);
+  if (request.method !== "POST") return noStoreJson({ error: "Use POST /api/feedback." }, 405, { allow: "POST" });
+  if (!env.ARCHIVE) return noStoreJson({ error: "Feedback storage is not configured." }, 503);
 
   let input;
   try {
     input = await request.json();
   } catch {
-    return privateJson({ error: "Send valid JSON." }, 400);
+    return noStoreJson({ error: "Send valid JSON." }, 400);
   }
 
   const turnId = typeof input?.turnId === "string" ? input.turnId.trim() : "";
   const rating = typeof input?.rating === "string" ? input.rating.trim() : "";
   const note = typeof input?.note === "string" ? input.note.trim().slice(0, 500) : "";
   if (!TURN_ID_PATTERN.test(turnId) || !FEEDBACK_RATINGS.has(rating)) {
-    return privateJson({ error: "Send a valid turnId and rating." }, 400);
+    return noStoreJson({ error: "Send a valid turnId and rating." }, 400);
   }
 
   const key = `conversation:${turnId}`;
   const existing = await env.ARCHIVE.get(key);
-  if (!existing) return privateJson({ error: "Conversation turn not found." }, 404);
+  if (!existing) return noStoreJson({ error: "Conversation turn not found." }, 404);
 
   let record;
   try {
     record = JSON.parse(existing);
   } catch {
-    return privateJson({ error: "Conversation turn is unavailable." }, 500);
+    return noStoreJson({ error: "Conversation turn is unavailable." }, 500);
   }
 
   const updatedAt = new Date().toISOString();
   record.updatedAt = updatedAt;
   record.feedback = { rating, note: note || null, updatedAt };
   await putExpiringRecord(env, key, record);
-  return privateJson({ saved: true });
+  return noStoreJson({ saved: true });
 }
 
 export async function handleAdminConversations(request, env) {
   const denied = await requireAdmin(request, env);
   if (denied) return denied;
-  if (request.method !== "GET") return privateJson({ error: "Use GET." }, 405, { allow: "GET" });
-  if (!env.ARCHIVE) return privateJson({ error: "Conversation storage is not configured." }, 503);
+  if (request.method !== "GET") return noStoreJson({ error: "Use GET." }, 405, { allow: "GET" });
+  if (!env.ARCHIVE) return noStoreJson({ error: "Conversation storage is not configured." }, 503);
 
   const records = await readRecords(env.ARCHIVE, "conversation:");
   records.sort((left, right) => left.createdAt.localeCompare(right.createdAt));
@@ -108,15 +103,15 @@ export async function handleAdminConversations(request, env) {
 export async function handleAdminStats(request, env) {
   const denied = await requireAdmin(request, env);
   if (denied) return denied;
-  if (request.method !== "GET") return privateJson({ error: "Use GET." }, 405, { allow: "GET" });
-  if (!env.ARCHIVE) return privateJson({ error: "Conversation storage is not configured." }, 503);
+  if (request.method !== "GET") return noStoreJson({ error: "Use GET." }, 405, { allow: "GET" });
+  if (!env.ARCHIVE) return noStoreJson({ error: "Conversation storage is not configured." }, 503);
 
   const [turns, resources] = await Promise.all([
     readRecords(env.ARCHIVE, "conversation:"),
     readRecords(env.ARCHIVE, "resource:"),
   ]);
   const sessions = new Set(turns.map(({ sessionId }) => sessionId));
-  return privateJson({
+  return noStoreJson({
     retentionDays: retentionDays(env),
     conversations: {
       sessions: sessions.size,
@@ -145,31 +140,36 @@ async function putExpiringRecord(env, key, record) {
 
 export async function readRecords(namespace, prefix) {
   const records = [];
+  let attempted = 0;
   let cursor;
   do {
     const page = await namespace.list({ prefix, cursor, limit: 1_000 });
-    const remaining = page.keys.slice(0, Math.max(0, MAX_EXPORT_RECORDS - records.length));
-    const values = await Promise.all(remaining.map(({ name }) => namespace.get(name)));
-    for (const value of values) {
-      if (!value) continue;
-      try {
-        records.push(JSON.parse(value));
-      } catch {
-        // Skip corrupt entries without making the complete export unavailable.
+    const remaining = page.keys.slice(0, Math.max(0, MAX_EXPORT_RECORDS - attempted));
+    attempted += remaining.length;
+    for (let index = 0; index < remaining.length; index += 50) {
+      const batch = remaining.slice(index, index + 50);
+      const values = await Promise.all(batch.map(({ name }) => namespace.get(name)));
+      for (const value of values) {
+        if (!value) continue;
+        try {
+          records.push(JSON.parse(value));
+        } catch {
+          // Skip corrupt entries without making the complete export unavailable.
+        }
       }
     }
-    if (records.length >= MAX_EXPORT_RECORDS || page.list_complete) break;
+    if (attempted >= MAX_EXPORT_RECORDS || page.list_complete) break;
     cursor = page.cursor;
   } while (cursor);
   return records;
 }
 
 export async function requireAdmin(request, env) {
-  if (!env.ADMIN_API_TOKEN) return privateJson({ error: "Admin access is not configured." }, 503);
+  if (!env.ADMIN_API_TOKEN) return noStoreJson({ error: "Admin access is not configured." }, 503);
   const authorization = request.headers.get("authorization") || "";
   const supplied = authorization.startsWith("Bearer ") ? authorization.slice(7) : "";
   if (!supplied || !(await secureEqual(supplied, env.ADMIN_API_TOKEN))) {
-    return privateJson({ error: "Unauthorized." }, 401, { "www-authenticate": "Bearer" });
+    return noStoreJson({ error: "Unauthorized." }, 401, { "www-authenticate": "Bearer" });
   }
   return null;
 }
@@ -196,17 +196,10 @@ function retentionDays(env) {
     : DEFAULT_RETENTION_DAYS;
 }
 
-function countBy(records, field) {
+export function countBy(records, field) {
   return Object.fromEntries([...records.reduce((counts, record) => {
     const value = record[field] || "unknown";
     counts.set(value, (counts.get(value) || 0) + 1);
     return counts;
   }, new Map())].sort(([left], [right]) => left.localeCompare(right)));
-}
-
-export function privateJson(body, status = 200, extraHeaders = {}) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { ...PRIVATE_JSON_HEADERS, ...extraHeaders },
-  });
 }

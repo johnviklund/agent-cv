@@ -30,7 +30,7 @@ for (const page of pages) {
   }
 
   if (!["/404.html", "/admin/index.html", "/application/index.html"].includes(relative)) {
-    if (!/<link\s+rel="canonical"\s+href="https:\/\/john-viklund-agent-cv\.agent-cv\.workers\.dev\//i.test(html)) {
+    if (!/<link\s+rel="canonical"\s+href="https:\/\/johnviklund\.com\//i.test(html)) {
       failures.push(`${relative}: missing canonical URL`);
     }
     if (!/<link\s+rel="describedby"\s+href="\/llms\.txt"/i.test(html)) {
@@ -118,15 +118,15 @@ async function checkDiscoveryResources() {
   if (!/"@type":\s*"ProfilePage"/.test(home) || !/"mainEntity":\s*\{/.test(home)) {
     failures.push("index.html: missing ProfilePage JSON-LD with mainEntity");
   }
-  if (!/"@id":\s*"https:\/\/john-viklund-agent-cv\.agent-cv\.workers\.dev\/#john-viklund"/.test(home)
+  if (!/"@id":\s*"https:\/\/johnviklund\.com\/#john-viklund"/.test(home)
     || !/"name":\s*"John Viklund"/.test(home)) {
     failures.push("index.html: JSON-LD public identity is inconsistent");
   }
-  if (!/Sitemap:\s*https:\/\/john-viklund-agent-cv\.agent-cv\.workers\.dev\/sitemap\.xml/.test(robots)) {
+  if (!/Sitemap:\s*https:\/\/johnviklund\.com\/sitemap\.xml/.test(robots)) {
     failures.push("robots.txt: missing canonical sitemap declaration");
   }
   for (const path of ["/", "/projects/", "/cv/", "/privacy/", "/AGENTS.md", "/llms.txt", "/overview.md", "/repositories.md"]) {
-    const url = `https://john-viklund-agent-cv.agent-cv.workers.dev${path}`;
+    const url = `https://johnviklund.com${path}`;
     if (!sitemap.includes(`<loc>${url}</loc>`)) failures.push(`sitemap.xml: missing ${path}`);
   }
 }

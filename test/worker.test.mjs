@@ -4,6 +4,7 @@ import { BudgetCounter, handleRequest } from "../src/worker.js";
 import { readRecordsWithStatus } from "../src/archive.js";
 
 const ASK_URL = "https://example.test/api/ask";
+const CANONICAL_ORIGIN = "https://johnviklund.com";
 const VALID_PAYLOAD = {
   messages: [{ role: "user", content: "What has John built?" }],
   sessionId: "session_12345678",
@@ -22,6 +23,21 @@ test("health reports the configured OpenAI model", async () => {
   assert.equal(health.ok, true);
   assert.equal(health.configured, true);
   assert.equal(health.model, "gpt-5.6-luna");
+});
+
+test("legacy and www hosts redirect to the canonical domain", async () => {
+  const aliases = [
+    "https://www.johnviklund.com/projects/?source=www",
+    "https://john-viklund-agent-cv.agent-cv.workers.dev/cv/?source=workers",
+  ];
+
+  for (const alias of aliases) {
+    const response = await handleRequest(new Request(alias), baseEnv(), emptyContext());
+    const source = new URL(alias);
+
+    assert.equal(response.status, 308);
+    assert.equal(response.headers.get("location"), `${CANONICAL_ORIGIN}${source.pathname}${source.search}`);
+  }
 });
 
 test("contact endpoint returns the deliberately configured public email", async () => {

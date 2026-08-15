@@ -10,21 +10,20 @@
   "observability": {
     "enabled": true
   },
+  "routes": [
+    {
+      "pattern": "johnviklund.com",
+      "custom_domain": true
+    },
+    {
+      "pattern": "www.johnviklund.com",
+      "custom_domain": true
+    }
+  ],
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",
-    "run_worker_first": [
-      "/api/*",
-      "/a/*",
-      "/AGENTS.md",
-      "/llms.txt",
-      "/cv.md",
-      "/overview.md",
-      "/projects.md",
-      "/repositories.md",
-      "/robots.txt",
-      "/sitemap.xml"
-    ],
+    "run_worker_first": true,
     "html_handling": "force-trailing-slash",
     "not_found_handling": "404-page"
   },

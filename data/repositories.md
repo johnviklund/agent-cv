@@ -25,7 +25,7 @@ Snapshot generated: 2026-08-15T17:56:08.359Z
 
 A chat-first conversational résumé for John Viklund. It gives recruiters, hiring managers, crawlers, and AI agents the same grounded evidence through a slim web interface, stable Markdown resources, and a bounded streaming API.
 
-Live site: [john-viklund-agent-cv.agent-cv.workers.dev](https://john-viklund-agent-cv.agent-cv.workers.dev/)
+Live site: [johnviklund.com](https://johnviklund.com/)
 
 ## What this project demonstrates
 

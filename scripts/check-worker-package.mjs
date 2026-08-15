@@ -14,6 +14,9 @@ if (config.find_additional_modules !== true) {
 if (workerRoot !== resolve(root, "src")) {
   failures.push("base_dir must remain ./src so emitted module names match static import specifiers");
 }
+if (config.assets?.run_worker_first !== true) {
+  failures.push("assets.run_worker_first must remain true so alias-host redirects run before static asset handling");
+}
 
 const moduleRules = config.rules ?? [];
 assertNarrowRule("ESModule", ["**/*.js"]);

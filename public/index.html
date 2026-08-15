@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>John Erik Viklund — Agent CV</title>
+  <meta name="description" content="Ask John Erik Viklund's grounded AI agent about 25 years across applied AI, product, enterprise software, and Customer Experience.">
+  <meta name="theme-color" content="#f4f0e8">
+  <meta property="og:title" content="John Erik Viklund — Agent CV">
+  <meta property="og:description" content="A conversational résumé for an applied-AI builder and product leader.">
+  <meta property="og:type" content="profile">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "John Erik Viklund",
+    "jobTitle": "CX AI Lead",
+    "worksFor": { "@type": "Organization", "name": "Volvo Cars" },
+    "address": { "@type": "PostalAddress", "addressLocality": "Gothenburg", "addressCountry": "SE" },
+    "knowsAbout": ["Applied AI", "AI agents", "AI product strategy", "Customer Experience", "Enterprise software", "Product management"]
+  }
+  </script>
+  <script src="/app.js" type="module"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="wordmark" href="/" aria-label="John Erik Viklund, home">JOHN ERIK VIKLUND</a>
+      <nav class="desktop-nav" aria-label="Primary navigation">
+        <a href="/experience/">Experience</a>
+        <a href="/projects/">Projects</a>
+        <a href="/about/">About</a>
+        <a href="/cv/">Full CV</a>
+        <a href="/contact/">Contact</a>
+      </nav>
+      <details class="mobile-nav">
+        <summary aria-label="Open navigation">Menu</summary>
+        <nav aria-label="Mobile navigation">
+          <a href="/experience/">Experience</a>
+          <a href="/projects/">Projects</a>
+          <a href="/about/">About</a>
+          <a href="/cv/">Full CV</a>
+          <a href="/contact/">Contact</a>
+        </nav>
+      </details>
+    </div>
+  </header>
+
+  <main id="main" class="home" data-home>
+    <div class="home-stage">
+      <section class="hero" aria-labelledby="home-title">
+        <div class="hero-intro">
+          <p class="eyebrow">CX AI LEAD · APPLIED-AI BUILDER</p>
+          <h1 id="home-title">Ask about my work.</h1>
+          <p class="hero-deck">25 years across AI, product, enterprise software and Customer Experience.</p>
+
+          <form class="chat-form" data-home-form>
+            <label class="sr-only" for="home-question">Ask about John's experience</label>
+            <div class="composer">
+              <input id="home-question" data-initial-input data-chat-control name="question" maxlength="1200" autocomplete="off" placeholder="Ask me anything about John's experience…" required>
+              <button class="send-button" data-chat-control type="submit" aria-label="Send question">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+          </form>
+
+          <ol class="starter-list" aria-label="Suggested questions">
+            <li><a href="/experience/" data-prompt="Summarize John's experience in three sentences."><span><span class="starter-number">01</span>Summarize John's experience</span><span aria-hidden="true">→</span></a></li>
+            <li><a href="/projects/" data-prompt="What AI and automation projects has John built?"><span><span class="starter-number">02</span>Explore AI projects</span><span aria-hidden="true">→</span></a></li>
+            <li><a href="/about/" data-prompt="What kind of roles and working environments is John looking for?"><span><span class="starter-number">03</span>Roles and working style</span><span aria-hidden="true">→</span></a></li>
+            <li><a href="/cv/"><span><span class="starter-number">04</span>Show the full CV</span><span aria-hidden="true">→</span></a></li>
+          </ol>
+
+          <noscript>
+            <section class="noscript-summary">
+              <h2>John Erik Viklund</h2>
+              <p>CX AI Lead at Volvo Cars. Applied-AI builder and product leader. Former AI startup founder. Enterprise scale, founder mindset, hands-on agent engineering.</p>
+              <a href="/cv/">Read the full CV →</a>
+            </section>
+          </noscript>
+        </div>
+
+        <section class="conversation-shell" data-conversation aria-label="Conversation" hidden>
+          <div class="conversation-toolbar">
+            <span>CONVERSATION 01</span>
+            <button class="text-button" data-start-over type="button">Start over ↗</button>
+          </div>
+          <div data-message-list></div>
+          <form class="chat-form conversation-composer" data-home-form data-conversation-composer>
+            <label class="sr-only" for="followup-question">Ask a follow-up</label>
+            <div class="composer">
+              <input id="followup-question" data-chat-control maxlength="1200" autocomplete="off" placeholder="Ask a follow-up…" required>
+              <button class="send-button" data-chat-control type="submit" aria-label="Send follow-up">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+          </form>
+          <div class="followups" data-followups hidden aria-label="Suggested follow-up questions">
+            <button type="button" data-followup="How was Product Studio designed?">How was Product Studio designed?</button>
+            <button type="button" data-followup="What scale has John worked at?">What scale has John worked at?</button>
+            <button type="button" data-followup="Show me the technical details of John's recent AI work.">Show technical details</button>
+          </div>
+        </section>
+      </section>
+    </div>
+
+    <footer class="home-footer">
+      <span>Grounded in John's CV · Updated Aug 2026</span>
+      <span class="footer-separator" aria-hidden="true">|</span>
+      <span>Conversations may be reviewed · Logs delete after 90 days</span>
+    </footer>
+  </main>
+</body>
+</html>

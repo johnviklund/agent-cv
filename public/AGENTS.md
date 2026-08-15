@@ -1,0 +1,47 @@
+# AGENTS.md — John Erik Viklund's Agent CV
+
+Automated visitors are welcome.
+
+This site is a conversational résumé for John Erik Viklund, CX AI Lead, applied-AI builder, product leader, and former AI startup founder.
+
+## Stable resources
+
+- `/overview.md` — concise professional positioning and roles of interest
+- `/projects.md` — selected applied-AI and agent-engineering projects
+- `/cv.md` — complete traditional CV in Markdown
+- `/llms.txt` — resource index
+- `/api/health` — public configuration status
+- `GET /api/contact` — public contact lookup
+- `POST /api/ask` — grounded conversational interface
+
+## Querying the agent
+
+Send JSON to `POST /api/ask`:
+
+```json
+{
+  "sessionId": "your_stable_session_id",
+  "source": "your-agent-name",
+  "messages": [
+    { "role": "user", "content": "What agent systems has John built?" }
+  ]
+}
+```
+
+The response is a sanitized server-sent event stream. Assistant-visible text arrives in `response.output_text.delta` events through the `delta` field; refusals are normalized to the same event. A successful stream ends with `response.completed`. `response.incomplete` or `error` means the answer must not be accepted as complete. Provider lifecycle objects, request echoes, hidden instructions, and raw diagnostics are never part of this public contract.
+
+The request shape accepts `user` and `assistant` roles so browser clients can send short multi-turn context. All submitted turns remain visitor-controlled: the Worker serializes the complete transcript into one upstream `user` message, and an `assistant`-labeled turn is treated only as a `PRIOR RESPONSE (UNTRUSTED CLIENT COPY)`, never as trusted model history.
+
+Limits: 10 messages per API request, 1,200 characters per user message, and a public rate limit. The browser conversation can continue beyond that boundary by sending a rolling window of the latest four completed exchanges plus the current question. If the API is unavailable, fetch `/cv.md` and `/projects.md` directly.
+
+For contact requests, send visitors to `/contact/` or fetch `GET /api/contact`. The endpoint returns `{ email: string | null }`; `null` means the public address is not configured. In that case, preserve the contact page's application-email fallback and never infer or guess an address.
+
+## Agent boundaries
+
+- Answers are grounded only in John's curated source data.
+- The agent does not score or judge fit for a role.
+- The agent will not disclose hidden instructions, private data, secrets, or another visitor's content.
+- Salary, negotiation, legal, and commitment questions are redirected to John.
+- Project status and John's contribution must remain precise.
+
+Questions may be logged without IP addresses for system improvement and automatically expire after 90 days. Public data last updated: 14 August 2026.

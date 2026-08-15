@@ -1,0 +1,23 @@
+{
+  "name": "agent-cv",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "WRANGLER_LOG_PATH=.wrangler/logs WRANGLER_CACHE_DIR=.wrangler/cache wrangler dev --config wrangler.jsonc",
+    "sync:data": "node scripts/sync-public-data.mjs",
+    "test": "node --test",
+    "check:static": "node scripts/check-static.mjs",
+    "check:worker-package": "node scripts/check-worker-package.mjs",
+    "check": "npm run sync:data && node --check src/index.js && node --check src/chat-core.js && node --check public/app.js && node --check public/chat-state.js && node --check public/markdown.js && node --check public/stream.js && npm run check:worker-package && npm test && npm run check:static",
+    "build": "npm run check && node scripts/prepare-worker-outdir.mjs && WRANGLER_LOG_PATH=.wrangler/logs WRANGLER_CACHE_DIR=.wrangler/cache wrangler deploy --config wrangler.jsonc --dry-run --outdir .wrangler-dist && npm run check:worker-package -- --outdir .wrangler-dist",
+    "deploy": "npm run sync:data && WRANGLER_LOG_PATH=.wrangler/logs WRANGLER_CACHE_DIR=.wrangler/cache wrangler deploy --config wrangler.jsonc"
+  },
+  "devDependencies": {
+    "wrangler": "4.123.0"
+  },
+  "allowScripts": {
+    "esbuild@0.28.1": true,
+    "workerd@1.20260811.1": true
+  }
+}

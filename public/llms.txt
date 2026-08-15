@@ -1,0 +1,26 @@
+# John Erik Viklund — Agent CV
+
+> Conversational résumé for a CX AI Lead, applied-AI builder, product leader, and former AI startup founder.
+
+## Primary resources
+
+- [Professional overview](/overview.md): positioning, career narrative, and roles of interest
+- [Selected AI projects](/projects.md): architecture, status, scale, and outcomes
+- [Full CV](/cv.md): complete traditional résumé in Markdown
+- [Agent instructions](/AGENTS.md): API contract, limits, and behavioral boundaries
+
+## Human-readable pages
+
+- [Conversation](/): ask the grounded Agent CV
+- [Experience](/experience/): career timeline
+- [Projects](/projects/): selected-work index
+- [About](/about/): working style and AI philosophy
+- [Full CV](/cv/): rendered CV
+
+## API
+
+- `POST /api/ask` — bounded, rate-limited, streaming grounded Q&A
+- `GET /api/health` — service status
+- `GET /api/contact` — public contact lookup; returns `{ email: string | null }`. A `null` email means the public address is not configured, so direct visitors to `/contact/` and preserve its application-email fallback rather than guessing an address.
+
+Data last updated: 2026-08-14

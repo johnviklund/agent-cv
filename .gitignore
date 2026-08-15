@@ -1,0 +1,19 @@
+.DS_Store
+.dev.vars
+.wrangler/
+.wrangler-dist/
+node_modules/
+npm-debug.log*
+
+# Private CV source and generated Worker knowledge. Public Markdown remains tracked.
+data/experience.md
+data/faq.md
+data/interests.md
+data/meta.md
+data/personal.md
+data/skills.md
+src/data/
+
+# Private working material and superseded data exports.
+docs/agent-cv-data.zip
+docs/agent-cv-master-profile.md

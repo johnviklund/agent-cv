@@ -1,0 +1,68 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "john-viklund-agent-cv",
+  "main": "src/index.js",
+  "compatibility_date": "2026-08-15",
+  "send_metrics": false,
+  "no_bundle": true,
+  "find_additional_modules": true,
+  "base_dir": "./src",
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"],
+    "html_handling": "force-trailing-slash",
+    "not_found_handling": "404-page"
+  },
+  "rules": [
+    {
+      "type": "ESModule",
+      "globs": ["**/*.js"],
+      "fallthrough": false
+    },
+    {
+      "type": "Text",
+      "globs": ["data/meta.md", "data/overview.md", "data/experience.md", "data/projects.md", "data/skills.md", "data/personal.md", "data/interests.md", "data/faq.md"],
+      "fallthrough": false
+    },
+    {
+      "type": "CompiledWasm",
+      "globs": ["**/*.wasm"],
+      "fallthrough": false
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "CHAT_BUDGET",
+        "class_name": "BudgetCounter"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["BudgetCounter"]
+    }
+  ],
+  "ratelimits": [
+    {
+      "name": "CHAT_RATE_LIMITER",
+      "namespace_id": "1001",
+      "simple": {
+        "limit": 12,
+        "period": 60
+      }
+    }
+  ],
+  "vars": {
+    "OPENAI_MODEL": "gpt-5.6-luna",
+    "OPENAI_REASONING_EFFORT": "none",
+    "MAX_OUTPUT_TOKENS": "700",
+    "MONTHLY_REQUEST_CAP": "1000",
+    "CONTACT_EMAIL": ""
+  }
+}

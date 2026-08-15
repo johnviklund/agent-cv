@@ -1,0 +1,13 @@
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-sgpmtGvBbr0Eo2qxQFJ5GSdXyp0xDXcPhhdQbEn4mL8='; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+
+/*.md
+  Access-Control-Allow-Origin: *
+  Content-Type: text/markdown; charset=utf-8
+
+/llms.txt
+  Access-Control-Allow-Origin: *

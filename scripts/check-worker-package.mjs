@@ -11,6 +11,9 @@ if (config.no_bundle !== true) failures.push("no_bundle must remain true");
 if (config.find_additional_modules !== true) {
   failures.push("find_additional_modules must remain true so Wrangler discovers the import closure");
 }
+if (config.workers_dev !== true) {
+  failures.push("workers_dev must remain true so the legacy hostname can redirect to the canonical domain");
+}
 if (workerRoot !== resolve(root, "src")) {
   failures.push("base_dir must remain ./src so emitted module names match static import specifiers");
 }

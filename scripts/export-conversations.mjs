@@ -1,8 +1,10 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
+const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const options = parseArguments(process.argv.slice(2));
-const token = process.env.ADMIN_API_TOKEN;
+const token = process.env.ADMIN_API_TOKEN || await localAdminToken();
 if (!token) {
   console.error("Set ADMIN_API_TOKEN in the command environment before exporting.");
   process.exit(1);
@@ -18,7 +20,7 @@ if (!response.ok) {
   process.exit(1);
 }
 
-const output = resolve(options.output || `exports/agent-cv-conversations-${new Date().toISOString().slice(0, 10)}.jsonl`);
+const output = resolve(root, options.output || `exports/agent-cv-conversations-${new Date().toISOString().slice(0, 10)}.jsonl`);
 await mkdir(dirname(output), { recursive: true });
 await writeFile(output, await response.text(), { mode: 0o600 });
 console.log(`Saved private conversation export to ${output}`);
@@ -35,4 +37,14 @@ function parseArguments(arguments_) {
     }
   }
   return options;
+}
+
+async function localAdminToken() {
+  try {
+    const source = await readFile(resolve(root, ".dev.vars"), "utf8");
+    return source.match(/^ADMIN_API_TOKEN=(.+)$/m)?.[1]?.trim() || "";
+  } catch (error) {
+    if (error.code === "ENOENT") return "";
+    throw error;
+  }
 }

@@ -9,6 +9,9 @@
 - [Public repository evidence](/repositories.md): bounded snapshots from explicitly allowlisted GitHub repositories
 - [Full CV](/cv.md): complete traditional résumé in Markdown
 - [Agent instructions](/AGENTS.md): API contract, limits, and behavioral boundaries
+- [Privacy](/privacy/): conversation data, purpose, retention, and deletion route
+- [Sitemap](/sitemap.xml): canonical URL inventory
+- [Public source](https://github.com/johnviklund/agent-cv): implementation, tests, and repository allowlist
 
 ## Human-readable pages
 

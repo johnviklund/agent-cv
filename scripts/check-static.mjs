@@ -10,6 +10,7 @@ const failures = [];
 
 await checkApiResourceParity();
 await checkInlineScriptCsp();
+await checkDiscoveryResources();
 
 for (const page of pages) {
   const html = await readFile(page, "utf8");
@@ -25,6 +26,15 @@ for (const page of pages) {
 
   for (const [pattern, message] of checks) {
     if (!pattern.test(html)) failures.push(`${relative}: ${message}`);
+  }
+
+  if (!["/404.html", "/admin/index.html"].includes(relative)) {
+    if (!/<link\s+rel="canonical"\s+href="https:\/\/john-viklund-agent-cv\.agent-cv\.workers\.dev\//i.test(html)) {
+      failures.push(`${relative}: missing canonical URL`);
+    }
+    if (!/<link\s+rel="describedby"\s+href="\/llms\.txt"/i.test(html)) {
+      failures.push(`${relative}: missing llms.txt describedby link`);
+    }
   }
 
   if (/href="[^"]*[?&]ask=/i.test(html)) {
@@ -95,5 +105,23 @@ async function checkInlineScriptCsp() {
   for (const [, source] of inlineScripts) {
     const hash = `sha256-${createHash("sha256").update(source).digest("base64")}`;
     if (!headers.includes(`'${hash}'`)) failures.push(`_headers: missing CSP hash ${hash}`);
+  }
+}
+
+async function checkDiscoveryResources() {
+  const [home, robots, sitemap] = await Promise.all([
+    readFile(resolve(publicDir, "index.html"), "utf8"),
+    readFile(resolve(publicDir, "robots.txt"), "utf8"),
+    readFile(resolve(publicDir, "sitemap.xml"), "utf8"),
+  ]);
+  if (!/"@type":\s*"ProfilePage"/.test(home) || !/"mainEntity":\s*\{/.test(home)) {
+    failures.push("index.html: missing ProfilePage JSON-LD with mainEntity");
+  }
+  if (!/Sitemap:\s*https:\/\/john-viklund-agent-cv\.agent-cv\.workers\.dev\/sitemap\.xml/.test(robots)) {
+    failures.push("robots.txt: missing canonical sitemap declaration");
+  }
+  for (const path of ["/", "/projects/", "/cv/", "/privacy/", "/AGENTS.md", "/llms.txt", "/repositories.md"]) {
+    const url = `https://john-viklund-agent-cv.agent-cv.workers.dev${path}`;
+    if (!sitemap.includes(`<loc>${url}</loc>`)) failures.push(`sitemap.xml: missing ${path}`);
   }
 }

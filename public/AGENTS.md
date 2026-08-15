@@ -11,6 +11,9 @@ This site is a conversational résumé for John Erik Viklund, CX AI Lead, applie
 - `/repositories.md` — bounded snapshots from explicitly allowlisted public repositories
 - `/cv.md` — complete traditional CV in Markdown
 - `/llms.txt` — resource index
+- `/sitemap.xml` — canonical human and machine-readable URL inventory
+- `/privacy/` — plain-language conversation data and retention policy
+- `https://github.com/johnviklund/agent-cv` — public source, tests, and repository-grounding manifest
 - `/api/health` — public configuration status
 - `GET /api/contact` — public contact lookup
 - `POST /api/ask` — grounded conversational interface

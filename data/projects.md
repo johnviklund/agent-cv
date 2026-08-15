@@ -2,15 +2,17 @@
 
 ## Product Studio — governed multi-agent execution loop
 
-**Status:** Active development; personal project; not yet a public product.
+**Status:** Active local-first personal system with a public repository; not commercially launched.
 
 A local-first control plane for running AI coding-agent work across repositories as a governed lifecycle: idea, brainstorm, spec, plan, execute, review, test, ship, and learn.
 
-The deterministic controller owns phase state. Agents propose actions but cannot declare themselves complete. Writer and reviewer roles can use different model vendors. Permissions, bounded autonomy, durable Markdown artifacts, a rebuildable SQLite cache, idempotent transitions, and leased execution are deliberate parts of the design.
+The implemented baseline is a Next.js and TypeScript application where versioned `.founder/` artifacts are durable workflow truth, a deterministic controller owns transitions and evidence checks, a connected Agent Client Protocol runtime performs bounded attempts, and SQLite remains a rebuildable projection. Agents cannot approve their own work; reviewer access stays source-read-only. The public architecture document clearly separates this working baseline from later service, policy, and orchestration options.
 
 **Stack:** Next.js, TypeScript, Tailwind, shadcn/ui, better-sqlite3, and an Agent Client Protocol adapter.
 
-**Verified scale in August 2026:** approximately 999 tracked files, approximately 49,000 lines, and eight iterations of the work-item/goal schema.
+**Verified scale on 15 August 2026:** 1,127 tracked files and 44 test files in the complete public Git tree.
+
+**Public repository:** [github.com/johnviklund/product-studio](https://github.com/johnviklund/product-studio)
 
 ## CX Intelligence — governed AI topic classification
 
@@ -58,18 +60,8 @@ A visual system that makes multi-agent task activity legible as a growing hex-ti
 
 ## Agent CV — this site
 
-**Status:** Active personal portfolio project.
+**Status:** Public, MIT-licensed, deployed, and actively maintained.
 
-The résumé itself is an AI system: Markdown source data, a grounded LLM, prompt-injection resistance, a human-readable CV, AI-readable files, structured metadata, and an agent-to-agent API. The medium demonstrates the claim that John builds applied AI systems.
+The résumé itself is an AI system: reviewed Markdown evidence is bundled into a Cloudflare Worker prompt, visitor transcripts stay untrusted, and upstream OpenAI events are normalized into a small public SSE contract. Human pages, raw Markdown, agent discovery files, structured metadata, expiring role links, bounded public-repository snapshots, and a private 90-day conversation archive all share the same grounded source boundary. The medium demonstrates the claim that John builds applied AI systems while remaining useful when the model API is unavailable.
 
 **Public repository:** [github.com/johnviklund/agent-cv](https://github.com/johnviklund/agent-cv)
-
-## Volvo Cars Support — public owner-support skill
-
-**Status:** Public personal prototype; MIT licensed.
-
-An OpenClaw skill that searches public Volvo owner manuals, knowledge articles, PDFs, and support content through Volvo's GraphQL API. It demonstrates a lightweight evidence-retrieval pattern: model- and market-scoped search, quoted matching passages, and links back to source material rather than unsupported generation.
-
-**Stack:** Shell, GraphQL, `curl`, `jq`, and Markdown skill instructions.
-
-**Public repository:** [github.com/johnviklund/volvo-cars-support](https://github.com/johnviklund/volvo-cars-support)

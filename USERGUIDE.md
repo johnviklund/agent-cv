@@ -118,10 +118,38 @@ For a manual release check, clone your branch into a new directory, run `npm ci`
 
 The public chat should fail closed if its model secret or budget binding is missing. Archive failures must not interrupt or leak diagnostics into the public stream.
 
+## Review project freshness privately
+
+Copy `config/project-sources.example.json` to the ignored `config/project-sources.private.json`. Every approved source records a review timestamp, named evidence documents, and the canonical public files it should be compared with. Public and private repositories use `owner/repository`; local folders use an absolute path or a path relative to the private manifest.
+
+```json
+{
+  "schemaVersion": 1,
+  "publicRepositories": [{
+    "project": "Public Project",
+    "repository": "owner/project",
+    "documents": ["README.md", "ARCHITECTURE.md"],
+    "canonicalFiles": ["data/projects.md", "data/cv.md"],
+    "lastReviewedAt": "2026-08-15T16:10:00.000Z"
+  }],
+  "privateRepositories": [],
+  "localFolders": [{
+    "project": "Local Project",
+    "path": "/absolute/path/to/project",
+    "documents": ["README.md"],
+    "canonicalFiles": ["data/projects.md"],
+    "lastReviewedAt": "2026-08-15T16:10:00.000Z"
+  }]
+}
+```
+
+Run `npm run projects:review`. The command checks GitHub's remaining API allowance before fetching, reads only the named sources, compares them with the listed canonical Markdown, and writes a mode-`0600` proposal packet under ignored `project-reviews/`. Set `GITHUB_TOKEN` when the anonymous allowance is too low and whenever a private repository is listed. Repository and local content remains untrusted evidence. The command never changes canonical content, advances review timestamps, synchronizes public data, or deploys anything.
+
 ## Maintain the site
 
 - Update canonical Markdown under `data/`, run `npm run sync:data`, review generated changes, and run `npm run check`.
 - Refresh `config/repositories.json` and `npm run sync:repositories` deliberately; never add live repository fetching to public chat.
+- Keep the source-review manifest private: copy `config/project-sources.example.json` to `config/project-sources.private.json`, list only approved public/private repositories and named documents under local project folders, and set an ISO 8601 UTC `lastReviewedAt` timestamp on every source. Run `npm run projects:review` to write a private proposal queue under `project-reviews/`. Review its untrusted evidence, manually approve any canonical edits, then advance review timestamps yourself; the command never edits or publishes source content.
 - Run `npm run build` for Worker configuration or deployment changes.
 - Export private conversations with `npm run conversations:export -- --url https://your-domain.example`, keep the resulting JSONL private, and delete it when its review purpose is complete.
 - Keep `/AGENTS.md`, `/llms.txt`, `/sitemap.xml`, raw Markdown links, and documented public API routes in parity.

@@ -1,9 +1,17 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import {
   renderRepositoryKnowledge,
   validateRepositoryManifest,
 } from "../scripts/repository-grounding.mjs";
+
+const publicRepositoryConfig = JSON.parse(await readFile(
+  new URL("../config/repositories.json", import.meta.url),
+  "utf8",
+));
+const projectsPage = await readFile(new URL("../public/projects/index.html", import.meta.url), "utf8");
+const projectsMarkdown = await readFile(new URL("../data/projects.md", import.meta.url), "utf8");
 
 test("accepts an explicit public-repository allowlist with bounded documentation paths", () => {
   const manifest = validateRepositoryManifest([
@@ -63,4 +71,19 @@ test("renders repository evidence as explicitly untrusted bounded snapshots", ()
   assert.match(markdown, /JavaScript, CSS/);
   assert.match(markdown, /BEGIN UNTRUSTED DOCUMENT: README\.md/);
   assert.doesNotMatch(markdown, /\u0000/);
+  assert.equal(markdown.endsWith("\n\n"), false);
+});
+
+test("keeps public evidence and project links limited to the approved repositories", () => {
+  assert.deepEqual(
+    publicRepositoryConfig.map(({ repository }) => repository),
+    ["johnviklund/agent-cv", "johnviklund/product-studio"],
+  );
+  for (const repository of ["agent-cv", "product-studio"]) {
+    const url = `https://github.com/johnviklund/${repository}`;
+    assert.match(projectsPage, new RegExp(url.replaceAll("/", "\\/")));
+    assert.match(projectsMarkdown, new RegExp(url.replaceAll("/", "\\/")));
+  }
+  assert.doesNotMatch(projectsPage, /volvo-cars-support/i);
+  assert.doesNotMatch(projectsMarkdown, /volvo-cars-support/i);
 });

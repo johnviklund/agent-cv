@@ -547,6 +547,17 @@ test("admin creates and revokes expiring application links without exposing JD o
   assert.equal(stored.privateNotes, "Met the hiring manager at an event.");
   assert.equal(stored.revoked, false);
 
+  const summary = await handleRequest(new Request("https://example.test/api/admin/applications?summary=1", {
+    headers: { authorization: "Bearer test-admin-secret" },
+  }), env, emptyContext());
+  const summaryBody = await summary.json();
+  assert.deepEqual(summaryBody.applications, [{
+    slug: created.slug,
+    role: "Head of Applied AI",
+    company: "Example AI",
+  }]);
+  assert.doesNotMatch(JSON.stringify(summaryBody), /governed agent platform|hiring manager/i);
+
   const publicResponse = await handleRequest(
     new Request(`https://example.test/api/application/${created.slug}`),
     env,

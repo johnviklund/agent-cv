@@ -139,7 +139,7 @@ function compareCreatedAt(left, right) {
   return String(left?.createdAt || "").localeCompare(String(right?.createdAt || ""));
 }
 
-function escapeXml(value) {
+export function escapeXml(value) {
   return String(value || "")
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")

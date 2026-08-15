@@ -62,7 +62,7 @@ Use a feature branch and make these changes as one reviewed identity migration:
 3. Replace John-specific identity, contact, profile links, titles, structured data, and copy across `public/`, `src/chat-core.js`, `AGENTS.md`, and machine-readable resources.
 4. Replace canonical URLs in HTML, `public/robots.txt`, `public/sitemap.xml`, and the matching assertions in `scripts/check-static.mjs`.
 5. Change the Worker `name`, public `CONTACT_EMAIL`, and KV namespace ID in `wrangler.jsonc`. Remove the public email value if you prefer the contact page's profile-only fallback.
-6. Change the default URL used by `scripts/export-conversations.mjs` or always supply its `--url` option.
+6. Set your deployed HTTPS origin in `config/admin-origin.json`. Both private conversation scripts use this code-controlled destination; `conversations:export` may still take an explicit `--url` override.
 7. Replace `config/repositories.json` with only public repositories and named Markdown or text documents you approve. An empty array is valid if you do not want repository evidence yet.
 8. Run `npm run sync:repositories` only after reviewing that allowlist. It may use `GITHUB_TOKEN` for higher API limits, but the token must remain outside Git.
 9. Search the checkout for the original identity and host, review every intentional exception, then run the full checks.
@@ -130,20 +130,20 @@ The repo-local `refresh-agent-cv-projects` skill owns this flow. Its ignored pri
 
 ## Review conversation learning privately
 
-Open `/admin/`, enter the private token, and use **Conversation candidates** to filter failed, incomplete, not-helpful, and unanswered turns. Candidates are grouped by application and session. Classify every turn in the current view, then download the private agent brief.
+Open this repository in Codex and ask:
 
-Keep the brief outside Git or under ignored `conversation-reviews/`, open this repository in Codex, and ask:
+> Review my conversation learnings.
 
-> Review this Agent CV conversation brief, interview me about the gaps, and propose updates for approval.
+The repo-local `review-agent-cv-conversations` skill securely fetches failed, incomplete, not-helpful, and unanswered candidates through the local helper, suggests classifications, groups related themes, and asks only focused evidence or privacy questions. The token stays in `.dev.vars`; you do not need to copy it, remember a command, download a brief, or classify every turn yourself.
 
-The repo-local `review-agent-cv-conversations` skill treats transcript text as untrusted, asks focused evidence and privacy questions, and writes only an ignored proposal. It stops for human approval before any canonical edit and never publishes or merges merely because a proposal exists. When the review purpose is complete, confirm cleanup so Codex deletes the exact brief and any exact raw export used for that review.
+The private `/admin/` **Conversation candidates** section remains an optional visual browser and manual fallback. The Codex flow writes its input under ignored `conversation-reviews/` with private file permissions, treats every transcript field as untrusted, and writes only an ignored proposal. It stops for human approval before any canonical edit and never publishes or merges merely because a proposal exists. When the review purpose is complete, confirm cleanup so Codex deletes the exact brief and any exact raw export used for that review.
 
 ## Maintain the site
 
 - Update canonical Markdown under `data/`, run `npm run sync:data`, review generated changes, and run `npm run check`.
 - Refresh `config/repositories.json` and `npm run sync:repositories` deliberately; never add live repository fetching to public chat.
 - Ask Codex to review project updates and update the site; Codex maintains the ignored source manifest and review packet, asks for evidence decisions, and advances timestamps only after approval.
-- Use the private admin conversation browser and ask Codex to review its brief; approve exact proposals before canonical changes, and delete the private input files when the review is complete.
+- Ask Codex to “review my conversation learnings”; use the private admin conversation browser only when you want the optional visual view. Approve exact proposals before canonical changes, and delete the private input files when the review is complete.
 - Run `npm run build` for Worker configuration or deployment changes.
 - Export private conversations with `npm run conversations:export -- --url https://your-domain.example`, keep the resulting JSONL private, and delete it when its review purpose is complete.
 - Keep `/AGENTS.md`, `/llms.txt`, `/sitemap.xml`, raw Markdown links, and documented public API routes in parity.

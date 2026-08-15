@@ -60,7 +60,7 @@ Public repository evidence is controlled only by `config/repositories.json`. Ref
 
 Project freshness is a Codex conversation. Open this repository in Codex and ask: **“Review my project and repository updates, ask me what changed, and update the site.”** The repo-local workflow gathers only approved evidence, asks for factual decisions, updates reviewed public content, verifies and ships it, deploys the site, and checks the live result. Its private manifest and proposal packet remain ignored plumbing; you do not need to remember their commands or formats.
 
-Conversation records, `.dev.vars`, admin tokens, application notes, job descriptions, review briefs, and exports remain private. The dashboard at `/admin/` keeps its bearer token in the current tab, groups learning candidates by application and session, and creates an untrusted-data brief for the local approval-gated Codex interview workflow.
+Conversation records, `.dev.vars`, admin tokens, application notes, job descriptions, review briefs, and exports remain private. Ask a local Codex agent to **“review my conversation learnings”** for the primary workflow: the repo-local skill securely fetches candidates, groups learning candidates by application and session, suggests classifications, and asks focused questions before creating a private approval-gated proposal. The dashboard at `/admin/` remains an optional visualization and manual brief generator.
 
 ## Deployment
 

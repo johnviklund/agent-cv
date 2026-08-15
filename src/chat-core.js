@@ -60,6 +60,7 @@ export function validateChatPayload(payload) {
     messages,
     sessionId: normalizeSessionId(payload.sessionId),
     source: normalizeSource(payload.source),
+    applicationSlug: normalizeApplicationSlug(payload.applicationSlug),
   };
 }
 
@@ -132,6 +133,12 @@ export function normalizeSessionId(value) {
   if (typeof value !== "string") return crypto.randomUUID();
   const clean = value.trim();
   return /^[a-zA-Z0-9_-]{8,80}$/.test(clean) ? clean : crypto.randomUUID();
+}
+
+function normalizeApplicationSlug(value) {
+  if (typeof value !== "string") return "";
+  const clean = value.trim().toLowerCase();
+  return /^[a-z0-9_-]{10,32}$/.test(clean) ? clean : "";
 }
 
 function normalizeSource(value) {

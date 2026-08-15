@@ -9,6 +9,8 @@ import {
   rollbackUnpairedUserTurn,
   storePendingPrompt,
   takePendingPrompt,
+  storePendingApplication,
+  takePendingApplication,
 } from "../public/chat-state.js";
 
 const completedConversation = (messageCount) => Array.from({ length: messageCount }, (_, index) => ({
@@ -59,3 +61,20 @@ test("pending prompts use one-time session storage instead of navigation URLs", 
   assert.equal(values.has(PENDING_PROMPT_KEY), false);
   assert.equal(takePendingPrompt(storage), "");
 });
+
+test("application context uses a validated one-time session value", () => {
+  const storage = memoryStorage();
+  assert.equal(storePendingApplication(storage, "application_1234"), true);
+  assert.equal(takePendingApplication(storage), "application_1234");
+  assert.equal(takePendingApplication(storage), "");
+  assert.equal(storePendingApplication(storage, "https://example.com/bad"), false);
+});
+
+function memoryStorage() {
+  const values = new Map();
+  return {
+    getItem: (key) => values.get(key) ?? null,
+    setItem: (key, value) => values.set(key, value),
+    removeItem: (key) => values.delete(key),
+  };
+}

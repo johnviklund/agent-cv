@@ -14,6 +14,12 @@ import {
   storeConversationRecord,
   storeResourceAccess,
 } from "./archive.js";
+import {
+  buildApplicationInstructions,
+  handleAdminApplications,
+  handlePublicApplication,
+  loadApplicationContext,
+} from "./applications.js";
 import { sanitizeOpenAIResponseStream } from "./openai-stream.js";
 
 const JSON_HEADERS = {
@@ -44,6 +50,9 @@ export async function handleRequest(
   { fetchImpl = fetch, systemPrompt = "" } = {},
 ) {
   const url = new URL(request.url);
+  const adminApplicationMatch = url.pathname.match(/^\/api\/admin\/applications(?:\/([a-z0-9_-]{10,32})\/(revoke))?$/);
+  const publicApplicationMatch = url.pathname.match(/^\/api\/application\/([a-z0-9_-]{10,32})$/);
+  const applicationPageMatch = url.pathname.match(/^\/a\/([a-z0-9_-]{10,32})\/?$/);
 
   if (url.pathname === "/api/health") {
     return Response.json({
@@ -73,8 +82,22 @@ export async function handleRequest(
     return handleAdminStats(request, env);
   }
 
+  if (adminApplicationMatch) {
+    return handleAdminApplications(request, env, adminApplicationMatch[1], adminApplicationMatch[2]);
+  }
+
+  if (publicApplicationMatch) {
+    return handlePublicApplication(request, env, publicApplicationMatch[1]);
+  }
+
   if (url.pathname === "/api/ask") {
     return handleAsk(request, env, context, { fetchImpl, systemPrompt });
+  }
+
+  if (applicationPageMatch) {
+    const application = await loadApplicationContext(env, applicationPageMatch[1]);
+    if (!application) return new Response("This application link has expired or been revoked.", { status: 410 });
+    return env.ASSETS.fetch(new Request(new URL("/application/", request.url), request));
   }
 
   if ((request.method === "GET" || request.method === "HEAD") && OBSERVED_RESOURCE_PATHS.has(url.pathname)) {
@@ -137,6 +160,13 @@ export async function handleAsk(
     return jsonError("The chat service is not configured yet. The full CV remains available.", 503);
   }
 
+  const application = input.applicationSlug
+    ? await loadApplicationContext(env, input.applicationSlug)
+    : null;
+  if (input.applicationSlug && !application) {
+    return jsonError("This application link has expired or been revoked.", 410);
+  }
+
   const budget = await reserveMonthlyBudget(env);
   if (budget === "unavailable") {
     return jsonError("The chat service is not fully configured yet. The full CV remains available.", 503);
@@ -152,6 +182,7 @@ export async function handleAsk(
     ...baseRecord,
     turnId: crypto.randomUUID(),
     model,
+    applicationSlug: input.applicationSlug,
   });
   let archiveTail = Promise.resolve();
   let archived = false;
@@ -188,7 +219,7 @@ export async function handleAsk(
       },
       body: JSON.stringify({
         model,
-        instructions: systemPrompt,
+        instructions: `${systemPrompt}${buildApplicationInstructions(application)}`,
         input: [{
           role: "user",
           content: buildUntrustedTranscript(input.messages),

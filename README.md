@@ -14,6 +14,7 @@ Live site: [john-viklund-agent-cv.agent-cv.workers.dev](https://john-viklund-age
 - Helpful/not-helpful answer feedback and authenticated JSONL export for local analysis
 - Bot access telemetry for the public machine-readable resources
 - Explicitly allowlisted public GitHub repository snapshots for deeper project evidence
+- Expiring `/a/:slug` application links with untrusted JD context and private admin notes kept outside the prompt
 - Rate limiting plus atomic monthly budget reservations in a Durable Object
 - Static no-JavaScript content, structured profile metadata, sitemap, canonical URLs, `/AGENTS.md`, and `/llms.txt`
 
@@ -55,6 +56,8 @@ Set `GITHUB_TOKEN` when higher GitHub API limits are needed. The generated `data
 ## Conversation archive
 
 The private dashboard is available at `/admin/`. Its bearer token remains in the current browser tab and is not written to local storage.
+
+The same dashboard creates 1–90 day application links. A link exposes only the company, role, and expiry to its visitor; the Worker adds the stored job description to the model as explicitly untrusted data. Private notes never enter the prompt. Links can be revoked immediately.
 
 To export the archive for a local AI agent:
 

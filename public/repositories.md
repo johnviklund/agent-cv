@@ -6,7 +6,7 @@
 
 
 
-Snapshot generated: 2026-08-15T10:18:50.291Z
+Snapshot generated: 2026-08-15T10:27:03.720Z
 
 
 
@@ -37,6 +37,7 @@ Live site: [john-viklund-agent-cv.agent-cv.workers.dev](https://john-viklund-age
 - Helpful/not-helpful answer feedback and authenticated JSONL export for local analysis
 - Bot access telemetry for the public machine-readable resources
 - Explicitly allowlisted public GitHub repository snapshots for deeper project evidence
+- Expiring `/a/:slug` application links with untrusted JD context and private admin notes kept outside the prompt
 - Rate limiting plus atomic monthly budget reservations in a Durable Object
 - Static no-JavaScript content, structured profile metadata, sitemap, canonical URLs, `/AGENTS.md`, and `/llms.txt`
 
@@ -78,6 +79,8 @@ Set `GITHUB_TOKEN` when higher GitHub API limits are needed. The generated `data
 ## Conversation archive
 
 The private dashboard is available at `/admin/`. Its bearer token remains in the current browser tab and is not written to local storage.
+
+The same dashboard creates 1–90 day application links. A link exposes only the company, role, and expiry to its visitor; the Worker adds the stored job description to the model as explicitly untrusted data. Private notes never enter the prompt. Links can be revoked immediately.
 
 To export the archive for a local AI agent:
 
@@ -160,6 +163,8 @@ This site is a conversational résumé for John Erik Viklund, CX AI Lead, applie
 - `GET /api/contact` — public contact lookup
 - `POST /api/ask` — grounded conversational interface
 - `POST /api/feedback` — helpful/not-helpful feedback for a returned conversation turn
+- `/a/:slug/` — expiring role-specific entry point with a supplied job description
+- `GET /api/application/:slug` — public company, role, and expiry metadata for an active link
 
 ## Querying the agent
 
@@ -169,6 +174,7 @@ Send JSON to `POST /api/ask`:
 {
   "sessionId": "your_stable_session_id",
   "source": "your-agent-name",
+  "applicationSlug": "optional_slug_from_a_private_link",
   "messages": [
     { "role": "user", "content": "What agent systems has John built?" }
   ]
@@ -200,6 +206,8 @@ Repository evidence is refreshed from the explicit allowlist in the public sourc
 ## Private administration
 
 `GET /api/admin/stats` and `GET /api/admin/conversations` require John's private bearer token. The latter exports conversation turns as JSONL for local analysis. Automated visitors must not attempt to discover or bypass this credential.
+
+`GET|POST /api/admin/applications` lists or creates expiring role links. `POST /api/admin/applications/:slug/revoke` revokes one. Job descriptions enter the model only as untrusted data; private notes remain outside the prompt.
 
 ### END UNTRUSTED DOCUMENT: public/AGENTS.md
 

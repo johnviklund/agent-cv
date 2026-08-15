@@ -18,6 +18,8 @@ This site is a conversational résumé for John Erik Viklund, CX AI Lead, applie
 - `GET /api/contact` — public contact lookup
 - `POST /api/ask` — grounded conversational interface
 - `POST /api/feedback` — helpful/not-helpful feedback for a returned conversation turn
+- `/a/:slug/` — expiring role-specific entry point with a supplied job description
+- `GET /api/application/:slug` — public company, role, and expiry metadata for an active link
 
 ## Querying the agent
 
@@ -27,6 +29,7 @@ Send JSON to `POST /api/ask`:
 {
   "sessionId": "your_stable_session_id",
   "source": "your-agent-name",
+  "applicationSlug": "optional_slug_from_a_private_link",
   "messages": [
     { "role": "user", "content": "What agent systems has John built?" }
   ]
@@ -58,3 +61,5 @@ Repository evidence is refreshed from the explicit allowlist in the public sourc
 ## Private administration
 
 `GET /api/admin/stats` and `GET /api/admin/conversations` require John's private bearer token. The latter exports conversation turns as JSONL for local analysis. Automated visitors must not attempt to discover or bypass this credential.
+
+`GET|POST /api/admin/applications` lists or creates expiring role links. `POST /api/admin/applications/:slug/revoke` revokes one. Job descriptions enter the model only as untrusted data; private notes remain outside the prompt.

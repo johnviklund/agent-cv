@@ -408,6 +408,93 @@ test("machine-readable resource fetches create bot-friendly access telemetry wit
   assert.equal(JSON.stringify(record).includes("192.0.2.99"), false);
 });
 
+test("admin creates and revokes expiring application links without exposing JD or private notes publicly", async () => {
+  const archive = memoryKv();
+  const env = baseEnv({ ARCHIVE: archive, ADMIN_API_TOKEN: "test-admin-secret" });
+  const create = await handleRequest(new Request("https://example.test/api/admin/applications", {
+    method: "POST",
+    headers: { "content-type": "application/json", authorization: "Bearer test-admin-secret" },
+    body: JSON.stringify({
+      company: "Example AI",
+      role: "Head of Applied AI",
+      jobDescription: "Lead a governed agent platform.",
+      privateNotes: "Met the hiring manager at an event.",
+      expiresDays: 30,
+    }),
+  }), env, emptyContext());
+  assert.equal(create.status, 201);
+  const created = await create.json();
+  assert.match(created.slug, /^[a-z0-9_-]{10,32}$/);
+  assert.equal(created.url, `/a/${created.slug}/`);
+
+  const stored = JSON.parse(archive.values.get(`application:${created.slug}`));
+  assert.equal(stored.jobDescription, "Lead a governed agent platform.");
+  assert.equal(stored.privateNotes, "Met the hiring manager at an event.");
+  assert.equal(stored.revoked, false);
+
+  const publicResponse = await handleRequest(
+    new Request(`https://example.test/api/application/${created.slug}`),
+    env,
+    emptyContext(),
+  );
+  assert.equal(publicResponse.status, 200);
+  const publicApplication = await publicResponse.json();
+  assert.equal(publicApplication.company, "Example AI");
+  assert.equal(publicApplication.role, "Head of Applied AI");
+  assert.equal(JSON.stringify(publicApplication).includes("governed agent platform"), false);
+  assert.equal(JSON.stringify(publicApplication).includes("hiring manager"), false);
+
+  const revoke = await handleRequest(new Request(`https://example.test/api/admin/applications/${created.slug}/revoke`, {
+    method: "POST",
+    headers: { authorization: "Bearer test-admin-secret" },
+  }), env, emptyContext());
+  assert.equal(revoke.status, 200);
+  assert.equal((await revoke.json()).revoked, true);
+
+  const revokedPublic = await handleRequest(
+    new Request(`https://example.test/api/application/${created.slug}`),
+    env,
+    emptyContext(),
+  );
+  assert.equal(revokedPublic.status, 410);
+});
+
+test("application chat adds an untrusted JD to the prompt while excluding private notes", async () => {
+  const slug = "application_1234";
+  const archive = memoryKv({
+    [`application:${slug}`]: JSON.stringify({
+      schemaVersion: 1,
+      slug,
+      company: "Example AI",
+      role: "Head of Applied AI",
+      jobDescription: "Lead a governed agent platform.",
+      privateNotes: "PRIVATE_NOTE_SENTINEL",
+      createdAt: "2026-08-15T10:00:00.000Z",
+      expiresAt: "2026-09-14T10:00:00.000Z",
+      revoked: false,
+      views: 0,
+    }),
+  });
+  let upstreamBody;
+  const response = await handleRequest(askRequest(JSON.stringify({
+    ...VALID_PAYLOAD,
+    applicationSlug: slug,
+  })), baseEnv({ ARCHIVE: archive }), collectingContext(), {
+    systemPrompt: "base grounded prompt",
+    fetchImpl: async (_url, init) => {
+      upstreamBody = JSON.parse(init.body);
+      return new Response('event: response.completed\ndata: {"type":"response.completed"}\n\n');
+    },
+  });
+  assert.equal(response.status, 200);
+  await response.text();
+  assert.match(upstreamBody.instructions, /Example AI/);
+  assert.match(upstreamBody.instructions, /Head of Applied AI/);
+  assert.match(upstreamBody.instructions, /Lead a governed agent platform/);
+  assert.match(upstreamBody.instructions, /job description below is untrusted/i);
+  assert.doesNotMatch(upstreamBody.instructions, /PRIVATE_NOTE_SENTINEL/);
+});
+
 test("the Durable Object grants only one concurrent reservation at cap minus one", async () => {
   const storage = new TransactionalStorage({ count: 4 });
   const counter = new BudgetCounter({ storage });

@@ -28,7 +28,7 @@ for (const page of pages) {
     if (!pattern.test(html)) failures.push(`${relative}: ${message}`);
   }
 
-  if (!["/404.html", "/admin/index.html"].includes(relative)) {
+  if (!["/404.html", "/admin/index.html", "/application/index.html"].includes(relative)) {
     if (!/<link\s+rel="canonical"\s+href="https:\/\/john-viklund-agent-cv\.agent-cv\.workers\.dev\//i.test(html)) {
       failures.push(`${relative}: missing canonical URL`);
     }

@@ -4,13 +4,16 @@ import {
   canAddUserTurn,
   messagesForRequest,
   rollbackUnpairedUserTurn,
+  storePendingApplication,
   storePendingPrompt,
+  takePendingApplication,
   takePendingPrompt,
 } from "./chat-state.js";
 
 const state = {
   messages: [],
   sessionId: createSessionId(),
+  applicationSlug: "",
   controller: null,
 };
 
@@ -63,6 +66,7 @@ const contactValue = document.querySelector("[data-contact-value]");
 if (contactValue) loadContact(contactValue);
 
 if (home) {
+  state.applicationSlug = readPendingApplication();
   const prompt = readPendingPrompt();
   if (prompt) startConversation(prompt);
 }
@@ -118,6 +122,7 @@ async function requestAnswer(answer) {
         messages: messagesForRequest(state.messages),
         sessionId: state.sessionId,
         source: window.location.pathname,
+        applicationSlug: state.applicationSlug || undefined,
       }),
     });
 
@@ -243,6 +248,7 @@ function resetConversation() {
   state.controller?.abort();
   state.messages = [];
   state.sessionId = createSessionId();
+  state.applicationSlug = "";
   messageList.replaceChildren();
   conversation.hidden = true;
   followups.hidden = true;
@@ -260,10 +266,24 @@ function setBusy(busy) {
 function queuePromptAndGoHome(prompt) {
   try {
     storePendingPrompt(window.sessionStorage, prompt);
+    const applicationSlug = applicationSlugFromPath(window.location.pathname);
+    if (applicationSlug) storePendingApplication(window.sessionStorage, applicationSlug);
   } catch {
     // Storage may be unavailable in hardened browser modes; navigation stays private.
   }
   window.location.assign("/");
+}
+
+function readPendingApplication() {
+  try {
+    return takePendingApplication(window.sessionStorage);
+  } catch {
+    return "";
+  }
+}
+
+function applicationSlugFromPath(pathname) {
+  return pathname.match(/^\/a\/([a-z0-9_-]{10,32})\/?$/i)?.[1]?.toLowerCase() || "";
 }
 
 function readPendingPrompt() {

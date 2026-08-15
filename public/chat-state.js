@@ -1,5 +1,6 @@
 export const MAX_REQUEST_MESSAGES = 10;
 export const PENDING_PROMPT_KEY = "agent-cv:pending-prompt";
+export const PENDING_APPLICATION_KEY = "agent-cv:pending-application";
 
 export function canAddUserTurn(messages) {
   if (!Array.isArray(messages)) return false;
@@ -35,6 +36,27 @@ export function takePendingPrompt(storage) {
     const prompt = storage.getItem(PENDING_PROMPT_KEY);
     storage.removeItem(PENDING_PROMPT_KEY);
     return typeof prompt === "string" ? prompt.trim().slice(0, 1_200) : "";
+  } catch {
+    return "";
+  }
+}
+
+export function storePendingApplication(storage, slug) {
+  const normalized = typeof slug === "string" ? slug.trim().toLowerCase() : "";
+  if (!/^[a-z0-9_-]{10,32}$/.test(normalized)) return false;
+  try {
+    storage.setItem(PENDING_APPLICATION_KEY, normalized);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function takePendingApplication(storage) {
+  try {
+    const slug = storage.getItem(PENDING_APPLICATION_KEY);
+    storage.removeItem(PENDING_APPLICATION_KEY);
+    return typeof slug === "string" && /^[a-z0-9_-]{10,32}$/.test(slug) ? slug : "";
   } catch {
     return "";
   }

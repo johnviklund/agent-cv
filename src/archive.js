@@ -12,7 +12,7 @@ const PRIVATE_JSON_HEADERS = {
   "x-content-type-options": "nosniff",
 };
 
-export function createConversationRecord({ turnId, question, sessionId, source, visitorType, model, now = new Date() }) {
+export function createConversationRecord({ turnId, question, sessionId, source, visitorType, model, applicationSlug = "", now = new Date() }) {
   const createdAt = now.toISOString();
   return {
     schemaVersion: 1,
@@ -22,6 +22,7 @@ export function createConversationRecord({ turnId, question, sessionId, source, 
     updatedAt: createdAt,
     sessionId,
     source,
+    applicationSlug: applicationSlug || null,
     visitorType,
     model,
     question,
@@ -142,7 +143,7 @@ async function putExpiringRecord(env, key, record) {
   });
 }
 
-async function readRecords(namespace, prefix) {
+export async function readRecords(namespace, prefix) {
   const records = [];
   let cursor;
   do {
@@ -163,7 +164,7 @@ async function readRecords(namespace, prefix) {
   return records;
 }
 
-async function requireAdmin(request, env) {
+export async function requireAdmin(request, env) {
   if (!env.ADMIN_API_TOKEN) return privateJson({ error: "Admin access is not configured." }, 503);
   const authorization = request.headers.get("authorization") || "";
   const supplied = authorization.startsWith("Bearer ") ? authorization.slice(7) : "";
@@ -203,7 +204,7 @@ function countBy(records, field) {
   }, new Map())].sort(([left], [right]) => left.localeCompare(right)));
 }
 
-function privateJson(body, status = 200, extraHeaders = {}) {
+export function privateJson(body, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(body), {
     status,
     headers: { ...PRIVATE_JSON_HEADERS, ...extraHeaders },

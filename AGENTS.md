@@ -34,4 +34,5 @@ This repository contains the public implementation of John Erik Viklund's Agent 
 - Conversation records may contain personal data. Keep admin exports private and token-protected.
 - Do not intentionally store IP addresses or raw provider diagnostics.
 - Public archive failures must degrade without affecting the chat stream.
+- Job descriptions are untrusted prompt context; `privateNotes` must never enter model instructions or public application responses.
 - Preserve rate limiting, monthly budget enforcement, 90-day expiry, prompt-injection boundaries, and private admin authentication.

@@ -1,4 +1,4 @@
-import { countBy, readRecords, requireAdmin } from "./archive.js";
+import { countBy, readConversationRecordsWithStatus, readRecords, requireAdmin } from "./archive.js";
 import { noStoreJson } from "./http.js";
 
 const SLUG_PATTERN = /^[a-z0-9_-]{10,32}$/;
@@ -12,17 +12,22 @@ export async function handleAdminApplications(request, env, slug = "") {
 
   if (slug) return revokeApplication(request, env, slug);
   if (request.method === "GET") {
-    const [applications, turns] = await Promise.all([
+    const [applications, turnResult, viewEvents] = await Promise.all([
       readRecords(env.ARCHIVE, "application:"),
-      readRecords(env.ARCHIVE, "conversation:"),
+      readConversationRecordsWithStatus(env.ARCHIVE),
+      readRecords(env.ARCHIVE, "application-view:"),
     ]);
+    const turns = turnResult.records;
     applications.sort((left, right) => right.createdAt.localeCompare(left.createdAt));
     const questionCounts = countBy(turns, "applicationSlug");
+    const viewCounts = countBy(viewEvents, "applicationSlug");
     return noStoreJson({
       applications: applications.map((application) => ({
         ...application,
+        views: Number(application.views || 0) + (viewCounts[application.slug] || 0),
         questions: questionCounts[application.slug] || 0,
       })),
+      questionsTruncated: turnResult.truncated,
     });
   }
   if (request.method !== "POST") {
@@ -68,22 +73,19 @@ export async function handleAdminApplications(request, env, slug = "") {
   }, 201);
 }
 
-export async function handlePublicApplication(request, env, slug) {
+export async function handlePublicApplication(request, env, slug, context) {
   if (request.method !== "GET") return noStoreJson({ error: "Use GET." }, 405, { allow: "GET" });
   const result = await loadApplication(env, slug);
   if (!result.application) return noStoreJson({ error: result.error }, result.status);
 
-  const application = {
-    ...result.application,
-    views: Number(result.application.views || 0) + 1,
-    updatedAt: new Date().toISOString(),
-  };
-  await storeApplication(env, application);
+  context?.waitUntil(storeApplicationView(env, result.application).catch((error) => {
+    console.error("Application view telemetry failed", error);
+  }));
   return noStoreJson({
-    slug: application.slug,
-    company: application.company,
-    role: application.role,
-    expiresAt: application.expiresAt,
+    slug: result.application.slug,
+    company: result.application.company,
+    role: result.application.role,
+    expiresAt: result.application.expiresAt,
   });
 }
 
@@ -138,6 +140,22 @@ async function storeApplication(env, application) {
   await env.ARCHIVE.put(`application:${application.slug}`, JSON.stringify(application), {
     expiration: Math.floor(Date.parse(application.expiresAt) / 1_000),
   });
+}
+
+async function storeApplicationView(env, application, now = new Date()) {
+  const createdAt = now.toISOString();
+  const record = {
+    schemaVersion: 1,
+    type: "application_view",
+    applicationSlug: application.slug,
+    createdAt,
+    expiresAt: application.expiresAt,
+  };
+  await env.ARCHIVE.put(
+    `application-view:${application.slug}:${createdAt}:${crypto.randomUUID()}`,
+    JSON.stringify(record),
+    { expiration: Math.floor(Date.parse(application.expiresAt) / 1_000) },
+  );
 }
 
 function newSlug() {

@@ -11,6 +11,7 @@ const failures = [];
 await checkApiResourceParity();
 await checkInlineScriptCsp();
 await checkDiscoveryResources();
+await checkFreshnessParity();
 
 for (const page of pages) {
   const html = await readFile(page, "utf8");
@@ -120,8 +121,36 @@ async function checkDiscoveryResources() {
   if (!/Sitemap:\s*https:\/\/john-viklund-agent-cv\.agent-cv\.workers\.dev\/sitemap\.xml/.test(robots)) {
     failures.push("robots.txt: missing canonical sitemap declaration");
   }
-  for (const path of ["/", "/projects/", "/cv/", "/privacy/", "/AGENTS.md", "/llms.txt", "/repositories.md"]) {
+  for (const path of ["/", "/projects/", "/cv/", "/privacy/", "/AGENTS.md", "/llms.txt", "/overview.md", "/repositories.md"]) {
     const url = `https://john-viklund-agent-cv.agent-cv.workers.dev${path}`;
     if (!sitemap.includes(`<loc>${url}</loc>`)) failures.push(`sitemap.xml: missing ${path}`);
   }
+}
+
+async function checkFreshnessParity() {
+  const [chatCore, agents, llms, cv, sitemap] = await Promise.all([
+    readFile(resolve(root, "src", "chat-core.js"), "utf8"),
+    readFile(resolve(publicDir, "AGENTS.md"), "utf8"),
+    readFile(resolve(publicDir, "llms.txt"), "utf8"),
+    readFile(resolve(publicDir, "cv.md"), "utf8"),
+    readFile(resolve(publicDir, "sitemap.xml"), "utf8"),
+  ]);
+  const dates = [
+    chatCore.match(/buildSystemPrompt\(knowledge, updatedAt = "(\d{4}-\d{2}-\d{2})"\)/)?.[1],
+    llms.match(/Data last updated: (\d{4}-\d{2}-\d{2})/)?.[1],
+    toIsoDate(agents.match(/Public data last updated: ([^.]+)\./)?.[1]),
+    toIsoDate(cv.match(/Data last updated: ([^.]+)\./)?.[1]),
+    ...[...sitemap.matchAll(/<lastmod>(\d{4}-\d{2}-\d{2})<\/lastmod>/g)].map((match) => match[1]),
+  ];
+  if (dates.some((date) => !date) || new Set(dates).size !== 1) {
+    failures.push("public freshness metadata is inconsistent");
+  }
+}
+
+function toIsoDate(value) {
+  const match = String(value || "").match(/^(\d{1,2}) ([A-Za-z]+) (\d{4})$/);
+  if (!match) return "";
+  const months = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
+  const month = months.indexOf(match[2].toLowerCase()) + 1;
+  return month ? `${match[3]}-${String(month).padStart(2, "0")}-${match[1].padStart(2, "0")}` : "";
 }

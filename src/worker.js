@@ -32,6 +32,7 @@ const DEFAULT_OPENAI_MODEL = "gpt-5.6-luna";
 const DEFAULT_OPENAI_REASONING_EFFORT = "none";
 const OPENAI_REASONING_EFFORTS = new Set(["none", "low", "medium", "high", "xhigh", "max"]);
 const MAX_ARCHIVED_ANSWER_CHARACTERS = 16_000;
+const OPENAI_RESPONSE_HEADER_TIMEOUT_MS = 30_000;
 const OBSERVED_RESOURCE_PATHS = new Set([
   "/AGENTS.md",
   "/llms.txt",
@@ -47,7 +48,7 @@ export async function handleRequest(
   request,
   env,
   context,
-  { fetchImpl = fetch, systemPrompt = "" } = {},
+  { fetchImpl = fetch, systemPrompt = "", openAIConnectTimeoutMs = OPENAI_RESPONSE_HEADER_TIMEOUT_MS } = {},
 ) {
   const url = new URL(request.url);
   const adminApplicationMatch = url.pathname.match(/^\/api\/admin\/applications(?:\/([a-z0-9_-]{10,32})\/revoke)?$/);
@@ -87,11 +88,11 @@ export async function handleRequest(
   }
 
   if (publicApplicationMatch) {
-    return handlePublicApplication(request, env, publicApplicationMatch[1]);
+    return handlePublicApplication(request, env, publicApplicationMatch[1], context);
   }
 
   if (url.pathname === "/api/ask") {
-    return handleAsk(request, env, context, { fetchImpl, systemPrompt });
+    return handleAsk(request, env, context, { fetchImpl, systemPrompt, openAIConnectTimeoutMs });
   }
 
   if (applicationPageMatch) {
@@ -113,7 +114,7 @@ export async function handleAsk(
   request,
   env,
   context,
-  { fetchImpl = fetch, systemPrompt = "" } = {},
+  { fetchImpl = fetch, systemPrompt = "", openAIConnectTimeoutMs = OPENAI_RESPONSE_HEADER_TIMEOUT_MS } = {},
 ) {
   if (request.method === "OPTIONS") {
     return new Response(null, {
@@ -213,7 +214,7 @@ export async function handleAsk(
 
   let upstream;
   try {
-    upstream = await fetchImpl("https://api.openai.com/v1/responses", {
+    upstream = await fetchWithResponseHeaderTimeout(fetchImpl, "https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -231,7 +232,7 @@ export async function handleAsk(
         stream: true,
         store: false,
       }),
-    });
+    }, openAIConnectTimeoutMs);
   } catch (error) {
     console.error("OpenAI request failed", error);
     finalizeArchive("failed");
@@ -265,6 +266,16 @@ export async function handleAsk(
       "access-control-expose-headers": "x-agent-model, x-conversation-turn-id",
     },
   });
+}
+
+async function fetchWithResponseHeaderTimeout(fetchImpl, url, init, timeoutMs) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetchImpl(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 export async function reserveMonthlyBudget(env, now = new Date()) {

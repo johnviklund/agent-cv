@@ -391,6 +391,7 @@ h1, h2, h3, p { margin-top: 0; }
 .answer-feedback button:hover { color: var(--accent); border-color: var(--accent); }
 .answer-feedback button:disabled { cursor: wait; opacity: .5; }
 .answer-feedback-status { min-height: 1em; }
+.private-navigation-error { color: var(--accent); margin-top: .85rem; }
 .conversation-composer {
   position: fixed;
   bottom: max(18px, env(safe-area-inset-bottom));

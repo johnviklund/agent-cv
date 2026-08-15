@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, open, readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -10,19 +10,33 @@ if (!token) {
   process.exit(1);
 }
 
-const endpoint = new URL("/api/admin/conversations", options.url);
-const response = await fetch(endpoint, {
-  headers: { authorization: `Bearer ${token}` },
-});
-if (!response.ok) {
-  const problem = await response.json().catch(() => ({}));
-  console.error(problem.error || `Export failed with HTTP ${response.status}.`);
-  process.exit(1);
-}
-
 const output = resolve(root, options.output || `exports/agent-cv-conversations-${new Date().toISOString().slice(0, 10)}.jsonl`);
 await mkdir(dirname(output), { recursive: true });
-await writeFile(output, await response.text(), { mode: 0o600 });
+const outputFile = await open(output, "w", 0o600);
+try {
+  let cursor = "";
+  do {
+    const endpoint = new URL("/api/admin/conversations", options.url);
+    endpoint.searchParams.set("limit", "250");
+    if (cursor) endpoint.searchParams.set("cursor", cursor);
+    const response = await fetch(endpoint, {
+      headers: { authorization: `Bearer ${token}` },
+      signal: AbortSignal.timeout(30_000),
+    });
+    if (!response.ok) {
+      const problem = await response.json().catch(() => ({}));
+      throw new Error(problem.error || `Export failed with HTTP ${response.status}.`);
+    }
+    await outputFile.writeFile(await response.text());
+    cursor = response.headers.get("x-archive-next-cursor") || "";
+  } while (cursor);
+} catch (error) {
+  console.error(error.message);
+  process.exitCode = 1;
+} finally {
+  await outputFile.close();
+}
+if (process.exitCode) process.exit(process.exitCode);
 console.log(`Saved private conversation export to ${output}`);
 
 function parseArguments(arguments_) {

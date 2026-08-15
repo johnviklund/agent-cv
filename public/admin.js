@@ -1,6 +1,7 @@
 import { createLink } from "./dom.js";
 
 let adminToken = "";
+let authRequestGeneration = 0;
 
 const authForm = document.querySelector("[data-admin-form]");
 const applicationForm = document.querySelector("[data-application-form]");
@@ -13,14 +14,22 @@ const exportButton = document.querySelector("[data-admin-export]");
 
 authForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
-  adminToken = new FormData(authForm).get("token")?.toString().trim() || "";
-  if (!adminToken) return;
+  const requestGeneration = ++authRequestGeneration;
+  const candidateToken = new FormData(authForm).get("token")?.toString().trim() || "";
+  if (!candidateToken) return;
   status.textContent = "Loading private archive…";
   try {
-    await loadDashboard();
+    const data = await fetchDashboard(candidateToken);
+    if (requestGeneration !== authRequestGeneration) return;
+    adminToken = candidateToken;
+    renderStats(data.stats);
+    renderApplications(data.applications);
     dashboard.hidden = false;
-    status.textContent = "Archive connected.";
+    status.textContent = data.stats.truncated?.conversations || data.stats.truncated?.resources
+      ? "Archive connected. Some aggregate counts reached the safety cap; use the complete paginated export for analysis."
+      : "Archive connected.";
   } catch (error) {
+    if (requestGeneration !== authRequestGeneration) return;
     dashboard.hidden = true;
     status.textContent = error.message;
   }
@@ -28,6 +37,8 @@ authForm?.addEventListener("submit", async (event) => {
 
 applicationForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
+  const submitButton = applicationForm.querySelector('[type="submit"]');
+  submitButton.disabled = true;
   const data = Object.fromEntries(new FormData(applicationForm));
   data.expiresDays = Number(data.expiresDays);
   applicationStatus.textContent = "Creating expiring application link…";
@@ -47,6 +58,8 @@ applicationForm?.addEventListener("submit", async (event) => {
     await loadApplications();
   } catch (error) {
     applicationStatus.textContent = error.message;
+  } finally {
+    submitButton.disabled = false;
   }
 });
 
@@ -54,10 +67,18 @@ exportButton?.addEventListener("click", async () => {
   exportButton.disabled = true;
   status.textContent = "Preparing JSONL export…";
   try {
-    const response = await adminFetch("/api/admin/conversations");
-    if (!response.ok) throw new Error("The export could not be prepared.");
-    const blob = await response.blob();
-    const disposition = response.headers.get("content-disposition") || "";
+    const parts = [];
+    let cursor = "";
+    let disposition = "";
+    do {
+      const path = `/api/admin/conversations?limit=250${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`;
+      const response = await adminFetch(path);
+      if (!response.ok) throw new Error("The export could not be prepared.");
+      parts.push(await response.blob());
+      disposition ||= response.headers.get("content-disposition") || "";
+      cursor = response.headers.get("x-archive-next-cursor") || "";
+    } while (cursor);
+    const blob = new Blob(parts, { type: "application/x-ndjson" });
     const filename = disposition.match(/filename="([^"]+)"/)?.[1] || "agent-cv-conversations.jsonl";
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -73,24 +94,26 @@ exportButton?.addEventListener("click", async () => {
   }
 });
 
-function adminFetch(path, init = {}) {
+function adminFetch(path, init = {}, token = adminToken) {
   return fetch(path, {
     ...init,
-    headers: { ...init.headers, authorization: `Bearer ${adminToken}` },
+    headers: { ...init.headers, authorization: `Bearer ${token}` },
   });
 }
 
-async function loadDashboard() {
+async function fetchDashboard(token) {
   const [statsResponse, applicationsResponse] = await Promise.all([
-    adminFetch("/api/admin/stats"),
-    adminFetch("/api/admin/applications"),
+    adminFetch("/api/admin/stats", {}, token),
+    adminFetch("/api/admin/applications", {}, token),
   ]);
   if (!statsResponse.ok || !applicationsResponse.ok) {
     const statusCode = !statsResponse.ok ? statsResponse.status : applicationsResponse.status;
     throw new Error(statusCode === 401 ? "That token was not accepted." : "The archive is unavailable.");
   }
-  renderStats(await statsResponse.json());
-  renderApplications((await applicationsResponse.json()).applications);
+  return {
+    stats: await statsResponse.json(),
+    applications: (await applicationsResponse.json()).applications,
+  };
 }
 
 async function loadApplications() {

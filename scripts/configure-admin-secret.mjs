@@ -1,24 +1,13 @@
 import { spawn } from "node:child_process";
 import { randomBytes } from "node:crypto";
-import { readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { writeLocalAdminToken } from "./admin-secret-file.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const envFile = resolve(root, ".dev.vars");
 const token = randomBytes(32).toString("hex");
-let existing = "";
-try {
-  existing = await readFile(envFile, "utf8");
-} catch (error) {
-  if (error.code !== "ENOENT") throw error;
-}
-
-const line = `ADMIN_API_TOKEN=${token}`;
-const next = /^ADMIN_API_TOKEN=.*$/m.test(existing)
-  ? existing.replace(/^ADMIN_API_TOKEN=.*$/m, line)
-  : `${existing.trimEnd()}${existing.trim() ? "\n" : ""}${line}\n`;
-await writeFile(envFile, next, { mode: 0o600 });
+await writeLocalAdminToken(envFile, token);
 
 const environment = { ...process.env, NODE_EXTRA_CA_CERTS: "/etc/ssl/cert.pem" };
 delete environment.SSL_CERT_FILE;

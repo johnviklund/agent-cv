@@ -266,14 +266,29 @@ function setBusy(busy) {
 }
 
 function queuePromptAndGoHome(prompt) {
-  try {
-    storePendingPrompt(window.sessionStorage, prompt);
-    const applicationSlug = applicationSlugFromPath(window.location.pathname);
-    if (applicationSlug) storePendingApplication(window.sessionStorage, applicationSlug);
-  } catch {
-    // Storage may be unavailable in hardened browser modes; navigation stays private.
+  const applicationSlug = applicationSlugFromPath(window.location.pathname);
+  const storedPrompt = storePendingPrompt(window.sessionStorage, prompt);
+  const storedApplication = !applicationSlug
+    || storePendingApplication(window.sessionStorage, applicationSlug);
+  if (!storedPrompt || !storedApplication) {
+    takePendingPrompt(window.sessionStorage);
+    takePendingApplication(window.sessionStorage);
+    showPrivateNavigationError();
+    return;
   }
   window.location.assign("/");
+}
+
+function showPrivateNavigationError() {
+  let message = document.querySelector("[data-private-navigation-error]");
+  if (!message) {
+    message = document.createElement("p");
+    message.dataset.privateNavigationError = "";
+    message.className = "private-navigation-error";
+    message.setAttribute("role", "alert");
+    document.querySelector("[data-subpage-form]")?.after(message);
+  }
+  message.textContent = "This browser blocked private session storage. Please open the home page and paste your question there.";
 }
 
 function readPendingApplication() {

@@ -12,6 +12,7 @@ const headers = {
   "user-agent": "johnviklund-agent-cv-repository-sync",
   "x-github-api-version": "2022-11-28",
 };
+const GITHUB_TIMEOUT_MS = 15_000;
 if (process.env.GITHUB_TOKEN) headers.authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
 
 const repositories = [];
@@ -62,7 +63,7 @@ async function fetchRepository(entry) {
 }
 
 async function githubJson(url) {
-  const response = await fetch(url, { headers });
+  const response = await fetch(url, { headers, signal: AbortSignal.timeout(GITHUB_TIMEOUT_MS) });
   if (!response.ok) throw new Error(`GitHub API returned HTTP ${response.status} for ${url}`);
   return response.json();
 }
@@ -70,6 +71,7 @@ async function githubJson(url) {
 async function githubText(url) {
   const response = await fetch(url, {
     headers: { ...headers, accept: "application/vnd.github.raw+json" },
+    signal: AbortSignal.timeout(GITHUB_TIMEOUT_MS),
   });
   if (!response.ok) throw new Error(`GitHub API returned HTTP ${response.status}`);
   return response.text();

@@ -36,4 +36,4 @@
 - `GET|POST /api/admin/applications` — bearer-authenticated role-link administration
 - `POST /api/admin/applications/:slug/revoke` — bearer-authenticated link revocation
 
-Data last updated: 2026-08-14
+Data last updated: 2026-08-15

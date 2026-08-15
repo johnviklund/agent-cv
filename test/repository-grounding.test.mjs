@@ -84,6 +84,8 @@ test("keeps public evidence and project links limited to the approved repositori
     assert.match(projectsPage, new RegExp(url.replaceAll("/", "\\/")));
     assert.match(projectsMarkdown, new RegExp(url.replaceAll("/", "\\/")));
   }
+  assert.match(projectsPage, /Volvo Cars Support/);
+  assert.match(projectsMarkdown, /Volvo Cars Support/);
   assert.doesNotMatch(projectsPage, /volvo-cars-support/i);
   assert.doesNotMatch(projectsMarkdown, /volvo-cars-support/i);
 });

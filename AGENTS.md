@@ -2,6 +2,13 @@
 
 This repository contains the public implementation of John Viklund's Agent CV. Keep the interface editorial, slim, accessible, and chat-first.
 
+## Codex interface
+
+- When John asks to review project or repository updates, use the repo-local `refresh-agent-cv-projects` skill automatically. He should not need to know command names, manifests, synchronization steps, or deployment mechanics.
+- Summarize new evidence and ask John focused factual or editorial questions before changing public claims.
+- Keep the public repository allowlist separate from the curated project list. A project can remain listed without an approved public repository or source link; remove a project only when John explicitly asks.
+- When John asks to update the site, carry approved edits through verification, commit, push, PR merge, deployment, and live-site verification. A review-only request stops after evidence and questions.
+
 ## Verification
 
 - Run `npm run check` before proposing or committing changes.

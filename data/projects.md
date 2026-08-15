@@ -65,3 +65,11 @@ A visual system that makes multi-agent task activity legible as a growing hex-ti
 The résumé itself is an AI system: reviewed Markdown evidence is bundled into a Cloudflare Worker prompt, visitor transcripts stay untrusted, and upstream OpenAI events are normalized into a small public SSE contract. Human pages, raw Markdown, agent discovery files, structured metadata, expiring role links, bounded public-repository snapshots, and a private 90-day conversation archive all share the same grounded source boundary. The medium demonstrates the claim that John builds applied AI systems while remaining useful when the model API is unavailable.
 
 **Public repository:** [github.com/johnviklund/agent-cv](https://github.com/johnviklund/agent-cv)
+
+## Volvo Cars Support — owner-support evidence retrieval
+
+**Status:** Personal prototype.
+
+An OpenClaw skill that searches public Volvo owner manuals, knowledge articles, PDFs, and support content through Volvo's GraphQL API. It demonstrates a lightweight evidence-retrieval pattern: model- and market-scoped search, quoted matching passages, and links back to source material rather than unsupported generation.
+
+**Stack:** Shell, GraphQL, `curl`, `jq`, and Markdown skill instructions.

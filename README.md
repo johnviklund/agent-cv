@@ -58,7 +58,7 @@ npm run sync:data
 
 Public repository evidence is controlled only by `config/repositories.json`. Refresh it deliberately with `npm run sync:repositories`; the public chat never fetches a repository or URL supplied by a visitor.
 
-Project freshness reviews are separate and private. Copy `config/project-sources.example.json` to the ignored `config/project-sources.private.json`, add only approved public repositories, private repositories, and named local-folder documents, then run `npm run projects:review`. The command writes a proposal-only packet under ignored `project-reviews/`; it does not edit or publish canonical Markdown.
+Project freshness is a Codex conversation. Open this repository in Codex and ask: **“Review my project and repository updates, ask me what changed, and update the site.”** The repo-local workflow gathers only approved evidence, asks for factual decisions, updates reviewed public content, verifies and ships it, deploys the site, and checks the live result. Its private manifest and proposal packet remain ignored plumbing; you do not need to remember their commands or formats.
 
 Conversation records, `.dev.vars`, admin tokens, application notes, job descriptions, and exports remain private. The dashboard at `/admin/` keeps its bearer token in the current tab rather than browser storage.
 

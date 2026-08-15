@@ -126,6 +126,8 @@ async function requestAnswer(answer) {
       throw new Error(problem.error || "The chat is temporarily unavailable.");
     }
 
+    const turnId = response.headers.get("x-conversation-turn-id");
+
     await consumeEventStream(response, (text) => {
       chunks.push(text);
       pendingChunks.push(text);
@@ -145,6 +147,7 @@ async function requestAnswer(answer) {
     answer.copy.classList.add("is-formatted");
     answer.copy.classList.remove("is-streaming");
     answer.status.textContent = "Answer complete";
+    if (turnId) answer.element.append(createFeedbackControls(turnId));
     showFollowups();
   } catch (error) {
     if (animationFrame !== null) cancelAnimationFrame(animationFrame);
@@ -161,6 +164,45 @@ async function requestAnswer(answer) {
     state.controller = null;
     setBusy(false);
   }
+}
+
+function createFeedbackControls(turnId) {
+  const container = document.createElement("div");
+  container.className = "answer-feedback";
+  const prompt = document.createElement("span");
+  prompt.textContent = "Was this useful?";
+  const status = document.createElement("span");
+  status.className = "answer-feedback-status";
+  status.setAttribute("aria-live", "polite");
+
+  for (const [label, rating] of [["Yes", "helpful"], ["No", "not_helpful"]]) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = label;
+    button.addEventListener("click", async () => {
+      container.querySelectorAll("button").forEach((control) => { control.disabled = true; });
+      status.textContent = "Saving…";
+      try {
+        const response = await fetch("/api/feedback", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ turnId, rating }),
+        });
+        if (!response.ok) throw new Error("Feedback unavailable");
+        prompt.textContent = "Thanks — this helps improve the source material.";
+        container.querySelectorAll("button").forEach((control) => control.remove());
+        status.textContent = "";
+      } catch {
+        container.querySelectorAll("button").forEach((control) => { control.disabled = false; });
+        status.textContent = "Couldn’t save feedback.";
+      }
+    });
+    container.append(button);
+  }
+
+  container.prepend(prompt);
+  container.append(status);
+  return container;
 }
 
 function appendUserMessage(prompt) {

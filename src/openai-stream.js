@@ -2,7 +2,11 @@ const INTERRUPTED_MESSAGE = "The model stream was interrupted.";
 const MAX_EVENT_BUFFER_CHARACTERS = 256 * 1024;
 const encoder = new TextEncoder();
 
-export function sanitizeOpenAIResponseStream(upstreamBody, reportDiagnostic = () => {}) {
+export function sanitizeOpenAIResponseStream(
+  upstreamBody,
+  reportDiagnostic = () => {},
+  observer = {},
+) {
   const reader = upstreamBody.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
@@ -18,6 +22,7 @@ export function sanitizeOpenAIResponseStream(upstreamBody, reportDiagnostic = ()
           buffer += decoder.decode(value || new Uint8Array(), { stream: !done });
           if (buffer.length > MAX_EVENT_BUFFER_CHARACTERS) {
             reportDiagnostic("buffer_limit", "unknown");
+            notifyObserver(observer, "onTerminal", "interrupted");
             controller.enqueue(encoder.encode(publicErrorEvent()));
             ended = true;
             await cancelReader(reader);
@@ -25,7 +30,7 @@ export function sanitizeOpenAIResponseStream(upstreamBody, reportDiagnostic = ()
             return;
           }
 
-          const result = drainEventBlocks(buffer, done, reportDiagnostic);
+          const result = drainEventBlocks(buffer, done, reportDiagnostic, observer);
           buffer = result.remainder;
           for (const event of result.events) controller.enqueue(encoder.encode(event));
 
@@ -38,6 +43,7 @@ export function sanitizeOpenAIResponseStream(upstreamBody, reportDiagnostic = ()
 
           if (done) {
             reportDiagnostic("unexpected_eof", "unknown");
+            notifyObserver(observer, "onTerminal", "interrupted");
             controller.enqueue(encoder.encode(publicErrorEvent()));
             ended = true;
             controller.close();
@@ -49,6 +55,7 @@ export function sanitizeOpenAIResponseStream(upstreamBody, reportDiagnostic = ()
       } catch {
         if (ended) return;
         reportDiagnostic("read_error", "unknown");
+        notifyObserver(observer, "onTerminal", "interrupted");
         controller.enqueue(encoder.encode(publicErrorEvent()));
         ended = true;
         controller.close();
@@ -58,12 +65,13 @@ export function sanitizeOpenAIResponseStream(upstreamBody, reportDiagnostic = ()
 
     async cancel() {
       ended = true;
+      notifyObserver(observer, "onTerminal", "cancelled");
       await cancelReader(reader);
     },
   });
 }
 
-function drainEventBlocks(input, final, reportDiagnostic) {
+function drainEventBlocks(input, final, reportDiagnostic, observer) {
   const events = [];
   let remainder = input;
   let terminal = false;
@@ -73,13 +81,13 @@ function drainEventBlocks(input, final, reportDiagnostic) {
     if (!delimiter) break;
     const block = remainder.slice(0, delimiter.index);
     remainder = remainder.slice(delimiter.index + delimiter[0].length);
-    const sanitized = sanitizeEventBlock(block, reportDiagnostic);
+    const sanitized = sanitizeEventBlock(block, reportDiagnostic, observer);
     if (sanitized.event) events.push(sanitized.event);
     terminal = sanitized.terminal;
   }
 
   if (final && !terminal && remainder.trim()) {
-    const sanitized = sanitizeEventBlock(remainder, reportDiagnostic);
+    const sanitized = sanitizeEventBlock(remainder, reportDiagnostic, observer);
     if (sanitized.event) events.push(sanitized.event);
     terminal = sanitized.terminal;
     remainder = "";
@@ -88,7 +96,7 @@ function drainEventBlocks(input, final, reportDiagnostic) {
   return { events, remainder, terminal };
 }
 
-function sanitizeEventBlock(block, reportDiagnostic) {
+function sanitizeEventBlock(block, reportDiagnostic, observer) {
   const data = block
     .split(/\r?\n/)
     .filter((line) => line.startsWith("data:"))
@@ -101,14 +109,17 @@ function sanitizeEventBlock(block, reportDiagnostic) {
     event = JSON.parse(data);
   } catch {
     reportDiagnostic("malformed_event", "unknown");
+    notifyObserver(observer, "onTerminal", "failed");
     return { event: publicErrorEvent(), terminal: true };
   }
 
   if (event.type === "response.output_text.delta" || event.type === "response.refusal.delta") {
     if (typeof event.delta !== "string") {
       reportDiagnostic("invalid_delta", "unknown");
+      notifyObserver(observer, "onTerminal", "failed");
       return { event: publicErrorEvent(), terminal: true };
     }
+    notifyObserver(observer, "onDelta", event.delta);
     return {
       event: publicEvent("response.output_text.delta", { delta: event.delta }),
       terminal: false,
@@ -116,11 +127,13 @@ function sanitizeEventBlock(block, reportDiagnostic) {
   }
 
   if (event.type === "response.completed") {
+    notifyObserver(observer, "onTerminal", "completed");
     return { event: publicEvent("response.completed"), terminal: true };
   }
 
   if (event.type === "response.incomplete") {
     reportDiagnostic("response.incomplete", safeDiagnosticCode(event.response?.incomplete_details?.reason));
+    notifyObserver(observer, "onTerminal", "interrupted");
     return {
       event: publicEvent("response.incomplete", { message: INTERRUPTED_MESSAGE }),
       terminal: true,
@@ -131,10 +144,19 @@ function sanitizeEventBlock(block, reportDiagnostic) {
     const error = event.type === "error" ? event : event.response?.error;
     const code = safeDiagnosticCode(error?.code);
     reportDiagnostic(event.type, code === "unknown" ? classifyDiagnosticMessage(error?.message) : code);
+    notifyObserver(observer, "onTerminal", "failed");
     return { event: publicErrorEvent(), terminal: true };
   }
 
   return { event: "", terminal: false };
+}
+
+function notifyObserver(observer, method, value) {
+  try {
+    observer?.[method]?.(value);
+  } catch {
+    // Archival telemetry must never affect the public stream contract.
+  }
 }
 
 function publicErrorEvent() {

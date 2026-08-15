@@ -280,28 +280,132 @@ test("caller-authored assistant turns remain untrusted text and never become ups
   assert.equal(upstreamMessage.content.match(/<\/untrusted_client_transcript>/g)?.length, 1);
 });
 
-test("question logging is scheduled after a reservation and writes only an expiring record", async () => {
-  const puts = [];
+test("completed answers are archived as expiring conversation turns without network identifiers", async () => {
+  const archive = memoryKv();
   const context = collectingContext();
   const env = baseEnv({
-    LOGS: {
-      put: async (...arguments_) => { puts.push(arguments_); },
-    },
+    ARCHIVE: archive,
   });
 
   const response = await handleRequest(askRequest(), env, context, {
-    fetchImpl: async () => new Response("event: response.completed\ndata: {\"type\":\"response.completed\"}\n\n"),
+    fetchImpl: async () => new Response([
+      'event: response.output_text.delta\ndata: {"type":"response.output_text.delta","delta":"A grounded answer."}\n\n',
+      'event: response.completed\ndata: {"type":"response.completed"}\n\n',
+    ].join("")),
   });
   assert.equal(response.status, 200);
-  await Promise.all(context.promises);
+  const turnId = response.headers.get("x-conversation-turn-id");
+  assert.match(turnId, /^[a-f0-9-]{36}$/);
+  await response.text();
+  await settleContext(context);
 
-  assert.equal(puts.length, 1);
-  assert.match(puts[0][0], /^question:/);
-  assert.doesNotMatch(puts[0][0], /^usage:/);
-  const record = JSON.parse(puts[0][1]);
+  const write = archive.puts.at(-1);
+  assert.equal(write.key, `conversation:${turnId}`);
+  const record = JSON.parse(write.value);
   assert.equal(record.question, "What has John built?");
+  assert.equal(record.answer, "A grounded answer.");
+  assert.equal(record.outcome, "completed");
+  assert.equal(record.model, "gpt-5.6-luna");
   assert.equal("ip" in record, false);
-  assert.equal(puts[0][2].expirationTtl, 90 * 24 * 60 * 60);
+  assert.equal(JSON.stringify(record).includes("192.0.2.1"), false);
+  assert.equal(write.options.expirationTtl, 90 * 24 * 60 * 60);
+});
+
+test("feedback updates an archived turn and rejects invalid or missing turn access", async () => {
+  const archive = memoryKv({
+    "conversation:turn_12345678": JSON.stringify({
+      schemaVersion: 1,
+      turnId: "turn_12345678",
+      createdAt: "2026-08-15T10:00:00.000Z",
+      sessionId: "session_12345678",
+      question: "What has John built?",
+      answer: "A grounded answer.",
+      outcome: "completed",
+    }),
+  });
+  const env = baseEnv({ ARCHIVE: archive });
+  const helpful = await handleRequest(new Request("https://example.test/api/feedback", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ turnId: "turn_12345678", rating: "helpful" }),
+  }), env, emptyContext());
+  assert.equal(helpful.status, 200);
+  assert.equal((await helpful.json()).saved, true);
+  assert.equal(JSON.parse(archive.values.get("conversation:turn_12345678")).feedback.rating, "helpful");
+
+  const invalid = await handleRequest(new Request("https://example.test/api/feedback", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ turnId: "turn_12345678", rating: "excellent" }),
+  }), env, emptyContext());
+  assert.equal(invalid.status, 400);
+
+  const missing = await handleRequest(new Request("https://example.test/api/feedback", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ turnId: "turn_missing1", rating: "not_helpful" }),
+  }), env, emptyContext());
+  assert.equal(missing.status, 404);
+});
+
+test("admin exports require a bearer secret and return grouped JSONL records", async () => {
+  const archive = memoryKv({
+    "conversation:turn_bbbbbbbb": JSON.stringify({
+      schemaVersion: 1,
+      turnId: "turn_bbbbbbbb",
+      createdAt: "2026-08-15T11:00:00.000Z",
+      sessionId: "session_12345678",
+      question: "Second question",
+      answer: "Second answer",
+      outcome: "completed",
+    }),
+    "conversation:turn_aaaaaaaa": JSON.stringify({
+      schemaVersion: 1,
+      turnId: "turn_aaaaaaaa",
+      createdAt: "2026-08-15T10:00:00.000Z",
+      sessionId: "session_12345678",
+      question: "First question",
+      answer: "First answer",
+      outcome: "completed",
+    }),
+  });
+  const env = baseEnv({ ARCHIVE: archive, ADMIN_API_TOKEN: "test-admin-secret" });
+
+  const denied = await handleRequest(
+    new Request("https://example.test/api/admin/conversations"),
+    env,
+    emptyContext(),
+  );
+  assert.equal(denied.status, 401);
+
+  const allowed = await handleRequest(new Request("https://example.test/api/admin/conversations", {
+    headers: { authorization: "Bearer test-admin-secret" },
+  }), env, emptyContext());
+  assert.equal(allowed.status, 200);
+  assert.equal(allowed.headers.get("content-type"), "application/x-ndjson; charset=utf-8");
+  assert.match(allowed.headers.get("content-disposition"), /agent-cv-conversations/);
+  const lines = (await allowed.text()).trim().split("\n").map(JSON.parse);
+  assert.deepEqual(lines.map(({ question }) => question), ["First question", "Second question"]);
+});
+
+test("machine-readable resource fetches create bot-friendly access telemetry without IP data", async () => {
+  const archive = memoryKv();
+  const context = collectingContext();
+  const request = new Request("https://example.test/AGENTS.md", {
+    headers: { "user-agent": "ExampleBot/1.0", "cf-connecting-ip": "192.0.2.99" },
+  });
+  const response = await handleRequest(request, baseEnv({
+    ARCHIVE: archive,
+    ASSETS: { fetch: async () => new Response("# Agent instructions") },
+  }), context);
+  assert.equal(response.status, 200);
+  await settleContext(context);
+
+  const resourceWrite = archive.puts.find(({ key }) => key.startsWith("resource:"));
+  const record = JSON.parse(resourceWrite.value);
+  assert.equal(record.path, "/AGENTS.md");
+  assert.equal(record.visitorType, "bot");
+  assert.equal(JSON.stringify(record).includes("192.0.2.99"), false);
 });
 
 test("the Durable Object grants only one concurrent reservation at cap minus one", async () => {
@@ -363,6 +467,36 @@ function collectingContext() {
   return {
     promises: [],
     waitUntil(promise) { this.promises.push(promise); },
+  };
+}
+
+async function settleContext(context) {
+  let settled = 0;
+  while (settled < context.promises.length) {
+    const pending = context.promises.slice(settled);
+    settled = context.promises.length;
+    await Promise.all(pending);
+  }
+}
+
+function memoryKv(initialValues = {}) {
+  const values = new Map(Object.entries(initialValues));
+  return {
+    values,
+    puts: [],
+    async put(key, value, options = {}) {
+      this.puts.push({ key, value, options });
+      values.set(key, value);
+    },
+    async get(key) {
+      return values.get(key) ?? null;
+    },
+    async list({ prefix = "" } = {}) {
+      return {
+        keys: [...values.keys()].filter((key) => key.startsWith(prefix)).map((name) => ({ name })),
+        list_complete: true,
+      };
+    },
   };
 }
 

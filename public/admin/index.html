@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Private archive — John Erik Viklund</title>
+  <meta name="description" content="Private administration for the Agent CV conversation archive.">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#f4f0e8">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/admin.js" type="module"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header"><div class="header-inner"><a class="wordmark" href="/" aria-label="John Erik Viklund, home">JOHN ERIK VIKLUND</a><nav class="desktop-nav" aria-label="Private navigation"><a href="/">Public site</a></nav><details class="mobile-nav"><summary aria-label="Open navigation">Menu</summary><nav aria-label="Mobile private navigation"><a href="/">Public site</a></nav></details></div></header>
+  <main id="main" class="page-main admin-main">
+    <header class="page-header">
+      <p class="eyebrow">PRIVATE · AUTHENTICATED</p>
+      <h1>Conversation archive.</h1>
+      <p class="deck">Review usage signals and export grounded conversations as JSONL for local analysis and follow-up interviews.</p>
+    </header>
+
+    <section class="admin-auth" aria-labelledby="admin-auth-heading">
+      <h2 id="admin-auth-heading">Connect to the archive</h2>
+      <form data-admin-form>
+        <label for="admin-token">Admin API token</label>
+        <div class="composer admin-token-composer">
+          <input id="admin-token" name="token" type="password" autocomplete="current-password" required placeholder="Paste token for this session">
+          <button class="admin-connect" type="submit">Load</button>
+        </div>
+      </form>
+      <p class="admin-note">The token remains in this browser tab only. It is never written to local storage.</p>
+      <p data-admin-status aria-live="polite"></p>
+    </section>
+
+    <section class="admin-dashboard" data-admin-dashboard hidden aria-labelledby="admin-dashboard-heading">
+      <div class="admin-dashboard-heading">
+        <div><p class="eyebrow">ROLLING ARCHIVE</p><h2 id="admin-dashboard-heading">Signals at a glance</h2></div>
+        <button type="button" class="project-action admin-export" data-admin-export>Download conversations.jsonl →</button>
+      </div>
+      <dl class="admin-stats" data-admin-stats></dl>
+      <p class="admin-note">Exports contain visitor questions, assistant answers, outcomes, coarse human/bot classification, and feedback. They never contain logged IP addresses or hidden prompts.</p>
+    </section>
+  </main>
+</body>
+</html>

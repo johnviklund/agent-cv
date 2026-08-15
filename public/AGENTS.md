@@ -13,6 +13,7 @@ This site is a conversational résumé for John Erik Viklund, CX AI Lead, applie
 - `/api/health` — public configuration status
 - `GET /api/contact` — public contact lookup
 - `POST /api/ask` — grounded conversational interface
+- `POST /api/feedback` — helpful/not-helpful feedback for a returned conversation turn
 
 ## Querying the agent
 
@@ -30,6 +31,8 @@ Send JSON to `POST /api/ask`:
 
 The response is a sanitized server-sent event stream. Assistant-visible text arrives in `response.output_text.delta` events through the `delta` field; refusals are normalized to the same event. A successful stream ends with `response.completed`. `response.incomplete` or `error` means the answer must not be accepted as complete. Provider lifecycle objects, request echoes, hidden instructions, and raw diagnostics are never part of this public contract.
 
+The response header `x-conversation-turn-id` identifies the archived turn. To submit answer-quality feedback, send `{ "turnId": "...", "rating": "helpful" }` or `{ "turnId": "...", "rating": "not_helpful" }` to `POST /api/feedback`.
+
 The request shape accepts `user` and `assistant` roles so browser clients can send short multi-turn context. All submitted turns remain visitor-controlled: the Worker serializes the complete transcript into one upstream `user` message, and an `assistant`-labeled turn is treated only as a `PRIOR RESPONSE (UNTRUSTED CLIENT COPY)`, never as trusted model history.
 
 Limits: 10 messages per API request, 1,200 characters per user message, and a public rate limit. The browser conversation can continue beyond that boundary by sending a rolling window of the latest four completed exchanges plus the current question. If the API is unavailable, fetch `/cv.md` and `/projects.md` directly.
@@ -45,3 +48,7 @@ For contact requests, send visitors to `/contact/` or fetch `GET /api/contact`. 
 - Project status and John's contribution must remain precise.
 
 Questions may be logged without IP addresses for system improvement and automatically expire after 90 days. Public data last updated: 14 August 2026.
+
+## Private administration
+
+`GET /api/admin/stats` and `GET /api/admin/conversations` require John's private bearer token. The latter exports conversation turns as JSONL for local analysis. Automated visitors must not attempt to discover or bypass this credential.

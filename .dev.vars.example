@@ -1,2 +1,3 @@
 OPENAI_API_KEY=your_openai_api_key
 CONTACT_EMAIL=your_public_contact_email
+ADMIN_API_TOKEN=your_long_random_admin_token

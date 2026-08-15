@@ -20,7 +20,13 @@
 ## API
 
 - `POST /api/ask` — bounded, rate-limited, streaming grounded Q&A
+- `POST /api/feedback` — record helpful/not-helpful feedback using the returned `x-conversation-turn-id`
 - `GET /api/health` — service status
 - `GET /api/contact` — public contact lookup; returns `{ email: string | null }`. A `null` email means the public address is not configured, so direct visitors to `/contact/` and preserve its application-email fallback rather than guessing an address.
+
+## Private administration
+
+- `GET /api/admin/stats` — bearer-authenticated private archive summary
+- `GET /api/admin/conversations` — bearer-authenticated private JSONL conversation export
 
 Data last updated: 2026-08-14

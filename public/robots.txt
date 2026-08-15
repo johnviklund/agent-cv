@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin/
 Disallow: /api/admin/
 
-Sitemap: https://john-viklund-agent-cv.agent-cv.workers.dev/sitemap.xml
+Sitemap: https://johnviklund.com/sitemap.xml

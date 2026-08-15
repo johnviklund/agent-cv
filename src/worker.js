@@ -30,6 +30,11 @@ const JSON_HEADERS = {
 };
 const DEFAULT_OPENAI_MODEL = "gpt-5.6-luna";
 const DEFAULT_OPENAI_REASONING_EFFORT = "none";
+const CANONICAL_ORIGIN = "https://johnviklund.com";
+const LEGACY_HOSTS = new Set([
+  "www.johnviklund.com",
+  "john-viklund-agent-cv.agent-cv.workers.dev",
+]);
 const OPENAI_REASONING_EFFORTS = new Set(["none", "low", "medium", "high", "xhigh", "max"]);
 const MAX_ARCHIVED_ANSWER_CHARACTERS = 16_000;
 const OPENAI_RESPONSE_HEADER_TIMEOUT_MS = 30_000;
@@ -51,6 +56,9 @@ export async function handleRequest(
   { fetchImpl = fetch, systemPrompt = "", openAIConnectTimeoutMs = OPENAI_RESPONSE_HEADER_TIMEOUT_MS } = {},
 ) {
   const url = new URL(request.url);
+  if (LEGACY_HOSTS.has(url.hostname)) {
+    return Response.redirect(`${CANONICAL_ORIGIN}${url.pathname}${url.search}`, 308);
+  }
   const adminApplicationMatch = url.pathname.match(/^\/api\/admin\/applications(?:\/([a-z0-9_-]{10,32})\/revoke)?$/);
   const publicApplicationMatch = url.pathname.match(/^\/api\/application\/([a-z0-9_-]{10,32})$/);
   const applicationPageMatch = url.pathname.match(/^\/a\/([a-z0-9_-]{10,32})\/?$/);

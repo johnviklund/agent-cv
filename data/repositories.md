@@ -6,7 +6,7 @@
 
 
 
-Snapshot generated: 2026-08-15T16:31:52.893Z
+Snapshot generated: 2026-08-15T17:56:08.359Z
 
 
 
@@ -17,7 +17,7 @@ Snapshot generated: 2026-08-15T16:31:52.893Z
 - Default branch: main
 - License: MIT
 - Languages: JavaScript, HTML, CSS
-- Public repository updated: 2026-08-15T15:51:32Z
+- Public repository updated: 2026-08-15T16:41:14Z
 
 ### BEGIN UNTRUSTED DOCUMENT: README.md
 
@@ -81,7 +81,7 @@ npm run sync:data
 
 Public repository evidence is controlled only by `config/repositories.json`. Refresh it deliberately with `npm run sync:repositories`; the public chat never fetches a repository or URL supplied by a visitor.
 
-Project freshness reviews are separate and private. Copy `config/project-sources.example.json` to the ignored `config/project-sources.private.json`, add only approved public repositories, private repositories, and named local-folder documents, then run `npm run projects:review`. The command writes a proposal-only packet under ignored `project-reviews/`; it does not edit or publish canonical Markdown.
+Project freshness is a Codex conversation. Open this repository in Codex and ask: **“Review my project and repository updates, ask me what changed, and update the site.”** The repo-local workflow gathers only approved evidence, asks for factual decisions, updates reviewed public content, verifies and ships it, deploys the site, and checks the live result. Its private manifest and proposal packet remain ignored plumbing; you do not need to remember their commands or formats.
 
 Conversation records, `.dev.vars`, admin tokens, application notes, job descriptions, and exports remain private. The dashboard at `/admin/` keeps its bearer token in the current tab rather than browser storage.
 
@@ -100,6 +100,13 @@ Application code is available under the [MIT License](LICENSE). Personal résum�
 # Repository guide for coding agents
 
 This repository contains the public implementation of John Viklund's Agent CV. Keep the interface editorial, slim, accessible, and chat-first.
+
+## Codex interface
+
+- When John asks to review project or repository updates, use the repo-local `refresh-agent-cv-projects` skill automatically. He should not need to know command names, manifests, synchronization steps, or deployment mechanics.
+- Summarize new evidence and ask John focused factual or editorial questions before changing public claims.
+- Keep the public repository allowlist separate from the curated project list. A project can remain listed without an approved public repository or source link; remove a project only when John explicitly asks.
+- When John asks to update the site, carry approved edits through verification, commit, push, PR merge, deployment, and live-site verification. A review-only request stops after evidence and questions.
 
 ## Verification
 
@@ -263,36 +270,19 @@ The public chat should fail closed if its model secret or budget binding is miss
 
 ## Review project freshness privately
 
-Copy `config/project-sources.example.json` to the ignored `config/project-sources.private.json`. Every approved source records a review timestamp, named evidence documents, and the canonical public files it should be compared with. Public and private repositories use `owner/repository`; local folders use an absolute path or a path relative to the private manifest.
+Open this repository in Codex and ask:
 
-```json
-{
-  "schemaVersion": 1,
-  "publicRepositories": [{
-    "project": "Public Project",
-    "repository": "owner/project",
-    "documents": ["README.md", "ARCHITECTURE.md"],
-    "canonicalFiles": ["data/projects.md", "data/cv.md"],
-    "lastReviewedAt": "2026-08-15T16:10:00.000Z"
-  }],
-  "privateRepositories": [],
-  "localFolders": [{
-    "project": "Local Project",
-    "path": "/absolute/path/to/project",
-    "documents": ["README.md"],
-    "canonicalFiles": ["data/projects.md"],
-    "lastReviewedAt": "2026-08-15T16:10:00.000Z"
-  }]
-}
-```
+> Review my project and repository updates, ask me what changed, and update the site.
 
-Run `npm run projects:review`. The command checks GitHub's remaining API allowance before fetching, reads only the named sources, compares them with the listed canonical Markdown, and writes a mode-`0600` proposal packet under ignored `project-reviews/`. Set `GITHUB_TOKEN` when the anonymous allowance is too low and whenever a private repository is listed. Repository and local content remains untrusted evidence. The command never changes canonical content, advances review timestamps, synchronizes public data, or deploys anything.
+Codex gathers only the approved repository and local evidence, explains material changes in plain language, and asks focused questions before changing public claims. After you answer, it updates the canonical content, refreshes bounded public evidence, verifies the site, ships the change through GitHub, deploys it, and checks the live pages. You do not need to remember a script, manifest format, Git command, or deployment command.
+
+The repo-local `refresh-agent-cv-projects` skill owns this flow. Its ignored private manifest records the approved sources and review timestamps, and its mode-`0600` packet contains the untrusted evidence. Codex maintains both as private local plumbing. Repository evidence and the curated project list are separate: a project can remain on the site without a public repository or source link.
 
 ## Maintain the site
 
 - Update canonical Markdown under `data/`, run `npm run sync:data`, review generated changes, and run `npm run check`.
 - Refresh `config/repositories.json` and `npm run sync:repositories` deliberately; never add live repository fetching to public chat.
-- Keep the source-review manifest private: copy `config/project-sources.example.json` to `config/project-sources.private.json`, list only approved public/private repositories and named documents under local project folders, and set an ISO 8601 UTC `lastReviewedAt` timestamp on every source. Run `npm run projects:review` to write a private proposal queue under `project-reviews/`. Review its untrusted evidence, manually approve any canonical edits, then advance review timestamps yourself; the command never edits or publishes source content.
+- Ask Codex to review project updates and update the site; Codex maintains the ignored source manifest and review packet, asks for evidence decisions, and advances timestamps only after approval.
 - Run `npm run build` for Worker configuration or deployment changes.
 - Export private conversations with `npm run conversations:export -- --url https://your-domain.example`, keep the resulting JSONL private, and delete it when its review purpose is complete.
 - Keep `/AGENTS.md`, `/llms.txt`, `/sitemap.xml`, raw Markdown links, and documented public API routes in parity.

@@ -1,16 +1,21 @@
 import { consumeEventStream } from "./stream.js";
 import { renderMarkdown } from "./markdown.js";
+import { createLink } from "./dom.js";
 import {
+  applicationSlugFromPath,
   canAddUserTurn,
   messagesForRequest,
   rollbackUnpairedUserTurn,
+  storePendingApplication,
   storePendingPrompt,
+  takePendingApplication,
   takePendingPrompt,
 } from "./chat-state.js";
 
 const state = {
   messages: [],
   sessionId: createSessionId(),
+  applicationSlug: "",
   controller: null,
 };
 
@@ -63,6 +68,7 @@ const contactValue = document.querySelector("[data-contact-value]");
 if (contactValue) loadContact(contactValue);
 
 if (home) {
+  state.applicationSlug = readPendingApplication();
   const prompt = readPendingPrompt();
   if (prompt) startConversation(prompt);
 }
@@ -118,6 +124,7 @@ async function requestAnswer(answer) {
         messages: messagesForRequest(state.messages),
         sessionId: state.sessionId,
         source: window.location.pathname,
+        applicationSlug: state.applicationSlug || undefined,
       }),
     });
 
@@ -125,6 +132,8 @@ async function requestAnswer(answer) {
       const problem = await response.json().catch(() => ({}));
       throw new Error(problem.error || "The chat is temporarily unavailable.");
     }
+
+    const turnId = response.headers.get("x-conversation-turn-id");
 
     await consumeEventStream(response, (text) => {
       chunks.push(text);
@@ -145,6 +154,7 @@ async function requestAnswer(answer) {
     answer.copy.classList.add("is-formatted");
     answer.copy.classList.remove("is-streaming");
     answer.status.textContent = "Answer complete";
+    if (turnId) answer.element.append(createFeedbackControls(turnId));
     showFollowups();
   } catch (error) {
     if (animationFrame !== null) cancelAnimationFrame(animationFrame);
@@ -161,6 +171,45 @@ async function requestAnswer(answer) {
     state.controller = null;
     setBusy(false);
   }
+}
+
+function createFeedbackControls(turnId) {
+  const container = document.createElement("div");
+  container.className = "answer-feedback";
+  const prompt = document.createElement("span");
+  prompt.textContent = "Was this useful?";
+  const status = document.createElement("span");
+  status.className = "answer-feedback-status";
+  status.setAttribute("aria-live", "polite");
+
+  for (const [label, rating] of [["Yes", "helpful"], ["No", "not_helpful"]]) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = label;
+    button.addEventListener("click", async () => {
+      container.querySelectorAll("button").forEach((control) => { control.disabled = true; });
+      status.textContent = "Saving…";
+      try {
+        const response = await fetch("/api/feedback", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ turnId, rating }),
+        });
+        if (!response.ok) throw new Error("Feedback unavailable");
+        prompt.textContent = "Thanks — this helps improve the source material.";
+        container.querySelectorAll("button").forEach((control) => control.remove());
+        status.textContent = "";
+      } catch {
+        container.querySelectorAll("button").forEach((control) => { control.disabled = false; });
+        status.textContent = "Couldn’t save feedback.";
+      }
+    });
+    container.append(button);
+  }
+
+  container.prepend(prompt);
+  container.append(status);
+  return container;
 }
 
 function appendUserMessage(prompt) {
@@ -201,6 +250,7 @@ function resetConversation() {
   state.controller?.abort();
   state.messages = [];
   state.sessionId = createSessionId();
+  state.applicationSlug = "";
   messageList.replaceChildren();
   conversation.hidden = true;
   followups.hidden = true;
@@ -216,12 +266,37 @@ function setBusy(busy) {
 }
 
 function queuePromptAndGoHome(prompt) {
-  try {
-    storePendingPrompt(window.sessionStorage, prompt);
-  } catch {
-    // Storage may be unavailable in hardened browser modes; navigation stays private.
+  const applicationSlug = applicationSlugFromPath(window.location.pathname);
+  const storedPrompt = storePendingPrompt(window.sessionStorage, prompt);
+  const storedApplication = !applicationSlug
+    || storePendingApplication(window.sessionStorage, applicationSlug);
+  if (!storedPrompt || !storedApplication) {
+    takePendingPrompt(window.sessionStorage);
+    takePendingApplication(window.sessionStorage);
+    showPrivateNavigationError();
+    return;
   }
   window.location.assign("/");
+}
+
+function showPrivateNavigationError() {
+  let message = document.querySelector("[data-private-navigation-error]");
+  if (!message) {
+    message = document.createElement("p");
+    message.dataset.privateNavigationError = "";
+    message.className = "private-navigation-error";
+    message.setAttribute("role", "alert");
+    document.querySelector("[data-subpage-form]")?.after(message);
+  }
+  message.textContent = "This browser blocked private session storage. Please open the home page and paste your question there.";
+}
+
+function readPendingApplication() {
+  try {
+    return takePendingApplication(window.sessionStorage);
+  } catch {
+    return "";
+  }
 }
 
 function readPendingPrompt() {
@@ -243,13 +318,6 @@ async function loadContact(element) {
   } catch {
     // The static fallback remains visible.
   }
-}
-
-function createLink(text, href) {
-  const link = document.createElement("a");
-  link.textContent = text;
-  link.href = href;
-  return link;
 }
 
 function createSessionId() {

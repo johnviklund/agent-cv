@@ -1,4 +1,4 @@
-# John Erik Viklund — Agent CV
+# John Viklund — Agent CV
 
 > Conversational résumé for a CX AI Lead, applied-AI builder, product leader, and former AI startup founder.
 
@@ -6,8 +6,12 @@
 
 - [Professional overview](/overview.md): positioning, career narrative, and roles of interest
 - [Selected AI projects](/projects.md): architecture, status, scale, and outcomes
+- [Public repository evidence](/repositories.md): bounded snapshots from explicitly allowlisted GitHub repositories
 - [Full CV](/cv.md): complete traditional résumé in Markdown
 - [Agent instructions](/AGENTS.md): API contract, limits, and behavioral boundaries
+- [Privacy](/privacy/): conversation data, purpose, retention, and deletion route
+- [Sitemap](/sitemap.xml): canonical URL inventory
+- [Public source](https://github.com/johnviklund/agent-cv): implementation, tests, and repository allowlist
 
 ## Human-readable pages
 
@@ -20,7 +24,16 @@
 ## API
 
 - `POST /api/ask` — bounded, rate-limited, streaming grounded Q&A
+- `POST /api/feedback` — record helpful/not-helpful feedback using the returned `x-conversation-turn-id`
+- `GET /api/application/:slug` — active role-link metadata; job descriptions and private notes are not returned
 - `GET /api/health` — service status
-- `GET /api/contact` — public contact lookup; returns `{ email: string | null }`. A `null` email means the public address is not configured, so direct visitors to `/contact/` and preserve its application-email fallback rather than guessing an address.
+- `GET /api/contact` — public contact lookup; returns `{ email: string | null }`. For contact requests or explicit interest in interviewing, hiring, or collaborating, direct visitors to `/contact/`. A `null` email means the public address is not configured, so use the LinkedIn fallback there rather than guessing an address.
 
-Data last updated: 2026-08-14
+## Private administration
+
+- `GET /api/admin/stats` — bearer-authenticated private archive summary
+- `GET /api/admin/conversations` — bearer-authenticated private JSONL conversation export
+- `GET|POST /api/admin/applications` — bearer-authenticated role-link administration
+- `POST /api/admin/applications/:slug/revoke` — bearer-authenticated link revocation
+
+Data last updated: 2026-08-15

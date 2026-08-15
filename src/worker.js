@@ -1,11 +1,25 @@
 import {
   buildUntrustedTranscript,
   ChatInputError,
+  isLikelyBot,
   LIMITS,
-  logRecord,
   publicErrorMessage,
   validateChatPayload,
 } from "./chat-core.js";
+import {
+  createConversationRecord,
+  handleAdminConversations,
+  handleAdminStats,
+  handleFeedback,
+  storeConversationRecord,
+  storeResourceAccess,
+} from "./archive.js";
+import {
+  buildApplicationInstructions,
+  handleAdminApplications,
+  handlePublicApplication,
+  loadApplicationContext,
+} from "./applications.js";
 import { sanitizeOpenAIResponseStream } from "./openai-stream.js";
 
 const JSON_HEADERS = {
@@ -14,18 +28,32 @@ const JSON_HEADERS = {
   "access-control-allow-origin": "*",
   "x-content-type-options": "nosniff",
 };
-const LOG_TTL_SECONDS = 90 * 24 * 60 * 60;
 const DEFAULT_OPENAI_MODEL = "gpt-5.6-luna";
 const DEFAULT_OPENAI_REASONING_EFFORT = "none";
 const OPENAI_REASONING_EFFORTS = new Set(["none", "low", "medium", "high", "xhigh", "max"]);
+const MAX_ARCHIVED_ANSWER_CHARACTERS = 16_000;
+const OPENAI_RESPONSE_HEADER_TIMEOUT_MS = 30_000;
+const OBSERVED_RESOURCE_PATHS = new Set([
+  "/AGENTS.md",
+  "/llms.txt",
+  "/cv.md",
+  "/overview.md",
+  "/projects.md",
+  "/repositories.md",
+  "/robots.txt",
+  "/sitemap.xml",
+]);
 
 export async function handleRequest(
   request,
   env,
   context,
-  { fetchImpl = fetch, systemPrompt = "" } = {},
+  { fetchImpl = fetch, systemPrompt = "", openAIConnectTimeoutMs = OPENAI_RESPONSE_HEADER_TIMEOUT_MS } = {},
 ) {
   const url = new URL(request.url);
+  const adminApplicationMatch = url.pathname.match(/^\/api\/admin\/applications(?:\/([a-z0-9_-]{10,32})\/revoke)?$/);
+  const publicApplicationMatch = url.pathname.match(/^\/api\/application\/([a-z0-9_-]{10,32})$/);
+  const applicationPageMatch = url.pathname.match(/^\/a\/([a-z0-9_-]{10,32})\/?$/);
 
   if (url.pathname === "/api/health") {
     return Response.json({
@@ -43,8 +71,40 @@ export async function handleRequest(
     });
   }
 
+  if (url.pathname === "/api/feedback") {
+    return handleFeedback(request, env);
+  }
+
+  if (url.pathname === "/api/admin/conversations") {
+    return handleAdminConversations(request, env);
+  }
+
+  if (url.pathname === "/api/admin/stats") {
+    return handleAdminStats(request, env);
+  }
+
+  if (adminApplicationMatch) {
+    return handleAdminApplications(request, env, adminApplicationMatch[1]);
+  }
+
+  if (publicApplicationMatch) {
+    return handlePublicApplication(request, env, publicApplicationMatch[1], context);
+  }
+
   if (url.pathname === "/api/ask") {
-    return handleAsk(request, env, context, { fetchImpl, systemPrompt });
+    return handleAsk(request, env, context, { fetchImpl, systemPrompt, openAIConnectTimeoutMs });
+  }
+
+  if (applicationPageMatch) {
+    const application = await loadApplicationContext(env, applicationPageMatch[1]);
+    if (!application) return new Response("This application link has expired or been revoked.", { status: 410 });
+    return env.ASSETS.fetch(new Request(new URL("/application/", request.url), request));
+  }
+
+  if ((request.method === "GET" || request.method === "HEAD") && OBSERVED_RESOURCE_PATHS.has(url.pathname)) {
+    context.waitUntil(storeResourceAccess(env, url.pathname, request).catch((error) => {
+      console.error("Resource telemetry failed", error);
+    }));
   }
 
   return env.ASSETS.fetch(request);
@@ -54,7 +114,7 @@ export async function handleAsk(
   request,
   env,
   context,
-  { fetchImpl = fetch, systemPrompt = "" } = {},
+  { fetchImpl = fetch, systemPrompt = "", openAIConnectTimeoutMs = OPENAI_RESPONSE_HEADER_TIMEOUT_MS } = {},
 ) {
   if (request.method === "OPTIONS") {
     return new Response(null, {
@@ -101,6 +161,13 @@ export async function handleAsk(
     return jsonError("The chat service is not configured yet. The full CV remains available.", 503);
   }
 
+  const application = input.applicationSlug
+    ? await loadApplicationContext(env, input.applicationSlug)
+    : null;
+  if (input.applicationSlug && !application) {
+    return jsonError("This application link has expired or been revoked.", 410);
+  }
+
   const budget = await reserveMonthlyBudget(env);
   if (budget === "unavailable") {
     return jsonError("The chat service is not fully configured yet. The full CV remains available.", 503);
@@ -109,16 +176,45 @@ export async function handleAsk(
     return jsonError("The monthly chat limit has been reached. The full CV remains available.", 503);
   }
 
+  const model = env.OPENAI_MODEL || DEFAULT_OPENAI_MODEL;
   const question = input.messages.at(-1).content;
-  const record = logRecord({ question, sessionId: input.sessionId, source: input.source, request });
-  if (env.LOGS) {
-    context.waitUntil(storeLog(env, record));
+  const archiveRecord = createConversationRecord({
+    question,
+    sessionId: input.sessionId,
+    source: input.source,
+    visitorType: isLikelyBot(request.headers.get("user-agent") || "") ? "bot" : "human",
+    turnId: crypto.randomUUID(),
+    model,
+    applicationSlug: input.applicationSlug,
+  });
+  let archiveTail = Promise.resolve();
+  let archived = false;
+  if (env.ARCHIVE) {
+    archiveTail = storeConversationRecord(env, archiveRecord).catch((error) => {
+      console.error("Conversation archive failed", error);
+    });
+    context.waitUntil(archiveTail);
   }
 
-  const model = env.OPENAI_MODEL || DEFAULT_OPENAI_MODEL;
+  let archivedAnswer = "";
+  const finalizeArchive = (outcome) => {
+    if (!env.ARCHIVE || archived) return;
+    archived = true;
+    const finalRecord = {
+      ...archiveRecord,
+      answer: archivedAnswer,
+      outcome,
+      updatedAt: new Date().toISOString(),
+    };
+    archiveTail = archiveTail.then(() => storeConversationRecord(env, finalRecord)).catch((error) => {
+      console.error("Conversation archive update failed", error);
+    });
+    context.waitUntil(archiveTail);
+  };
+
   let upstream;
   try {
-    upstream = await fetchImpl("https://api.openai.com/v1/responses", {
+    upstream = await fetchWithResponseHeaderTimeout(fetchImpl, "https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -126,7 +222,7 @@ export async function handleAsk(
       },
       body: JSON.stringify({
         model,
-        instructions: systemPrompt,
+        instructions: `${systemPrompt}${buildApplicationInstructions(application)}`,
         input: [{
           role: "user",
           content: buildUntrustedTranscript(input.messages),
@@ -136,19 +232,27 @@ export async function handleAsk(
         stream: true,
         store: false,
       }),
-    });
+    }, openAIConnectTimeoutMs);
   } catch (error) {
     console.error("OpenAI request failed", error);
+    finalizeArchive("failed");
     return jsonError(publicErrorMessage(503), 502);
   }
 
   if (!upstream.ok || !upstream.body) {
     console.error("OpenAI request failed", upstream.status);
+    finalizeArchive("failed");
     return jsonError(publicErrorMessage(upstream.status), upstream.status === 429 ? 429 : 502);
   }
 
   const publicStream = sanitizeOpenAIResponseStream(upstream.body, (eventType, code) => {
     console.error("OpenAI stream issue", eventType, code);
+  }, {
+    onDelta(delta) {
+      const remaining = MAX_ARCHIVED_ANSWER_CHARACTERS - archivedAnswer.length;
+      if (remaining > 0) archivedAnswer += delta.slice(0, remaining);
+    },
+    onTerminal: finalizeArchive,
   });
   return new Response(publicStream, {
     status: 200,
@@ -158,15 +262,20 @@ export async function handleAsk(
       "access-control-allow-origin": "*",
       "x-content-type-options": "nosniff",
       "x-agent-model": model,
+      "x-conversation-turn-id": archiveRecord.turnId,
+      "access-control-expose-headers": "x-agent-model, x-conversation-turn-id",
     },
   });
 }
 
-async function storeLog(env, record) {
-  const id = crypto.randomUUID();
-  await env.LOGS.put(`question:${record.createdAt}:${id}`, JSON.stringify(record), {
-    expirationTtl: LOG_TTL_SECONDS,
-  });
+async function fetchWithResponseHeaderTimeout(fetchImpl, url, init, timeoutMs) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetchImpl(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 export async function reserveMonthlyBudget(env, now = new Date()) {

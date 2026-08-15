@@ -1,0 +1,13 @@
+[
+  {
+    "project": "Agent CV",
+    "repository": "johnviklund/agent-cv",
+    "documents": ["README.md", "public/AGENTS.md"],
+    "localDocuments": ["README.md", "public/AGENTS.md"]
+  },
+  {
+    "project": "Volvo Cars Support",
+    "repository": "johnviklund/volvo-cars-support",
+    "documents": ["README.md", "SKILL.md"]
+  }
+]

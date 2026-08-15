@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy — John Viklund's Agent CV</title>
+  <meta name="description" content="How the Agent CV handles conversation data, feedback, retention, and private exports.">
+  <meta name="theme-color" content="#f4f0e8">
+  <link rel="canonical" href="https://john-viklund-agent-cv.agent-cv.workers.dev/privacy/">
+  <link rel="describedby" href="/llms.txt" type="text/plain">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header"><div class="header-inner"><a class="wordmark" href="/" aria-label="John Viklund, home">JOHN VIKLUND</a><nav class="desktop-nav" aria-label="Primary navigation"><a href="/experience/">Experience</a><a href="/projects/">Projects</a><a href="/about/">About</a><a href="/cv/">Full CV</a><a href="/contact/">Contact</a></nav><details class="mobile-nav"><summary aria-label="Open navigation">Menu</summary><nav aria-label="Mobile navigation"><a href="/experience/">Experience</a><a href="/projects/">Projects</a><a href="/about/">About</a><a href="/cv/">Full CV</a><a href="/contact/">Contact</a></nav></details></div></header>
+  <main id="main" class="page-main">
+    <header class="page-header"><p class="eyebrow">PLAIN LANGUAGE · DATA MINIMIZATION</p><h1>Conversation privacy.</h1><p class="deck">The chat is designed to improve the CV without turning visitors into profiles.</p></header>
+    <article class="prose privacy-prose">
+      <h2>What is saved</h2>
+      <p>When you use the chat, the site may save the question, the assistant's answer, a random conversation and turn identifier, the page where the question started, the model name, completion status, a coarse human-or-bot classification, and any helpful/not-helpful feedback you submit.</p>
+      <p>The application does not intentionally store your IP address in the conversation archive. It does not create advertising profiles or sell conversation data.</p>
+
+      <h2>Why it is saved</h2>
+      <p>John reviews aggregated questions and answer-quality signals to identify missing CV evidence, improve the source material, and prepare follow-up interviews with a private local AI agent. Conversation exports remain private and are not added to the public CV automatically.</p>
+
+      <h2>Retention and processors</h2>
+      <p>Cloudflare stores the rolling archive for up to 90 days, after which records expire automatically. John may create restricted local exports for the same content-improvement purpose and should delete them when no longer needed.</p>
+      <p>Chat prompts are processed by Cloudflare Workers and the OpenAI API. The request sets <code>store: false</code> to avoid Responses API application-state storage. Under OpenAI's default controls, prompts and responses may still appear in abuse-monitoring logs for up to 30 days unless additional data-retention controls apply. See OpenAI's <a href="https://developers.openai.com/api/docs/guides/your-data#default-usage-policies-by-endpoint">official data-controls documentation</a>.</p>
+
+      <h2>What not to submit</h2>
+      <p>Please do not paste confidential job information, special-category personal data, credentials, or information about another person. The public chat is intended for questions about John's professional experience.</p>
+
+      <h2>Access or deletion</h2>
+      <p>To ask about a conversation record or request deletion, use the contact route supplied with John's application or reach John through his <a href="https://github.com/johnviklund" rel="me">public GitHub profile</a>. Include the approximate date and wording of the question; do not send credentials.</p>
+      <p><strong>Last updated:</strong> 15 August 2026.</p>
+    </article>
+  </main>
+  <footer class="site-footer"><a href="/">Ask John's agent</a><span class="footer-separator" aria-hidden="true">|</span><a href="https://github.com/johnviklund/agent-cv">View source ↗</a></footer>
+</body>
+</html>

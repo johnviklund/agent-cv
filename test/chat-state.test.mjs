@@ -4,11 +4,14 @@ import { LIMITS } from "../src/chat-core.js";
 import {
   MAX_REQUEST_MESSAGES,
   PENDING_PROMPT_KEY,
+  applicationSlugFromPath,
   canAddUserTurn,
   messagesForRequest,
   rollbackUnpairedUserTurn,
   storePendingPrompt,
   takePendingPrompt,
+  storePendingApplication,
+  takePendingApplication,
 } from "../public/chat-state.js";
 
 const completedConversation = (messageCount) => Array.from({ length: messageCount }, (_, index) => ({
@@ -46,16 +49,35 @@ test("a failed request rolls back its unpaired user turn and can retry", () => {
 });
 
 test("pending prompts use one-time session storage instead of navigation URLs", () => {
+  const storage = memoryStorage();
+
+  assert.equal(storePendingPrompt(storage, "  Tell me about Product Studio.  "), true);
+  assert.equal(storage.getItem(PENDING_PROMPT_KEY), "Tell me about Product Studio.");
+  assert.equal(takePendingPrompt(storage), "Tell me about Product Studio.");
+  assert.equal(storage.getItem(PENDING_PROMPT_KEY), null);
+  assert.equal(takePendingPrompt(storage), "");
+});
+
+test("application links expose only a validated slug", () => {
+  assert.equal(applicationSlugFromPath("/a/application_1234/"), "application_1234");
+  assert.equal(applicationSlugFromPath("/a/APPLICATION_1234"), "application_1234");
+  assert.equal(applicationSlugFromPath("/a/too-short/"), "");
+  assert.equal(applicationSlugFromPath("https://example.com/a/application_1234/"), "");
+});
+
+test("application context uses a validated one-time session value", () => {
+  const storage = memoryStorage();
+  assert.equal(storePendingApplication(storage, "application_1234"), true);
+  assert.equal(takePendingApplication(storage), "application_1234");
+  assert.equal(takePendingApplication(storage), "");
+  assert.equal(storePendingApplication(storage, "https://example.com/bad"), false);
+});
+
+function memoryStorage() {
   const values = new Map();
-  const storage = {
+  return {
     getItem: (key) => values.get(key) ?? null,
     setItem: (key, value) => values.set(key, value),
     removeItem: (key) => values.delete(key),
   };
-
-  assert.equal(storePendingPrompt(storage, "  Tell me about Product Studio.  "), true);
-  assert.equal(values.get(PENDING_PROMPT_KEY), "Tell me about Product Studio.");
-  assert.equal(takePendingPrompt(storage), "Tell me about Product Studio.");
-  assert.equal(values.has(PENDING_PROMPT_KEY), false);
-  assert.equal(takePendingPrompt(storage), "");
-});
+}

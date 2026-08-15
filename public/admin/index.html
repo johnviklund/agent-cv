@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Private archive — John Viklund</title>
+  <meta name="description" content="Private administration for the Agent CV conversation archive.">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#f4f0e8">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/admin.js" type="module"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header"><div class="header-inner"><a class="wordmark" href="/" aria-label="John Viklund, home">JOHN VIKLUND</a><nav class="desktop-nav" aria-label="Private navigation"><a href="/">Public site</a></nav><details class="mobile-nav"><summary aria-label="Open navigation">Menu</summary><nav aria-label="Mobile private navigation"><a href="/">Public site</a></nav></details></div></header>
+  <main id="main" class="page-main admin-main">
+    <header class="page-header">
+      <p class="eyebrow">PRIVATE · AUTHENTICATED</p>
+      <h1>Conversation archive.</h1>
+      <p class="deck">Review usage signals and export grounded conversations as JSONL for local analysis and follow-up interviews.</p>
+    </header>
+
+    <section class="admin-auth" aria-labelledby="admin-auth-heading">
+      <h2 id="admin-auth-heading">Connect to the archive</h2>
+      <form data-admin-form>
+        <label for="admin-token">Admin API token</label>
+        <div class="composer admin-token-composer">
+          <input id="admin-token" name="token" type="password" autocomplete="current-password" required placeholder="Paste token for this session">
+          <button class="admin-connect" type="submit">Load</button>
+        </div>
+      </form>
+      <p class="admin-note">The token remains in this browser tab only. It is never written to local storage.</p>
+      <p data-admin-status aria-live="polite"></p>
+    </section>
+
+    <section class="admin-dashboard" data-admin-dashboard hidden aria-labelledby="admin-dashboard-heading">
+      <div class="admin-dashboard-heading">
+        <div><p class="eyebrow">ROLLING ARCHIVE</p><h2 id="admin-dashboard-heading">Signals at a glance</h2></div>
+        <button type="button" class="project-action admin-export" data-admin-export>Download conversations.jsonl →</button>
+      </div>
+      <dl class="admin-stats" data-admin-stats></dl>
+      <p class="admin-note">Exports contain visitor questions, assistant answers, outcomes, coarse human/bot classification, and feedback. They never contain logged IP addresses or hidden prompts.</p>
+
+      <section class="admin-applications" aria-labelledby="admin-applications-heading">
+        <div class="admin-dashboard-heading"><div><p class="eyebrow">ROLE CONTEXT</p><h2 id="admin-applications-heading">Application links</h2></div></div>
+        <form class="admin-application-form" data-application-form>
+          <div><label for="application-company">Company</label><input id="application-company" name="company" maxlength="100" required></div>
+          <div><label for="application-role">Role</label><input id="application-role" name="role" maxlength="140" required></div>
+          <div class="admin-field-wide"><label for="application-jd">Job description</label><textarea id="application-jd" name="jobDescription" maxlength="24000" rows="9" required></textarea></div>
+          <div class="admin-field-wide"><label for="application-notes">Private notes — never added to the AI prompt</label><textarea id="application-notes" name="privateNotes" maxlength="4000" rows="3"></textarea></div>
+          <div><label for="application-expiry">Expires after</label><select id="application-expiry" name="expiresDays"><option value="30">30 days</option><option value="14">14 days</option><option value="60">60 days</option><option value="90">90 days</option></select></div>
+          <button class="admin-connect" type="submit">Create private link</button>
+        </form>
+        <p data-application-status aria-live="polite"></p>
+        <div class="admin-application-list" data-application-list></div>
+      </section>
+    </section>
+  </main>
+</body>
+</html>

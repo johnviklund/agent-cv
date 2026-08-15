@@ -61,3 +61,15 @@ A visual system that makes multi-agent task activity legible as a growing hex-ti
 **Status:** Active personal portfolio project.
 
 The résumé itself is an AI system: Markdown source data, a grounded LLM, prompt-injection resistance, a human-readable CV, AI-readable files, structured metadata, and an agent-to-agent API. The medium demonstrates the claim that John builds applied AI systems.
+
+**Public repository:** [github.com/johnviklund/agent-cv](https://github.com/johnviklund/agent-cv)
+
+## Volvo Cars Support — public owner-support skill
+
+**Status:** Public personal prototype; MIT licensed.
+
+An OpenClaw skill that searches public Volvo owner manuals, knowledge articles, PDFs, and support content through Volvo's GraphQL API. It demonstrates a lightweight evidence-retrieval pattern: model- and market-scoped search, quoted matching passages, and links back to source material rather than unsupported generation.
+
+**Stack:** Shell, GraphQL, `curl`, `jq`, and Markdown skill instructions.
+
+**Public repository:** [github.com/johnviklund/volvo-cars-support](https://github.com/johnviklund/volvo-cars-support)

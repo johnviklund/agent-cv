@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { BudgetCounter, handleRequest } from "../src/worker.js";
+import { readRecordsWithStatus } from "../src/archive.js";
 
 const ASK_URL = "https://example.test/api/ask";
 const VALID_PAYLOAD = {
@@ -21,6 +22,18 @@ test("health reports the configured OpenAI model", async () => {
   assert.equal(health.ok, true);
   assert.equal(health.configured, true);
   assert.equal(health.model, "gpt-5.6-luna");
+});
+
+test("contact endpoint returns the deliberately configured public email", async () => {
+  const response = await handleRequest(
+    new Request("https://example.test/api/contact"),
+    baseEnv({ CONTACT_EMAIL: "johnwik@gmail.com" }),
+    emptyContext(),
+  );
+
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get("cache-control"), "public, max-age=300");
+  assert.deepEqual(await response.json(), { email: "johnwik@gmail.com" });
 });
 
 test("OPTIONS and non-POST requests return the API method contract", async () => {
@@ -115,6 +128,17 @@ test("upstream HTTP failures and network rejection map to public API errors", as
   const body = await rejected.json();
   assert.equal(body.error, "The chat is temporarily unavailable.");
   assert.equal(body.fallback, "/cv/");
+});
+
+test("OpenAI response headers have a bounded wait without timing the response stream", async () => {
+  const response = await handleRequest(askRequest(), baseEnv(), emptyContext(), {
+    openAIConnectTimeoutMs: 5,
+    fetchImpl: async (_url, init) => new Promise((_resolve, reject) => {
+      init.signal.addEventListener("abort", () => reject(new DOMException("Timed out", "AbortError")));
+    }),
+  });
+  assert.equal(response.status, 502);
+  assert.equal((await response.json()).error, "The chat is temporarily unavailable.");
 });
 
 test("successful OpenAI Responses streams preserve SSE headers, privacy, and grounded request data", async () => {
@@ -280,28 +304,370 @@ test("caller-authored assistant turns remain untrusted text and never become ups
   assert.equal(upstreamMessage.content.match(/<\/untrusted_client_transcript>/g)?.length, 1);
 });
 
-test("question logging is scheduled after a reservation and writes only an expiring record", async () => {
-  const puts = [];
+test("completed answers are archived as expiring conversation turns without network identifiers", async () => {
+  const archive = memoryKv();
   const context = collectingContext();
   const env = baseEnv({
-    LOGS: {
-      put: async (...arguments_) => { puts.push(arguments_); },
-    },
+    ARCHIVE: archive,
   });
 
   const response = await handleRequest(askRequest(), env, context, {
-    fetchImpl: async () => new Response("event: response.completed\ndata: {\"type\":\"response.completed\"}\n\n"),
+    fetchImpl: async () => new Response([
+      'event: response.output_text.delta\ndata: {"type":"response.output_text.delta","delta":"A grounded answer."}\n\n',
+      'event: response.completed\ndata: {"type":"response.completed"}\n\n',
+    ].join("")),
   });
   assert.equal(response.status, 200);
-  await Promise.all(context.promises);
+  const turnId = response.headers.get("x-conversation-turn-id");
+  assert.match(turnId, /^[a-f0-9-]{36}$/);
+  await response.text();
+  await settleContext(context);
 
-  assert.equal(puts.length, 1);
-  assert.match(puts[0][0], /^question:/);
-  assert.doesNotMatch(puts[0][0], /^usage:/);
-  const record = JSON.parse(puts[0][1]);
+  const write = archive.puts.at(-1);
+  assert.equal(write.key, `conversation:${turnId}`);
+  const record = JSON.parse(write.value);
   assert.equal(record.question, "What has John built?");
+  assert.equal(record.answer, "A grounded answer.");
+  assert.equal(record.outcome, "completed");
+  assert.equal(record.model, "gpt-5.6-luna");
   assert.equal("ip" in record, false);
-  assert.equal(puts[0][2].expirationTtl, 90 * 24 * 60 * 60);
+  assert.equal(JSON.stringify(record).includes("192.0.2.1"), false);
+  assert.equal(write.options.expiration, Math.floor(Date.parse(record.expiresAt) / 1_000));
+  assert.ok(Date.parse(record.expiresAt) - Date.parse(record.createdAt) === 90 * 24 * 60 * 60 * 1_000);
+});
+
+test("archive terminal outcomes remain ordered for interrupted and cancelled streams", async () => {
+  const interruptedArchive = memoryKv();
+  const interruptedContext = collectingContext();
+  const interrupted = await handleRequest(askRequest(), baseEnv({ ARCHIVE: interruptedArchive }), interruptedContext, {
+    fetchImpl: async () => new Response([
+      'event: response.output_text.delta\ndata: {"type":"response.output_text.delta","delta":"Partial"}\n\n',
+      'event: response.incomplete\ndata: {"type":"response.incomplete","response":{"incomplete_details":{"reason":"max_output_tokens"}}}\n\n',
+    ].join("")),
+  });
+  await interrupted.text();
+  await settleContext(interruptedContext);
+  assert.equal(JSON.parse(interruptedArchive.puts.at(-1).value).outcome, "interrupted");
+
+  const cancelledArchive = memoryKv();
+  const cancelledContext = collectingContext();
+  const cancelled = await handleRequest(askRequest(), baseEnv({ ARCHIVE: cancelledArchive }), cancelledContext, {
+    fetchImpl: async () => new Response(new ReadableStream({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode(
+          'event: response.output_text.delta\ndata: {"type":"response.output_text.delta","delta":"Partial"}\n\n',
+        ));
+      },
+    })),
+  });
+  const reader = cancelled.body.getReader();
+  await reader.read();
+  await reader.cancel();
+  await settleContext(cancelledContext);
+  assert.equal(JSON.parse(cancelledArchive.puts.at(-1).value).outcome, "cancelled");
+});
+
+test("feedback is stored separately, preserves the original expiry, and merges into exports", async () => {
+  const expiresAt = "2026-11-13T10:00:00.000Z";
+  const archive = memoryKv({
+    "conversation:turn_12345678": JSON.stringify({
+      schemaVersion: 1,
+      turnId: "turn_12345678",
+      createdAt: "2026-08-15T10:00:00.000Z",
+      sessionId: "session_12345678",
+      question: "What has John built?",
+      answer: "A grounded answer.",
+      outcome: "completed",
+      expiresAt,
+    }),
+  });
+  const env = baseEnv({ ARCHIVE: archive });
+  const helpful = await handleRequest(new Request("https://example.test/api/feedback", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ turnId: "turn_12345678", rating: "helpful" }),
+  }), env, emptyContext());
+  assert.equal(helpful.status, 200);
+  assert.equal((await helpful.json()).saved, true);
+  const feedback = JSON.parse(archive.values.get("feedback:turn_12345678"));
+  assert.equal(feedback.rating, "helpful");
+  assert.equal(feedback.expiresAt, expiresAt);
+  assert.equal(archive.puts.at(-1).options.expiration, Math.floor(Date.parse(expiresAt) / 1_000));
+
+  archive.values.set("conversation:turn_12345678", JSON.stringify({
+    schemaVersion: 1,
+    turnId: "turn_12345678",
+    createdAt: "2026-08-15T10:00:00.000Z",
+    sessionId: "session_12345678",
+    question: "What has John built?",
+    answer: "The final answer written after feedback.",
+    outcome: "completed",
+    expiresAt,
+  }));
+  const exported = await handleRequest(new Request("https://example.test/api/admin/conversations", {
+    headers: { authorization: "Bearer test-admin-secret" },
+  }), baseEnv({ ARCHIVE: archive, ADMIN_API_TOKEN: "test-admin-secret" }), emptyContext());
+  const [exportedTurn] = (await exported.text()).trim().split("\n").map(JSON.parse);
+  assert.equal(exportedTurn.answer, "The final answer written after feedback.");
+  assert.equal(exportedTurn.feedback.rating, "helpful");
+
+  const invalid = await handleRequest(new Request("https://example.test/api/feedback", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ turnId: "turn_12345678", rating: "excellent" }),
+  }), env, emptyContext());
+  assert.equal(invalid.status, 400);
+
+  const missing = await handleRequest(new Request("https://example.test/api/feedback", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ turnId: "turn_missing1", rating: "not_helpful" }),
+  }), env, emptyContext());
+  assert.equal(missing.status, 404);
+});
+
+test("feedback rejects encoded request bodies above its dedicated limit", async () => {
+  const env = baseEnv({ ARCHIVE: memoryKv() });
+  const declaredLarge = await handleRequest(new Request("https://example.test/api/feedback", {
+    method: "POST",
+    headers: { "content-type": "application/json", "content-length": "2049" },
+    body: "{}",
+  }), env, emptyContext());
+  assert.equal(declaredLarge.status, 413);
+
+  const encodedLarge = await handleRequest(new Request("https://example.test/api/feedback", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ turnId: "turn_12345678", rating: "helpful", note: "x".repeat(2_100) }),
+  }), env, emptyContext());
+  assert.equal(encodedLarge.status, 413);
+});
+
+test("admin exports require a bearer secret and return bounded cursor-paginated JSONL records", async () => {
+  const archive = memoryKv({
+    "conversation:turn_bbbbbbbb": JSON.stringify({
+      schemaVersion: 1,
+      turnId: "turn_bbbbbbbb",
+      createdAt: "2026-08-15T11:00:00.000Z",
+      sessionId: "session_12345678",
+      question: "Second question",
+      answer: "Second answer",
+      outcome: "completed",
+    }),
+    "conversation:turn_aaaaaaaa": JSON.stringify({
+      schemaVersion: 1,
+      turnId: "turn_aaaaaaaa",
+      createdAt: "2026-08-15T10:00:00.000Z",
+      sessionId: "session_12345678",
+      question: "First question",
+      answer: "First answer",
+      outcome: "completed",
+    }),
+  });
+  const env = baseEnv({ ARCHIVE: archive, ADMIN_API_TOKEN: "test-admin-secret" });
+
+  const denied = await handleRequest(
+    new Request("https://example.test/api/admin/conversations"),
+    env,
+    emptyContext(),
+  );
+  assert.equal(denied.status, 401);
+
+  const allowed = await handleRequest(new Request("https://example.test/api/admin/conversations?limit=1", {
+    headers: { authorization: "Bearer test-admin-secret" },
+  }), env, emptyContext());
+  assert.equal(allowed.status, 200);
+  assert.equal(allowed.headers.get("content-type"), "application/x-ndjson; charset=utf-8");
+  assert.match(allowed.headers.get("content-disposition"), /agent-cv-conversations/);
+  const firstPage = (await allowed.text()).trim().split("\n").map(JSON.parse);
+  assert.equal(firstPage.length, 1);
+  const cursor = allowed.headers.get("x-archive-next-cursor");
+  assert.ok(cursor);
+  const next = await handleRequest(new Request(`https://example.test/api/admin/conversations?limit=1&cursor=${encodeURIComponent(cursor)}`, {
+    headers: { authorization: "Bearer test-admin-secret" },
+  }), env, emptyContext());
+  const secondPage = (await next.text()).trim().split("\n").map(JSON.parse);
+  assert.equal(next.headers.get("x-archive-next-cursor"), "");
+  assert.deepEqual(new Set([...firstPage, ...secondPage].map(({ question }) => question)), new Set(["First question", "Second question"]));
+});
+
+test("bounded analytics reads report truncation instead of silently returning partial counts", async () => {
+  const archive = memoryKv({
+    "resource:1": JSON.stringify({ id: 1 }),
+    "resource:2": JSON.stringify({ id: 2 }),
+    "resource:3": JSON.stringify({ id: 3 }),
+  });
+  const result = await readRecordsWithStatus(archive, "resource:", 2);
+  assert.equal(result.records.length, 2);
+  assert.equal(result.truncated, true);
+});
+
+test("machine-readable resource fetches create bot-friendly access telemetry without IP data", async () => {
+  const archive = memoryKv();
+  const context = collectingContext();
+  const request = new Request("https://example.test/AGENTS.md", {
+    headers: { "user-agent": "ExampleBot/1.0", "cf-connecting-ip": "192.0.2.99" },
+  });
+  const response = await handleRequest(request, baseEnv({
+    ARCHIVE: archive,
+    ASSETS: { fetch: async () => new Response("# Agent instructions") },
+  }), context);
+  assert.equal(response.status, 200);
+  await settleContext(context);
+
+  const resourceWrite = archive.puts.find(({ key }) => key.startsWith("resource:"));
+  const record = JSON.parse(resourceWrite.value);
+  assert.equal(record.path, "/AGENTS.md");
+  assert.equal(record.visitorType, "bot");
+  assert.equal(JSON.stringify(record).includes("192.0.2.99"), false);
+});
+
+test("admin creates and revokes expiring application links without exposing JD or private notes publicly", async () => {
+  const archive = memoryKv();
+  const env = baseEnv({ ARCHIVE: archive, ADMIN_API_TOKEN: "test-admin-secret" });
+  const context = collectingContext();
+  const create = await handleRequest(new Request("https://example.test/api/admin/applications", {
+    method: "POST",
+    headers: { "content-type": "application/json", authorization: "Bearer test-admin-secret" },
+    body: JSON.stringify({
+      company: "Example AI",
+      role: "Head of Applied AI",
+      jobDescription: "Lead a governed agent platform.",
+      privateNotes: "Met the hiring manager at an event.",
+      expiresDays: 30,
+    }),
+  }), env, emptyContext());
+  assert.equal(create.status, 201);
+  const created = await create.json();
+  assert.match(created.slug, /^[a-z0-9_-]{10,32}$/);
+  assert.equal(created.url, `/a/${created.slug}/`);
+
+  const stored = JSON.parse(archive.values.get(`application:${created.slug}`));
+  assert.equal(stored.jobDescription, "Lead a governed agent platform.");
+  assert.equal(stored.privateNotes, "Met the hiring manager at an event.");
+  assert.equal(stored.revoked, false);
+
+  const publicResponse = await handleRequest(
+    new Request(`https://example.test/api/application/${created.slug}`),
+    env,
+    context,
+  );
+  assert.equal(publicResponse.status, 200);
+  const publicApplication = await publicResponse.json();
+  assert.equal(publicApplication.company, "Example AI");
+  assert.equal(publicApplication.role, "Head of Applied AI");
+  assert.equal(JSON.stringify(publicApplication).includes("governed agent platform"), false);
+  assert.equal(JSON.stringify(publicApplication).includes("hiring manager"), false);
+
+  const revoke = await handleRequest(new Request(`https://example.test/api/admin/applications/${created.slug}/revoke`, {
+    method: "POST",
+    headers: { authorization: "Bearer test-admin-secret" },
+  }), env, emptyContext());
+  assert.equal(revoke.status, 200);
+  assert.equal((await revoke.json()).revoked, true);
+  await settleContext(context);
+  assert.equal(JSON.parse(archive.values.get(`application:${created.slug}`)).revoked, true);
+  assert.equal([...archive.values.keys()].some((key) => key.startsWith(`application-view:${created.slug}:`)), true);
+
+  const revokedPublic = await handleRequest(
+    new Request(`https://example.test/api/application/${created.slug}`),
+    env,
+    emptyContext(),
+  );
+  assert.equal(revokedPublic.status, 410);
+
+  const applications = await handleRequest(new Request("https://example.test/api/admin/applications", {
+    headers: { authorization: "Bearer test-admin-secret" },
+  }), env, emptyContext());
+  assert.equal((await applications.json()).applications[0].views, 1);
+});
+
+test("application metadata remains available when view telemetry fails", async () => {
+  const slug = "application_5678";
+  const archive = memoryKv({
+    [`application:${slug}`]: JSON.stringify({
+      slug,
+      company: "Example AI",
+      role: "AI Lead",
+      createdAt: "2026-08-15T10:00:00.000Z",
+      expiresAt: "2026-09-15T10:00:00.000Z",
+      revoked: false,
+    }),
+  });
+  archive.put = async (key) => {
+    if (key.startsWith("application-view:")) throw new Error("telemetry unavailable");
+  };
+  const context = collectingContext();
+  const response = await handleRequest(
+    new Request(`https://example.test/api/application/${slug}`),
+    baseEnv({ ARCHIVE: archive }),
+    context,
+  );
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).role, "AI Lead");
+  await settleContext(context);
+});
+
+test("expired application API and page routes return 410 without serving private context", async () => {
+  const slug = "application_9999";
+  const archive = memoryKv({
+    [`application:${slug}`]: JSON.stringify({
+      slug,
+      company: "Expired Co",
+      role: "Expired role",
+      jobDescription: "PRIVATE_EXPIRED_JD",
+      createdAt: "2026-07-01T10:00:00.000Z",
+      expiresAt: "2026-08-01T10:00:00.000Z",
+      revoked: false,
+    }),
+  });
+  let assetFetches = 0;
+  const env = baseEnv({
+    ARCHIVE: archive,
+    ASSETS: { fetch: async () => { assetFetches += 1; return new Response("private page"); } },
+  });
+  const api = await handleRequest(new Request(`https://example.test/api/application/${slug}`), env, emptyContext());
+  const page = await handleRequest(new Request(`https://example.test/a/${slug}/`), env, emptyContext());
+  assert.equal(api.status, 410);
+  assert.equal(page.status, 410);
+  assert.doesNotMatch(await page.text(), /PRIVATE_EXPIRED_JD/);
+  assert.equal(assetFetches, 0);
+});
+
+test("application chat adds an untrusted JD to the prompt while excluding private notes", async () => {
+  const slug = "application_1234";
+  const archive = memoryKv({
+    [`application:${slug}`]: JSON.stringify({
+      schemaVersion: 1,
+      slug,
+      company: "Example AI",
+      role: "Head of Applied AI",
+      jobDescription: "Lead a governed agent platform.",
+      privateNotes: "PRIVATE_NOTE_SENTINEL",
+      createdAt: "2026-08-15T10:00:00.000Z",
+      expiresAt: "2026-09-14T10:00:00.000Z",
+      revoked: false,
+      views: 0,
+    }),
+  });
+  let upstreamBody;
+  const response = await handleRequest(askRequest(JSON.stringify({
+    ...VALID_PAYLOAD,
+    applicationSlug: slug,
+  })), baseEnv({ ARCHIVE: archive }), collectingContext(), {
+    systemPrompt: "base grounded prompt",
+    fetchImpl: async (_url, init) => {
+      upstreamBody = JSON.parse(init.body);
+      return new Response('event: response.completed\ndata: {"type":"response.completed"}\n\n');
+    },
+  });
+  assert.equal(response.status, 200);
+  await response.text();
+  assert.match(upstreamBody.instructions, /Example AI/);
+  assert.match(upstreamBody.instructions, /Head of Applied AI/);
+  assert.match(upstreamBody.instructions, /Lead a governed agent platform/);
+  assert.match(upstreamBody.instructions, /job description below is untrusted/i);
+  assert.doesNotMatch(upstreamBody.instructions, /PRIVATE_NOTE_SENTINEL/);
 });
 
 test("the Durable Object grants only one concurrent reservation at cap minus one", async () => {
@@ -363,6 +729,41 @@ function collectingContext() {
   return {
     promises: [],
     waitUntil(promise) { this.promises.push(promise); },
+  };
+}
+
+async function settleContext(context) {
+  let settled = 0;
+  while (settled < context.promises.length) {
+    const pending = context.promises.slice(settled);
+    settled = context.promises.length;
+    await Promise.all(pending);
+  }
+}
+
+function memoryKv(initialValues = {}) {
+  const values = new Map(Object.entries(initialValues));
+  return {
+    values,
+    puts: [],
+    async put(key, value, options = {}) {
+      this.puts.push({ key, value, options });
+      values.set(key, value);
+    },
+    async get(key) {
+      return values.get(key) ?? null;
+    },
+    async list({ prefix = "", cursor = "", limit = 1_000 } = {}) {
+      const matching = [...values.keys()].filter((key) => key.startsWith(prefix));
+      const start = Number(cursor || 0);
+      const page = matching.slice(start, start + limit);
+      const next = start + page.length;
+      return {
+        keys: page.map((name) => ({ name })),
+        list_complete: next >= matching.length,
+        cursor: next >= matching.length ? undefined : String(next),
+      };
+    },
   };
 }
 

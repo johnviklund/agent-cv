@@ -1,76 +1,69 @@
 # Agent CV
 
-A chat-first conversational résumé for John Erik Viklund. The interface is deliberately slim: starter questions open a fresh grounded conversation, while navigation exposes human-readable subpages and stable Markdown resources for recruiters, ATS tools, and agents.
+A chat-first conversational résumé for John Viklund. It gives recruiters, hiring managers, crawlers, and AI agents the same grounded evidence through a slim web interface, stable Markdown resources, and a bounded streaming API.
 
-## Architecture
+Live site: [john-viklund-agent-cv.agent-cv.workers.dev](https://john-viklund-agent-cv.agent-cv.workers.dev/)
 
-- Framework-free accessible HTML, CSS, and JavaScript
-- Cloudflare Worker for `/api/ask`, `/api/health`, and `/api/contact`
-- OpenAI Responses API with server-sent-event streaming
-- Continuous browser conversations with a bounded rolling context window
-- Client transcripts flattened into one bounded, untrusted upstream user message; caller-authored assistant roles are never trusted as model history
-- Markdown source data bundled into the Worker prompt
-- Cloudflare Rate Limiting binding for public chat traffic
-- Atomic per-month chat budget reservations in a Cloudflare Durable Object
-- Optional Workers KV question logs with 90-day TTL and no IP storage
-- Static no-JavaScript content plus `/cv.md`, `/projects.md`, `/overview.md`, `/AGENTS.md`, and `/llms.txt`
+## What this project demonstrates
 
-## Local development
+- An accessible, framework-free interface that keeps conversation primary
+- A Cloudflare Worker boundary around the OpenAI Responses API
+- Curated Markdown grounding with explicit prompt-injection boundaries
+- A small, sanitized public SSE contract instead of raw provider events
+- Continuous browser conversations with bounded rolling context
+- Rate limiting and atomic monthly budget reservations in a Durable Object
+- Private 90-day conversation archival, feedback, and token-protected JSONL export
+- Expiring role-specific links whose job descriptions remain untrusted context
+- Deliberately refreshed snapshots from allowlisted public repositories
+- Human pages plus `/AGENTS.md`, `/llms.txt`, raw Markdown, JSON-LD, and a sitemap
+
+The Worker converts the visitor-controlled transcript into one upstream user message. Client-authored `assistant` roles remain untrusted copies, and repository snapshots can support curated facts but cannot override them or independently establish personal contribution.
+
+## Run it locally
 
 ```sh
-npm install
+npm ci
 cp .dev.vars.example .dev.vars
+npm run bootstrap:data
 npm run dev
 ```
 
-Set `OPENAI_API_KEY` in `.dev.vars`. The default model is `gpt-5.6-luna` with reasoning effort `none`, keeping this short grounded lookup fast and preserving the visible answer budget. Override these through `OPENAI_MODEL` and `OPENAI_REASONING_EFFORT`; supported efforts are `none`, `low`, `medium`, `high`, `xhigh`, and `max`. Use `max` only after representative quality, latency, and cost evaluation, with a suitable `MAX_OUTPUT_TOKENS` budget.
-
-Run verification:
+Set `OPENAI_API_KEY` in `.dev.vars`. `npm run bootstrap:data` creates only the six tracked example files that are missing; it never overwrites reviewed private data. Run the complete repository verification with:
 
 ```sh
-npm run build
+npm run check
 ```
 
-## Cloudflare deployment
+The static site and raw CV remain available when the model API is unavailable. Public chat fails closed when its required secret or budget binding is absent, and archive failures do not expose private diagnostics through the stream.
 
-1. Authenticate Wrangler with the desired Cloudflare account.
-2. The checked-in `CHAT_BUDGET` Durable Object binding and `v1` migration enforce `MONTHLY_REQUEST_CAP`. The Worker fails closed to the static CV if this binding is unavailable.
-3. Optionally create a KV namespace for 90-day question logs:
+## Reuse it safely
 
-   ```sh
-   npx wrangler kv namespace create AGENT_CV_LOGS
-   ```
+Start with [USERGUIDE.md](USERGUIDE.md) for setup, data boundaries, deployment, maintenance, and the complete fork checklist. [AGENTS.md](AGENTS.md) is the authoritative repository guide for coding agents; the deployed [`/AGENTS.md`](public/AGENTS.md) and [`/llms.txt`](public/llms.txt) describe the public interface to visiting agents.
 
-4. Add its returned ID to `wrangler.jsonc`:
+You can hand a fresh fork to a coding agent with this prompt:
 
-   ```jsonc
-   "kv_namespaces": [
-     { "binding": "LOGS", "id": "<namespace-id>" }
-   ]
-   ```
+> Adapt this repository into my Agent CV. Read `AGENTS.md` and `USERGUIDE.md` first. Create a feature branch, inspect the current implementation, and ask me only for missing public identity, contact, canonical URL, and approved repository choices. Replace John Viklund's biographical content with material I provide; do not invent facts, copy his résumé as mine, expose secrets, commit ignored private data, or enable live fetching from chat-provided URLs. Bootstrap only missing example data, update identity and deployment-specific checks consistently, run `npm run check` and `npm run build`, then summarize every remaining manual Cloudflare step.
 
-5. Add the OpenAI secret and, optionally, a public contact address:
+The application code is MIT-licensed. John Viklund's résumé content is personal biographical material, not a template identity; replace it with your own reviewed evidence before publishing a fork.
 
-   ```sh
-   npx wrangler secret put OPENAI_API_KEY
-   ```
+## Data and evidence boundaries
 
-   Set `CONTACT_EMAIL` in `wrangler.jsonc` or as a secret only when the address is intended to be public. If it is unset, `/api/contact` returns `null` and the contact page keeps its application-email fallback.
+Tracked canonical public sources live in `data/cv.md`, `data/overview.md`, `data/projects.md`, and `data/repositories.md`. The six other `data/*.md` knowledge files and generated `src/data/` bundle are intentionally ignored because a real deployment may contain private material. `examples/private-data/` contains generic placeholders only.
 
-6. Deploy:
-
-   ```sh
-   npm run deploy
-   ```
-
-The UI and raw CV remain available when the model API or required budget binding is unavailable. The chat remains safely unavailable until the OpenAI secret is configured. The `LOGS` KV binding is optional and stores questions only; budget accounting never uses eventually consistent KV counters.
-
-If a Wrangler command fails with `fetch failed` and `SSL_CERT_FILE` points to a missing certificate bundle, run it with the stale override removed. For example:
+After editing canonical sources, synchronize generated resources:
 
 ```sh
-env -u SSL_CERT_FILE NODE_EXTRA_CA_CERTS=/etc/ssl/cert.pem npx wrangler login
+npm run sync:data
 ```
 
-## Data maintenance
+Public repository evidence is controlled only by `config/repositories.json`. Refresh it deliberately with `npm run sync:repositories`; the public chat never fetches a repository or URL supplied by a visitor.
 
-Private agent behavior and curated source files live in `data/`. `npm run sync:data` copies the approved public Markdown files into `public/`. Keep precise project statuses and distinguish John's personal contribution from team work.
+Conversation records, `.dev.vars`, admin tokens, application notes, job descriptions, and exports remain private. The dashboard at `/admin/` keeps its bearer token in the current tab rather than browser storage.
+
+## Deployment
+
+Deployment uses Cloudflare Workers, KV, and a Durable Object. A fork needs its own Worker name, KV namespace ID, secrets, public contact setting, and canonical URL metadata. The exact sequence and verification checklist are in [USERGUIDE.md](USERGUIDE.md#deploy-your-fork).
+
+## License
+
+Application code is available under the [MIT License](LICENSE). Personal résumé content remains attributable to John Viklund; reuse it as personal biographical content only with appropriate permission.

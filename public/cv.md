@@ -1,4 +1,4 @@
-# John Erik Viklund
+# John Viklund
 
 **CX AI Lead · Applied-AI builder · Product leader**  
 Gothenburg, Sweden · Open to Europe and United States opportunities
@@ -94,4 +94,4 @@ Native Swedish and fluent professional English. Based near Gothenburg, Sweden. O
 
 ---
 
-Data last updated: 14 August 2026. Ask the conversational CV at the site root or fetch machine-readable resources from `/AGENTS.md` and `/llms.txt`.
+Data last updated: 15 August 2026. Ask the conversational CV at the site root or fetch machine-readable resources from `/AGENTS.md` and `/llms.txt`.

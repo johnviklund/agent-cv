@@ -13,7 +13,18 @@
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",
-    "run_worker_first": ["/api/*"],
+    "run_worker_first": [
+      "/api/*",
+      "/a/*",
+      "/AGENTS.md",
+      "/llms.txt",
+      "/cv.md",
+      "/overview.md",
+      "/projects.md",
+      "/repositories.md",
+      "/robots.txt",
+      "/sitemap.xml"
+    ],
     "html_handling": "force-trailing-slash",
     "not_found_handling": "404-page"
   },
@@ -25,7 +36,7 @@
     },
     {
       "type": "Text",
-      "globs": ["data/meta.md", "data/overview.md", "data/experience.md", "data/projects.md", "data/skills.md", "data/personal.md", "data/interests.md", "data/faq.md"],
+      "globs": ["data/meta.md", "data/overview.md", "data/experience.md", "data/projects.md", "data/repositories.md", "data/skills.md", "data/personal.md", "data/interests.md", "data/faq.md"],
       "fallthrough": false
     },
     {
@@ -42,6 +53,12 @@
       }
     ]
   },
+  "kv_namespaces": [
+    {
+      "binding": "ARCHIVE",
+      "id": "66eaa9b0f9724e31980aec66972ad219"
+    }
+  ],
   "migrations": [
     {
       "tag": "v1",
@@ -63,6 +80,7 @@
     "OPENAI_REASONING_EFFORT": "none",
     "MAX_OUTPUT_TOKENS": "700",
     "MONTHLY_REQUEST_CAP": "1000",
-    "CONTACT_EMAIL": ""
+    "ARCHIVE_RETENTION_DAYS": "90",
+    "CONTACT_EMAIL": "johnwik@gmail.com"
   }
 }

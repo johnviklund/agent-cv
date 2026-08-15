@@ -12,6 +12,16 @@ export async function handleAdminApplications(request, env, slug = "") {
 
   if (slug) return revokeApplication(request, env, slug);
   if (request.method === "GET") {
+    if (new URL(request.url).searchParams.get("summary") === "1") {
+      const applications = await readRecords(env.ARCHIVE, "application:");
+      return noStoreJson({
+        applications: applications.map(({ slug: applicationSlug, role, company }) => ({
+          slug: applicationSlug,
+          role,
+          company,
+        })),
+      });
+    }
     const [applications, turnResult, viewEvents] = await Promise.all([
       readRecords(env.ARCHIVE, "application:"),
       readConversationRecordsWithStatus(env.ARCHIVE),

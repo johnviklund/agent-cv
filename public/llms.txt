@@ -36,4 +36,6 @@
 - `GET|POST /api/admin/applications` — bearer-authenticated role-link administration
 - `POST /api/admin/applications/:slug/revoke` — bearer-authenticated link revocation
 
+The private `/admin/` browser groups conversation-learning candidates by application and session and generates a private, untrusted-data brief for a local human-approval workflow. Conversation-derived proposals are never published automatically.
+
 Data last updated: 2026-08-15

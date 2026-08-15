@@ -42,6 +42,30 @@
       <dl class="admin-stats" data-admin-stats></dl>
       <p class="admin-note">Exports contain visitor questions, assistant answers, outcomes, coarse human/bot classification, and feedback. They never contain logged IP addresses or hidden prompts.</p>
 
+      <section class="admin-conversation-review" aria-labelledby="admin-conversation-review-heading">
+        <div class="admin-dashboard-heading">
+          <div><p class="eyebrow">LEARNING LOOP</p><h2 id="admin-conversation-review-heading">Conversation candidates</h2></div>
+        </div>
+        <p class="admin-note">Browse private turns by application and session. Filters use “any match”: a turn appears when it has at least one selected signal.</p>
+        <form class="admin-review-filters" data-review-filters>
+          <fieldset>
+            <legend>Learning signals</legend>
+            <label><input type="checkbox" name="reason" value="failed" checked> Failed</label>
+            <label><input type="checkbox" name="reason" value="incomplete" checked> Incomplete</label>
+            <label><input type="checkbox" name="reason" value="not_helpful" checked> Not helpful</label>
+            <label><input type="checkbox" name="reason" value="unanswered" checked> Unanswered</label>
+          </fieldset>
+        </form>
+        <button type="button" class="admin-export admin-review-load" data-review-load>Load conversation candidates →</button>
+        <div class="admin-review-list" data-review-list></div>
+        <div class="admin-review-actions">
+          <button type="button" class="admin-connect" data-review-brief disabled>Download private agent brief</button>
+          <button type="button" class="admin-export" data-review-clear disabled>Clear classifications</button>
+        </div>
+        <p class="admin-note">Classify every visible candidate before creating the brief. The brief contains private transcript text: keep it out of Git, review it with Codex locally, and delete it when the review purpose is complete.</p>
+        <p data-review-status aria-live="polite">No candidates selected for a brief.</p>
+      </section>
+
       <section class="admin-applications" aria-labelledby="admin-applications-heading">
         <div class="admin-dashboard-heading"><div><p class="eyebrow">ROLE CONTEXT</p><h2 id="admin-applications-heading">Application links</h2></div></div>
         <form class="admin-application-form" data-application-form>

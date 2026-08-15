@@ -1,0 +1,6 @@
+interface:
+  display_name: "Review Agent CV Conversations"
+  short_description: "Turn conversation gaps into reviewed CV proposals"
+  default_prompt: "Use $review-agent-cv-conversations to interview me about a private conversation review brief and propose grounded Agent CV updates."
+policy:
+  allow_implicit_invocation: true

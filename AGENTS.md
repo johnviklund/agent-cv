@@ -1,6 +1,6 @@
 # Repository guide for coding agents
 
-This repository contains the public implementation of John Erik Viklund's Agent CV. Keep the interface editorial, slim, accessible, and chat-first.
+This repository contains the public implementation of John Viklund's Agent CV. Keep the interface editorial, slim, accessible, and chat-first.
 
 ## Verification
 

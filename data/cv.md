@@ -1,4 +1,4 @@
-# John Erik Viklund
+# John Viklund
 
 **CX AI Lead · Applied-AI builder · Product leader**  
 Gothenburg, Sweden · Open to Europe and United States opportunities

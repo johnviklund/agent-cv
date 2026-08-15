@@ -24,6 +24,18 @@ test("health reports the configured OpenAI model", async () => {
   assert.equal(health.model, "gpt-5.6-luna");
 });
 
+test("contact endpoint returns the deliberately configured public email", async () => {
+  const response = await handleRequest(
+    new Request("https://example.test/api/contact"),
+    baseEnv({ CONTACT_EMAIL: "johnwik@gmail.com" }),
+    emptyContext(),
+  );
+
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get("cache-control"), "public, max-age=300");
+  assert.deepEqual(await response.json(), { email: "johnwik@gmail.com" });
+});
+
 test("OPTIONS and non-POST requests return the API method contract", async () => {
   const preflight = await handleRequest(new Request(ASK_URL, { method: "OPTIONS" }), {}, emptyContext());
   assert.equal(preflight.status, 204);

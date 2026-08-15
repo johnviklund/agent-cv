@@ -1,6 +1,6 @@
 # Agent CV
 
-A chat-first conversational résumé for John Erik Viklund. The interface is deliberately slim: the grounded chat is the primary interaction, while human pages and stable Markdown resources make the same evidence legible to recruiters, ATS tools, crawlers, and agents.
+A chat-first conversational résumé for John Viklund. The interface is deliberately slim: the grounded chat is the primary interaction, while human pages and stable Markdown resources make the same evidence legible to recruiters, ATS tools, crawlers, and agents.
 
 Live site: [john-viklund-agent-cv.agent-cv.workers.dev](https://john-viklund-agent-cv.agent-cv.workers.dev/)
 
@@ -85,7 +85,7 @@ The resulting private JSONL file is written under ignored `exports/`. Each line 
 
    `setup:admin` generates the admin token, writes it to ignored `.dev.vars` with private file permissions, and configures the same value in Cloudflare without printing it.
 
-4. Optionally set a deliberately public contact address through `CONTACT_EMAIL`. If unset, the contact page uses GitHub and the application-email fallback.
+4. Replace or clear the deliberately public `CONTACT_EMAIL` value for a fork. If unset, the contact page falls back to LinkedIn without guessing an address.
 5. Deploy:
 
    ```sh
@@ -93,6 +93,8 @@ The resulting private JSONL file is written under ignored `exports/`. Each line 
    ```
 
 The UI and raw CV remain available when the model API is unavailable. The public chat fails closed if the OpenAI secret or monthly budget binding is missing. Archive failures never expose private errors through the public stream.
+
+The checked-in `workers.dev` hostname is the validation URL. Keep broad distribution gated on choosing and configuring a John-owned custom domain, then update canonical metadata, discovery resources, and deployment configuration together.
 
 If Wrangler reports `fetch failed` and `SSL_CERT_FILE` points to a missing certificate bundle, remove the stale override for that command:
 
@@ -114,4 +116,4 @@ Private deployment data, secrets, raw logs, application notes, and job descripti
 
 ## License
 
-Application code is available under the [MIT License](LICENSE). Personal résumé content remains attributable to John Erik Viklund; reuse it as personal biographical content only with appropriate permission.
+Application code is available under the [MIT License](LICENSE). Personal résumé content remains attributable to John Viklund; reuse it as personal biographical content only with appropriate permission.

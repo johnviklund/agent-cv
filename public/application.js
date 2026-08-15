@@ -12,7 +12,7 @@ async function loadApplication(container, applicationSlug) {
     container.querySelector("[data-application-company]").textContent = application.company.toUpperCase();
     container.querySelector("[data-application-role]").textContent = application.role;
     container.querySelector("[data-application-heading]").textContent = `${application.role} · ${application.company}`;
-    document.title = `${application.role} at ${application.company} — John Erik Viklund`;
+    document.title = `${application.role} at ${application.company} — John Viklund`;
   } catch (error) {
     container.querySelector("[data-application-heading]").textContent = error.message;
     container.querySelectorAll("form, .application-starters").forEach((element) => { element.hidden = true; });

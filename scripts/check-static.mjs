@@ -118,6 +118,10 @@ async function checkDiscoveryResources() {
   if (!/"@type":\s*"ProfilePage"/.test(home) || !/"mainEntity":\s*\{/.test(home)) {
     failures.push("index.html: missing ProfilePage JSON-LD with mainEntity");
   }
+  if (!/"@id":\s*"https:\/\/john-viklund-agent-cv\.agent-cv\.workers\.dev\/#john-viklund"/.test(home)
+    || !/"name":\s*"John Viklund"/.test(home)) {
+    failures.push("index.html: JSON-LD public identity is inconsistent");
+  }
   if (!/Sitemap:\s*https:\/\/john-viklund-agent-cv\.agent-cv\.workers\.dev\/sitemap\.xml/.test(robots)) {
     failures.push("robots.txt: missing canonical sitemap declaration");
   }

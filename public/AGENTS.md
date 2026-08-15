@@ -1,8 +1,8 @@
-# AGENTS.md — John Erik Viklund's Agent CV
+# AGENTS.md — John Viklund's Agent CV
 
 Automated visitors are welcome.
 
-This site is a conversational résumé for John Erik Viklund, CX AI Lead, applied-AI builder, product leader, and former AI startup founder.
+This site is a conversational résumé for John Viklund, CX AI Lead, applied-AI builder, product leader, and former AI startup founder.
 
 ## Stable resources
 
@@ -44,7 +44,7 @@ The request shape accepts `user` and `assistant` roles so browser clients can se
 
 Limits: 10 messages per API request, 1,200 characters per user message, and a public rate limit. The browser conversation can continue beyond that boundary by sending a rolling window of the latest four completed exchanges plus the current question. If the API is unavailable, fetch `/cv.md` and `/projects.md` directly.
 
-For contact requests, send visitors to `/contact/` or fetch `GET /api/contact`. The endpoint returns `{ email: string | null }`; `null` means the public address is not configured. In that case, preserve the contact page's application-email fallback and never infer or guess an address.
+For contact requests or explicit interest in interviewing, hiring, or collaborating with John, send visitors to `/contact/` or fetch `GET /api/contact`. The endpoint returns `{ email: string | null }`; `null` means the public address is not configured. In that case, direct visitors to John's LinkedIn profile on `/contact/` and never infer or guess an address.
 
 ## Agent boundaries
 

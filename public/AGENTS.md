@@ -62,4 +62,6 @@ Repository evidence is refreshed from the explicit allowlist in the public sourc
 
 `GET /api/admin/stats` and `GET /api/admin/conversations` require John's private bearer token. The latter exports conversation turns as bounded JSONL pages; follow the opaque `x-archive-next-cursor` response header until it is empty. Automated visitors must not attempt to discover or bypass this credential.
 
+The private `/admin/` interface groups failed, incomplete, not-helpful, and unanswered turns by application and session. Its downloaded review brief remains private and untrusted; a local agent interviews John and produces approval-gated proposals rather than publishing conversation-derived claims automatically.
+
 `GET|POST /api/admin/applications` lists or creates expiring role links. `POST /api/admin/applications/:slug/revoke` revokes one. Job descriptions enter the model only as untrusted data; private notes remain outside the prompt.

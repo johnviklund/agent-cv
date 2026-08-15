@@ -12,7 +12,7 @@ Live site: [john-viklund-agent-cv.agent-cv.workers.dev](https://john-viklund-age
 - A small, sanitized public SSE contract instead of raw provider events
 - Continuous browser conversations with bounded rolling context
 - Rate limiting and atomic monthly budget reservations in a Durable Object
-- Private 90-day conversation archival, feedback, and token-protected JSONL export
+- Private 90-day conversation archival, feedback, token-protected browsing, and JSONL export
 - Expiring role-specific links whose job descriptions remain untrusted context
 - Deliberately refreshed snapshots from allowlisted public repositories
 - Human pages plus `/AGENTS.md`, `/llms.txt`, raw Markdown, JSON-LD, and a sitemap
@@ -60,7 +60,7 @@ Public repository evidence is controlled only by `config/repositories.json`. Ref
 
 Project freshness is a Codex conversation. Open this repository in Codex and ask: **“Review my project and repository updates, ask me what changed, and update the site.”** The repo-local workflow gathers only approved evidence, asks for factual decisions, updates reviewed public content, verifies and ships it, deploys the site, and checks the live result. Its private manifest and proposal packet remain ignored plumbing; you do not need to remember their commands or formats.
 
-Conversation records, `.dev.vars`, admin tokens, application notes, job descriptions, and exports remain private. The dashboard at `/admin/` keeps its bearer token in the current tab rather than browser storage.
+Conversation records, `.dev.vars`, admin tokens, application notes, job descriptions, review briefs, and exports remain private. The dashboard at `/admin/` keeps its bearer token in the current tab, groups learning candidates by application and session, and creates an untrusted-data brief for the local approval-gated Codex interview workflow.
 
 ## Deployment
 

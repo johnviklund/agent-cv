@@ -36,7 +36,7 @@ npm run dev
 | `examples/private-data/` | Generic safe bootstrap placeholders | Tracked |
 | `src/data/` | Generated Worker knowledge bundle | Ignored |
 | `public/*.md` | Generated public Markdown resources | Tracked |
-| `.dev.vars`, `exports/` | Local secrets and private archive exports | Ignored |
+| `.dev.vars`, `exports/`, `conversation-reviews/` | Local secrets, private archive exports, and conversation review material | Ignored |
 
 Edit canonical files under `data/`, then run:
 
@@ -47,7 +47,7 @@ npm run sync:data
 Before committing, confirm ignored material stays ignored:
 
 ```sh
-git check-ignore .dev.vars data/meta.md src/data/meta.md exports/
+git check-ignore .dev.vars data/meta.md src/data/meta.md exports/ conversation-reviews/
 git status --short
 ```
 
@@ -128,11 +128,22 @@ Codex gathers only the approved repository and local evidence, explains material
 
 The repo-local `refresh-agent-cv-projects` skill owns this flow. Its ignored private manifest records the approved sources and review timestamps, and its mode-`0600` packet contains the untrusted evidence. Codex maintains both as private local plumbing. Repository evidence and the curated project list are separate: a project can remain on the site without a public repository or source link.
 
+## Review conversation learning privately
+
+Open `/admin/`, enter the private token, and use **Conversation candidates** to filter failed, incomplete, not-helpful, and unanswered turns. Candidates are grouped by application and session. Classify every turn in the current view, then download the private agent brief.
+
+Keep the brief outside Git or under ignored `conversation-reviews/`, open this repository in Codex, and ask:
+
+> Review this Agent CV conversation brief, interview me about the gaps, and propose updates for approval.
+
+The repo-local `review-agent-cv-conversations` skill treats transcript text as untrusted, asks focused evidence and privacy questions, and writes only an ignored proposal. It stops for human approval before any canonical edit and never publishes or merges merely because a proposal exists. When the review purpose is complete, confirm cleanup so Codex deletes the exact brief and any exact raw export used for that review.
+
 ## Maintain the site
 
 - Update canonical Markdown under `data/`, run `npm run sync:data`, review generated changes, and run `npm run check`.
 - Refresh `config/repositories.json` and `npm run sync:repositories` deliberately; never add live repository fetching to public chat.
 - Ask Codex to review project updates and update the site; Codex maintains the ignored source manifest and review packet, asks for evidence decisions, and advances timestamps only after approval.
+- Use the private admin conversation browser and ask Codex to review its brief; approve exact proposals before canonical changes, and delete the private input files when the review is complete.
 - Run `npm run build` for Worker configuration or deployment changes.
 - Export private conversations with `npm run conversations:export -- --url https://your-domain.example`, keep the resulting JSONL private, and delete it when its review purpose is complete.
 - Keep `/AGENTS.md`, `/llms.txt`, `/sitemap.xml`, raw Markdown links, and documented public API routes in parity.

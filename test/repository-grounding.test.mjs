@@ -89,3 +89,18 @@ test("keeps public evidence and project links limited to the approved repositori
   assert.doesNotMatch(projectsPage, /volvo-cars-support/i);
   assert.doesNotMatch(projectsMarkdown, /volvo-cars-support/i);
 });
+
+test("keeps source links out of the project action column", async () => {
+  const projectsPage = await readFile(new URL("../public/projects/index.html", import.meta.url), "utf8");
+  const rows = [...projectsPage.matchAll(/<article class="project-row">([\s\S]*?)<\/article>/g)].map((match) => match[1]);
+
+  assert.equal(rows.length, 7);
+  assert.doesNotMatch(projectsPage, /class="project-actions"/);
+  for (const row of rows) {
+    assert.match(row, /class="project-meta-block"/);
+    assert.match(row, /class="project-action"/);
+    if (row.includes('class="project-source"')) {
+      assert.ok(row.indexOf('class="project-source"') < row.indexOf('class="project-action"'));
+    }
+  }
+});

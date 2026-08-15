@@ -6,6 +6,7 @@
 
 - [Professional overview](/overview.md): positioning, career narrative, and roles of interest
 - [Selected AI projects](/projects.md): architecture, status, scale, and outcomes
+- [Public repository evidence](/repositories.md): bounded snapshots from explicitly allowlisted GitHub repositories
 - [Full CV](/cv.md): complete traditional résumé in Markdown
 - [Agent instructions](/AGENTS.md): API contract, limits, and behavioral boundaries
 

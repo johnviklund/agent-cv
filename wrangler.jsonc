@@ -35,7 +35,7 @@
     },
     {
       "type": "Text",
-      "globs": ["data/meta.md", "data/overview.md", "data/experience.md", "data/projects.md", "data/skills.md", "data/personal.md", "data/interests.md", "data/faq.md"],
+      "globs": ["data/meta.md", "data/overview.md", "data/experience.md", "data/projects.md", "data/repositories.md", "data/skills.md", "data/personal.md", "data/interests.md", "data/faq.md"],
       "fallthrough": false
     },
     {

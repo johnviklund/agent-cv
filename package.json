@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "WRANGLER_LOG_PATH=.wrangler/logs WRANGLER_CACHE_DIR=.wrangler/cache wrangler dev --config wrangler.jsonc",
     "build:evidence": "node scripts/build-comparison-evidence.mjs",
+    "build:comparison-contract": "node scripts/build-comparison-contract.mjs",
     "sync:data": "node scripts/sync-public-data.mjs",
     "sync:repositories": "node scripts/sync-github-repositories.mjs && npm run sync:data",
     "projects:review": "node scripts/review-project-sources.mjs",

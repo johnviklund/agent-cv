@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "limits": {
+    "maxBodyBytes": 20000,
+    "minRoles": 1,
+    "maxRoles": 3,
+    "maxTitleCharacters": 120,
+    "maxCompanyCharacters": 120,
+    "maxDescriptionCharacters": 6000,
+    "maxCombinedRoleCharacters": 15000,
+    "maxRows": 18,
+    "maxRequirementsPerRole": 8,
+    "maxRowLabelCharacters": 120,
+    "maxRequirementCharacters": 600,
+    "maxEvidencePerCell": 2,
+    "maxQuestionsPerCell": 2,
+    "maxQuestionCharacters": 240,
+    "maxProviderResponseBytes": 262144
+  },
+  "coverageStates": [
+    "documented",
+    "transferable",
+    "not_documented",
+    "not_listed"
+  ],
+  "reasonCodes": {
+    "documented": [
+      "direct_responsibility",
+      "directly_relevant_delivery"
+    ],
+    "transferable": [
+      "related_domain_experience",
+      "related_technical_exposure",
+      "analogous_scale_or_context"
+    ]
+  },
+  "identity": {
+    "role": "role_<input position padded to two digits>",
+    "row": "row_<result position padded to two digits>",
+    "cell": "cell_<row id>_<role id>"
+  },
+  "ordering": {
+    "roles": "request input order",
+    "rows": "provider row order after complete-draft validation",
+    "cells": "request input order within every row"
+  },
+  "cardinality": {
+    "roles": "one to three",
+    "rows": "one to eighteen",
+    "cells": "exactly one per role in every row",
+    "listedRequirements": "no more than eight per role"
+  }
+}

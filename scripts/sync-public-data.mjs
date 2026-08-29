@@ -2,6 +2,7 @@ import { copyFile, mkdir } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { writeComparisonEvidence } from "./build-comparison-evidence.mjs";
+import { writeComparisonContract } from "./build-comparison-contract.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const publicFiles = ["cv.md", "projects.md", "overview.md", "repositories.md"];
@@ -20,6 +21,9 @@ await Promise.all([
   )),
 ]);
 
-const comparisonEvidence = await writeComparisonEvidence({ root });
+const [comparisonEvidence, comparisonContract] = await Promise.all([
+  writeComparisonEvidence({ root }),
+  writeComparisonContract({ repositoryRoot: root }),
+]);
 
-console.log(`Synced ${publicFiles.length} public and ${workerFiles.length} Worker Markdown resources, plus ${comparisonEvidence.items.length} comparison evidence items.`);
+console.log(`Synced ${publicFiles.length} public and ${workerFiles.length} Worker Markdown resources, ${comparisonEvidence.items.length} comparison evidence items, and comparison contract v${comparisonContract.schemaVersion}.`);

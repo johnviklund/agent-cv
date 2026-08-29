@@ -1,0 +1,256 @@
+{
+  "schemaVersion": 1,
+  "digest": "sha256:958d17ccff7559bc18c345fe0f162795e5084e0ac83d7e399f74c3eced12c5aa",
+  "items": [
+    {
+      "id": "cv.profile",
+      "title": "Profile",
+      "text": "CX AI Lead at Volvo Cars and applied-AI product leader with roughly 25 years across enterprise software, product management, AI entrepreneurship, consulting, Customer Experience, and transformation. Former Co-founder, CEO, and Head of Product of a Chalmers Ventures-backed predictive-AI startup. Strongest as a builder-leader who combines enterprise-scale direction with hands-on agent, prompt, context, tool, evaluation, and workflow engineering.",
+      "source": {
+        "path": "data/cv.md",
+        "headingPath": [
+          "Profile"
+        ]
+      }
+    },
+    {
+      "id": "experience.volvo-cx-ai-lead",
+      "title": "Volvo Cars — CX AI Lead",
+      "text": "**April 2026–present · Gothenburg, Sweden**\n\n- Owns the end-to-end AI strategy for Customer Experience.\n- Leads opportunity discovery and execution across conversational AI, agents, knowledge, automation, personalization, analytics, and insights.\n- Establishes roadmaps, metrics, responsible-AI governance, guardrails, security, quality controls, and build-versus-buy decisions.\n- Bridges business, technology, product, and operations.",
+      "source": {
+        "path": "data/cv.md",
+        "headingPath": [
+          "Experience",
+          "Volvo Cars — CX AI Lead"
+        ]
+      }
+    },
+    {
+      "id": "experience.volvo-digital-customer-care-crm-ai",
+      "title": "Volvo Cars — Digital, Customer Care, CRM, and AI leadership",
+      "text": "**November 2017–March 2026 · Sweden and United States**\n\n- Led work spanning global digital retail, fleet services, Customer Care platforms and processes, Salesforce, Five9, CRM transformation, and applied AI.\n- Served in Americas regional process leadership across the United States, Canada, and Mexico during a New York-region assignment.\n- Worked on global operational platforms and workflows in an environment handling approximately three million Customer Care interactions annually.",
+      "source": {
+        "path": "data/cv.md",
+        "headingPath": [
+          "Experience",
+          "Volvo Cars — Digital, Customer Care, CRM, and AI leadership"
+        ]
+      }
+    },
+    {
+      "id": "experience.tajitsu-founder",
+      "title": "Tajitsu Industries — Co-founder, CEO, and Head of Product",
+      "text": "**August 2014–October 2017 · Gothenburg, Sweden**\n\n- Co-founded and led a Chalmers Ventures-backed AI and predictive-analytics company.\n- Owned product strategy, definition, customer discovery, commercialization, partnerships, and company development.\n- Technology was applied to responsible-gambling signals at Svenska Spel and later hotel demand and price optimization.",
+      "source": {
+        "path": "data/cv.md",
+        "headingPath": [
+          "Experience",
+          "Tajitsu Industries — Co-founder, CEO, and Head of Product"
+        ]
+      }
+    },
+    {
+      "id": "experience.axient-cx-manager",
+      "title": "Axient — Customer Experience Manager",
+      "text": "**September 2012–May 2014 · Sydney, Australia**\n\nArchitecture, delivery, and management of enterprise Customer Experience and transformation projects.",
+      "source": {
+        "path": "data/cv.md",
+        "headingPath": [
+          "Experience",
+          "Axient — Customer Experience Manager"
+        ]
+      }
+    },
+    {
+      "id": "experience.saltside-product-manager",
+      "title": "Saltside Technologies — Lead Product Manager",
+      "text": "**January 2012–July 2012 · Gothenburg, Sweden**\n\nProduct leadership in a Kinnevik-backed online-marketplace startup.",
+      "source": {
+        "path": "data/cv.md",
+        "headingPath": [
+          "Experience",
+          "Saltside Technologies — Lead Product Manager"
+        ]
+      }
+    },
+    {
+      "id": "experience.streamserve-opentext",
+      "title": "StreamServe / OpenText — Product and technical roles",
+      "text": "**March 2001–December 2011 · Gothenburg and Boston**\n\nProgressed from Product Specialist to Product Manager and Senior Product Manager. Combined enterprise software strategy, lifecycle management, solution architecture, commercialization, pre-sales, and international customer work.",
+      "source": {
+        "path": "data/cv.md",
+        "headingPath": [
+          "Experience",
+          "StreamServe / OpenText — Product and technical roles"
+        ]
+      }
+    },
+    {
+      "id": "cv.capabilities",
+      "title": "Capabilities",
+      "text": "- Applied AI, LLM applications, AI agents, conversational AI, prompt and context engineering\n- Agent harnesses, tool integration, retrieval, structured outputs, evaluations, and human-in-the-loop systems\n- AI product strategy, enterprise adoption, governance, responsible AI, and build-versus-buy decisions\n- Product strategy and management, Customer Experience, CRM, service design, and global transformation\n- Hands-on project exposure across Python, Go, TypeScript, JavaScript, SQL, Snowflake, Microsoft Foundry, React, Next.js, Hono, SQLite, GraphQL, and Three.js",
+      "source": {
+        "path": "data/cv.md",
+        "headingPath": [
+          "Capabilities"
+        ]
+      }
+    },
+    {
+      "id": "cv.education",
+      "title": "Education",
+      "text": "**Gothenburg Institute of Technology, 1999–2001** — two-year associate-level computer science education; exact diploma wording pending verification.\n\n**Strativity Group, New York, 2013** — Customer Experience Management certification program.",
+      "source": {
+        "path": "data/cv.md",
+        "headingPath": [
+          "Education"
+        ]
+      }
+    },
+    {
+      "id": "cv.languages-location",
+      "title": "Languages and location",
+      "text": "Native Swedish and fluent professional English. Based near Gothenburg, Sweden. Open to relocation, travel, remote, and hybrid roles in Europe or the United States. Previous employer-sponsored US work history; future authorization would depend on employer and role.\n\n---\n\nData last updated: 15 August 2026. Ask the conversational CV at the site root or fetch machine-readable resources from `/AGENTS.md` and `/llms.txt`.",
+      "source": {
+        "path": "data/cv.md",
+        "headingPath": [
+          "Languages and location"
+        ]
+      }
+    },
+    {
+      "id": "overview.career-narrative",
+      "title": "Career narrative",
+      "text": "Software and product builder → international product leader → AI startup founder → enterprise digital and platform leader → applied enterprise AI leader → CX AI Lead.",
+      "source": {
+        "path": "data/overview.md",
+        "headingPath": [
+          "Career narrative"
+        ]
+      }
+    },
+    {
+      "id": "overview.roles-of-interest",
+      "title": "Roles of interest",
+      "text": "- Applied AI and AI product\n- AI engineering leadership\n- AI agents and agentic systems\n- Enterprise AI and automation\n- AI platform and enablement\n- Technical product leadership\n- Customer Experience AI and AI transformation\n\nThe title matters less than the opportunity to combine product, AI, architecture, experimentation, agent engineering, and execution.",
+      "source": {
+        "path": "data/overview.md",
+        "headingPath": [
+          "Roles of interest"
+        ]
+      }
+    },
+    {
+      "id": "project.product-studio",
+      "title": "Product Studio — governed multi-agent execution loop",
+      "text": "**Status:** Active local-first personal system with a public repository; not commercially launched.\n\nA local-first control plane for running AI coding-agent work across repositories as a governed lifecycle: idea, brainstorm, spec, plan, execute, review, test, ship, and learn.\n\nThe implemented baseline is a Next.js and TypeScript application where versioned `.founder/` artifacts are durable workflow truth, a deterministic controller owns transitions and evidence checks, a connected Agent Client Protocol runtime performs bounded attempts, and SQLite remains a rebuildable projection. Agents cannot approve their own work; reviewer access stays source-read-only. The public architecture document clearly separates this working baseline from later service, policy, and orchestration options.\n\n**Stack:** Next.js, TypeScript, Tailwind, shadcn/ui, better-sqlite3, and an Agent Client Protocol adapter.\n\n**Verified scale on 15 August 2026:** 1,127 tracked files and 44 test files in the complete public Git tree.\n\n**Public repository:** [github.com/johnviklund/product-studio](https://github.com/johnviklund/product-studio)",
+      "source": {
+        "path": "data/projects.md",
+        "headingPath": [
+          "Product Studio — governed multi-agent execution loop"
+        ]
+      },
+      "supportingSources": [
+        {
+          "trust": "untrusted-secondary",
+          "url": "https://github.com/johnviklund/product-studio",
+          "source": {
+            "path": "data/repositories.md",
+            "headingPath": [
+              "Product Studio"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "project.cx-intelligence",
+      "title": "CX Intelligence — governed AI topic classification",
+      "text": "**Status:** Ongoing proof of concept with selected Volvo Cars markets; not production.\n\nConverts fragmented support contacts and survey signals into evidence-backed Customer Experience Intelligence. The current architecture uses two-stage GPT-5 topic induction and classification, governed Snowflake procedures, a human review queue, first-class coverage and confidence signals, Microsoft Foundry guidance agents, and a React/Vite validation interface.\n\nThe design separates what probabilistic AI may suggest from what governed data procedures are allowed to promote.\n\n**Verified validation milestone:** 15 candidate topics reviewed; 74 agree and 26 disagree; eight pass and six escalate; zero promotion mutations; approximately $11 of AI-service cost; usefulness verdict closed Yes on 11 August 2026; specificity, coverage, and distinctness each scored 3/3.",
+      "source": {
+        "path": "data/projects.md",
+        "headingPath": [
+          "CX Intelligence — governed AI topic classification"
+        ]
+      }
+    },
+    {
+      "id": "project.workflow",
+      "title": "workflow — personal agent methodology",
+      "text": "**Status:** Active, maintained, and used daily.\n\nA file-backed instruction system for a solo-development loop: brainstorm, spec, plan, execute, review, and learn. Work is organized around vendor-neutral seats, cross-vendor review is an invariant, and model-routing changes are evaluated before adoption rather than silently self-modifying.\n\n**Scale:** 18 skill Markdown files and five top-level skills as of July 2026.",
+      "source": {
+        "path": "data/projects.md",
+        "headingPath": [
+          "workflow — personal agent methodology"
+        ]
+      }
+    },
+    {
+      "id": "project.cx-newsletter",
+      "title": "CX Newsletter — AI-scored research curation",
+      "text": "**Status:** Active and in production use at Volvo Cars.\n\nA resumable Python pipeline that scans external sources, scores relevance to Customer Experience and Customer Care, and produces daily or weekly newsletter drafts plus a wiki-backed research base.\n\n**Architecture:** Typer CLI; scan, import, score, wiki, and draft stages; GitHub Copilot CLI; a Claude Sonnet-class model; feedparser; httpx; trafilatura; BeautifulSoup; TinyDB; Pydantic; manifest tracking and partial-failure recovery.\n\n**Scale:** 236 curated sources and approximately 1,867 wiki knowledge files.",
+      "source": {
+        "path": "data/projects.md",
+        "headingPath": [
+          "CX Newsletter — AI-scored research curation"
+        ]
+      }
+    },
+    {
+      "id": "project.volvo-evidence-cli",
+      "title": "Volvo Evidence CLI — citation-first retrieval",
+      "text": "**Status:** Shipped v1; private/internal Volvo Cars work.\n\nA Go CLI that retrieves market-scoped evidence from official sources and returns deterministic citations instead of generated answers. It uses Cobra, SQLite/FTS5, GraphQL, locale normalization, retries, rate limiting, and coverage diagnostics.\n\n**Scale:** approximately 44 Go source files; v1 coverage diagnostics shipped 10 July 2026.",
+      "source": {
+        "path": "data/projects.md",
+        "headingPath": [
+          "Volvo Evidence CLI — citation-first retrieval"
+        ]
+      }
+    },
+    {
+      "id": "project.agentoria",
+      "title": "Agentoria — a living world for agent activity",
+      "text": "**Status:** Active personal side project; MVP in progress.\n\nA visual system that makes multi-agent task activity legible as a growing hex-tile world. The stack includes a pnpm monorepo, Three.js WebGPU/TSL, deterministic procedural generation, Wave Function Collapse, Hono, SQLite, Drizzle, REST/WebSocket communication, and a zero-dependency TypeScript SDK.\n\n**Scale:** approximately 198 tracked files and approximately 21,600 lines of source.",
+      "source": {
+        "path": "data/projects.md",
+        "headingPath": [
+          "Agentoria — a living world for agent activity"
+        ]
+      }
+    },
+    {
+      "id": "project.agent-cv",
+      "title": "Agent CV — this site",
+      "text": "**Status:** Public, MIT-licensed, deployed, and actively maintained.\n\nThe résumé itself is an AI system: reviewed Markdown evidence is bundled into a Cloudflare Worker prompt, visitor transcripts stay untrusted, and upstream OpenAI events are normalized into a small public SSE contract. Human pages, raw Markdown, agent discovery files, structured metadata, expiring role links, bounded public-repository snapshots, and a private 90-day conversation archive all share the same grounded source boundary. The medium demonstrates the claim that John builds applied AI systems while remaining useful when the model API is unavailable.\n\n**Public repository:** [github.com/johnviklund/agent-cv](https://github.com/johnviklund/agent-cv)",
+      "source": {
+        "path": "data/projects.md",
+        "headingPath": [
+          "Agent CV — this site"
+        ]
+      },
+      "supportingSources": [
+        {
+          "trust": "untrusted-secondary",
+          "url": "https://github.com/johnviklund/agent-cv",
+          "source": {
+            "path": "data/repositories.md",
+            "headingPath": [
+              "Agent CV"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "project.volvo-cars-support",
+      "title": "Volvo Cars Support — owner-support evidence retrieval",
+      "text": "**Status:** Personal prototype.\n\nAn OpenClaw skill that searches public Volvo owner manuals, knowledge articles, PDFs, and support content through Volvo's GraphQL API. It demonstrates a lightweight evidence-retrieval pattern: model- and market-scoped search, quoted matching passages, and links back to source material rather than unsupported generation.\n\n**Stack:** Shell, GraphQL, `curl`, `jq`, and Markdown skill instructions.",
+      "source": {
+        "path": "data/projects.md",
+        "headingPath": [
+          "Volvo Cars Support — owner-support evidence retrieval"
+        ]
+      }
+    }
+  ]
+}

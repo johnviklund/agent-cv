@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "items": [
+    {
+      "id": "cv.profile",
+      "source": { "path": "data/cv.md", "headingPath": ["Profile"] }
+    },
+    {
+      "id": "experience.volvo-cx-ai-lead",
+      "source": { "path": "data/cv.md", "headingPath": ["Experience", "Volvo Cars — CX AI Lead"] }
+    },
+    {
+      "id": "experience.volvo-digital-customer-care-crm-ai",
+      "source": { "path": "data/cv.md", "headingPath": ["Experience", "Volvo Cars — Digital, Customer Care, CRM, and AI leadership"] }
+    },
+    {
+      "id": "experience.tajitsu-founder",
+      "source": { "path": "data/cv.md", "headingPath": ["Experience", "Tajitsu Industries — Co-founder, CEO, and Head of Product"] }
+    },
+    {
+      "id": "experience.axient-cx-manager",
+      "source": { "path": "data/cv.md", "headingPath": ["Experience", "Axient — Customer Experience Manager"] }
+    },
+    {
+      "id": "experience.saltside-product-manager",
+      "source": { "path": "data/cv.md", "headingPath": ["Experience", "Saltside Technologies — Lead Product Manager"] }
+    },
+    {
+      "id": "experience.streamserve-opentext",
+      "source": { "path": "data/cv.md", "headingPath": ["Experience", "StreamServe / OpenText — Product and technical roles"] }
+    },
+    {
+      "id": "cv.capabilities",
+      "source": { "path": "data/cv.md", "headingPath": ["Capabilities"] }
+    },
+    {
+      "id": "cv.education",
+      "source": { "path": "data/cv.md", "headingPath": ["Education"] }
+    },
+    {
+      "id": "cv.languages-location",
+      "source": { "path": "data/cv.md", "headingPath": ["Languages and location"] }
+    },
+    {
+      "id": "overview.career-narrative",
+      "source": { "path": "data/overview.md", "headingPath": ["Career narrative"] }
+    },
+    {
+      "id": "overview.roles-of-interest",
+      "source": { "path": "data/overview.md", "headingPath": ["Roles of interest"] }
+    },
+    {
+      "id": "project.product-studio",
+      "source": { "path": "data/projects.md", "headingPath": ["Product Studio — governed multi-agent execution loop"] },
+      "supportingSources": [
+        { "path": "data/repositories.md", "headingPath": ["Product Studio"] }
+      ]
+    },
+    {
+      "id": "project.cx-intelligence",
+      "source": { "path": "data/projects.md", "headingPath": ["CX Intelligence — governed AI topic classification"] }
+    },
+    {
+      "id": "project.workflow",
+      "source": { "path": "data/projects.md", "headingPath": ["workflow — personal agent methodology"] }
+    },
+    {
+      "id": "project.cx-newsletter",
+      "source": { "path": "data/projects.md", "headingPath": ["CX Newsletter — AI-scored research curation"] }
+    },
+    {
+      "id": "project.volvo-evidence-cli",
+      "source": { "path": "data/projects.md", "headingPath": ["Volvo Evidence CLI — citation-first retrieval"] }
+    },
+    {
+      "id": "project.agentoria",
+      "source": { "path": "data/projects.md", "headingPath": ["Agentoria — a living world for agent activity"] }
+    },
+    {
+      "id": "project.agent-cv",
+      "source": { "path": "data/projects.md", "headingPath": ["Agent CV — this site"] },
+      "supportingSources": [
+        { "path": "data/repositories.md", "headingPath": ["Agent CV"] }
+      ]
+    },
+    {
+      "id": "project.volvo-cars-support",
+      "source": { "path": "data/projects.md", "headingPath": ["Volvo Cars Support — owner-support evidence retrieval"] }
+    }
+  ]
+}

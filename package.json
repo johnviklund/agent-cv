@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "WRANGLER_LOG_PATH=.wrangler/logs WRANGLER_CACHE_DIR=.wrangler/cache wrangler dev --config wrangler.jsonc",
+    "build:evidence": "node scripts/build-comparison-evidence.mjs",
     "sync:data": "node scripts/sync-public-data.mjs",
     "sync:repositories": "node scripts/sync-github-repositories.mjs && npm run sync:data",
     "projects:review": "node scripts/review-project-sources.mjs",
@@ -15,7 +16,7 @@
     "test": "node --test",
     "check:static": "node scripts/check-static.mjs",
     "check:worker-package": "node scripts/check-worker-package.mjs",
-    "check": "npm run sync:data && node --check src/index.js && node --check src/applications.js && node --check src/archive.js && node --check src/chat-core.js && node --check src/openai-stream.js && node --check src/worker.js && node --check public/admin.js && node --check public/app.js && node --check public/application.js && node --check public/chat-state.js && node --check public/conversation-review.js && node --check public/markdown.js && node --check public/stream.js && node --check scripts/admin-origin.mjs && node --check scripts/admin-secret-file.mjs && node --check scripts/bootstrap-example-data.mjs && node --check scripts/configure-admin-secret.mjs && node --check scripts/export-conversations.mjs && node --check scripts/project-review.mjs && node --check scripts/repository-grounding.mjs && node --check scripts/review-conversations.mjs && node --check scripts/review-project-sources.mjs && node --check scripts/sync-github-repositories.mjs && npm run check:worker-package && npm test && npm run check:static",
+    "check": "npm run sync:data && node --check src/index.js && node --check src/applications.js && node --check src/archive.js && node --check src/chat-core.js && node --check src/openai-stream.js && node --check src/worker.js && node --check public/admin.js && node --check public/app.js && node --check public/application.js && node --check public/chat-state.js && node --check public/conversation-review.js && node --check public/markdown.js && node --check public/stream.js && node --check scripts/admin-origin.mjs && node --check scripts/admin-secret-file.mjs && node --check scripts/bootstrap-example-data.mjs && node --check scripts/build-comparison-evidence.mjs && node --check scripts/configure-admin-secret.mjs && node --check scripts/export-conversations.mjs && node --check scripts/project-review.mjs && node --check scripts/repository-grounding.mjs && node --check scripts/review-conversations.mjs && node --check scripts/review-project-sources.mjs && node --check scripts/sync-github-repositories.mjs && npm run check:worker-package && npm test && npm run check:static",
     "build": "npm run check && node scripts/prepare-worker-outdir.mjs && WRANGLER_LOG_PATH=.wrangler/logs WRANGLER_CACHE_DIR=.wrangler/cache wrangler deploy --config wrangler.jsonc --dry-run --outdir .wrangler-dist && npm run check:worker-package -- --outdir .wrangler-dist",
     "deploy": "npm run sync:data && WRANGLER_LOG_PATH=.wrangler/logs WRANGLER_CACHE_DIR=.wrangler/cache wrangler deploy --config wrangler.jsonc"
   },

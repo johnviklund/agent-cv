@@ -691,6 +691,7 @@ h1, h2, h3, p { margin-top: 0; }
 .comparison-matrix tbody th,
 .comparison-matrix tbody td { height: 1px; }
 .comparison-matrix thead th { border-top-color: var(--rule-strong); }
+.comparison-matrix thead th:not(.requirement-column) { height: 1px; }
 .comparison-matrix th:first-child,
 .comparison-matrix td:first-child { border-left: 0; }
 .comparison-matrix thead th:not(.requirement-column) { background: rgba(250,247,240,.52); }
@@ -698,8 +699,14 @@ h1, h2, h3, p { margin-top: 0; }
 .comparison-matrix thead span { display: block; }
 .comparison-matrix thead strong { margin: 5px 0 2px; font-family: var(--serif); font-size: 23px; font-weight: 400; line-height: 1.1; }
 .matrix-role-company { color: var(--muted); font-size: 12px; }
+.matrix-role-heading {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 100%;
+}
 .role-outcome-ledger {
-  margin-top: 18px;
+  margin-top: auto;
   padding-top: 11px;
   border-top: 1px solid var(--rule-strong);
 }

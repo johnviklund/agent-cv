@@ -47,9 +47,10 @@ export class ComparisonInputError extends Error {
 }
 
 export class ComparisonOutputError extends Error {
-  constructor(message = "The comparison response was invalid.") {
-    super(message);
+  constructor(reason = "provider_response_invalid") {
+    super("The comparison response was invalid.");
     this.name = "ComparisonOutputError";
+    this.reason = reason;
   }
 }
 
@@ -116,23 +117,23 @@ export function comparisonStructuredOutputFormat() {
 
 export function extractStructuredComparison(response) {
   if (!response || typeof response !== "object" || Array.isArray(response) || response.error || response.incomplete_details) {
-    throw new ComparisonOutputError();
+    throw new ComparisonOutputError(response?.incomplete_details ? "provider_response_incomplete" : "provider_response_shape");
   }
   const parts = [];
   if (Array.isArray(response.output)) {
     for (const item of response.output) {
       if (!item || item.type !== "message" || !Array.isArray(item.content)) continue;
       for (const content of item.content) {
-        if (content?.type === "refusal") throw new ComparisonOutputError();
+        if (content?.type === "refusal") throw new ComparisonOutputError("provider_refusal");
         if (content?.type === "output_text" && typeof content.text === "string") parts.push(content.text);
       }
     }
   }
-  if (parts.length !== 1) throw new ComparisonOutputError();
+  if (parts.length !== 1) throw new ComparisonOutputError("provider_output_part_count");
   try {
     return JSON.parse(parts[0]);
   } catch {
-    throw new ComparisonOutputError();
+    throw new ComparisonOutputError("provider_output_json");
   }
 }
 
@@ -154,8 +155,25 @@ export function canonicalizeComparisonDraft(draft, roles, catalog = evidenceCata
     return result;
   } catch (error) {
     if (error instanceof ComparisonOutputError) throw error;
-    throw new ComparisonOutputError();
+    throw new ComparisonOutputError(classifyDraftFailure(error));
   }
+}
+
+function classifyDraftFailure(error) {
+  const message = error instanceof Error ? error.message : "";
+  if (/protected-trait/i.test(message)) return "draft_protected_trait";
+  if (/prohibited conclusion/i.test(message)) return "draft_hiring_conclusion";
+  if (/evidence ID is unknown or duplicated/i.test(message)) return "draft_evidence_id";
+  if (/evidence does not match/i.test(message)) return "draft_evidence_coverage";
+  if (/relevance reason does not match/i.test(message)) return "draft_reason_code";
+  if (/question kind/i.test(message)) return "draft_question_kind";
+  if (/cells must preserve role input order/i.test(message)) return "draft_role_order";
+  if (/requires exactly one cell per role/i.test(message)) return "draft_cell_count";
+  if (/requirement does not match/i.test(message)) return "draft_requirement_coverage";
+  if (/too many listed requirements/i.test(message)) return "draft_requirement_count";
+  if (/unsafe or out of bounds/i.test(message)) return "draft_generated_text";
+  if (/unsupported fields|requires .*\./i.test(message)) return "draft_shape";
+  return "draft_validation";
 }
 
 function normalizeDraftRow(row, rowIndex, roles, evidenceIds) {

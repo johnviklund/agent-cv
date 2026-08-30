@@ -74,10 +74,7 @@ export async function handleCompare(
   if (budget === "exhausted") return comparisonError("The monthly comparison limit has been reached.", 503, {}, access.origin);
 
   const model = env.COMPARISON_MODEL || DEFAULT_COMPARISON_MODEL;
-  let upstream;
-  let providerResponseText;
-  try {
-    ({ response: upstream, bodyText: providerResponseText } = await fetchComparisonProvider(fetchImpl, "https://api.openai.com/v1/responses", {
+  const providerRequest = {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -94,37 +91,55 @@ export async function handleCompare(
         background: false,
         store: false,
       }),
-    }, request.signal, openAIConnectTimeoutMs));
-  } catch (error) {
-    if (error?.comparisonAbort === "client") return comparisonError("The comparison request was cancelled.", 499, {}, access.origin);
-    if (error?.comparisonAbort === "timeout") return comparisonError("The comparison service timed out. Please try again.", 504, {}, access.origin);
-    console.error("Comparison provider request failed");
-    return comparisonError("The comparison service is temporarily unavailable.", 502, {}, access.origin);
+    };
+
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    let upstream;
+    let providerResponseText;
+    try {
+      ({ response: upstream, bodyText: providerResponseText } = await fetchComparisonProvider(
+        fetchImpl,
+        "https://api.openai.com/v1/responses",
+        providerRequest,
+        request.signal,
+        openAIConnectTimeoutMs,
+      ));
+    } catch (error) {
+      if (error?.comparisonAbort === "client") return comparisonError("The comparison request was cancelled.", 499, {}, access.origin);
+      if (error?.comparisonAbort === "timeout") return comparisonError("The comparison service timed out. Please try again.", 504, {}, access.origin);
+      console.error("Comparison provider request failed");
+      return comparisonError("The comparison service is temporarily unavailable.", 502, {}, access.origin);
+    }
+
+    if (!upstream.ok) {
+      console.error("Comparison provider request failed", upstream.status);
+      return comparisonError(
+        upstream.status === 429 ? "The comparison service is busy. Please try again shortly." : "The comparison service is temporarily unavailable.",
+        upstream.status === 429 ? 429 : 502,
+        upstream.status === 429 ? { "retry-after": "60" } : {},
+        access.origin,
+      );
+    }
+
+    try {
+      const providerResponse = JSON.parse(providerResponseText);
+      const draft = extractStructuredComparison(providerResponse);
+      const result = canonicalizeComparisonDraft(draft, input.roles, evidenceCatalog);
+      return noStoreJson(result, 200, Object.fromEntries(comparisonCorsHeaders(access.origin, {
+          "x-agent-model": model,
+          "x-comparison-catalog-digest": evidenceCatalog.digest,
+          "access-control-expose-headers": "x-agent-model, x-comparison-catalog-digest",
+        })));
+    } catch (error) {
+      console.error(
+        "Comparison provider returned an invalid structured result",
+        error?.reason || "unknown",
+        attempt === 0 ? "retrying" : "failed",
+      );
+    }
   }
 
-  if (!upstream.ok) {
-    console.error("Comparison provider request failed", upstream.status);
-    return comparisonError(
-      upstream.status === 429 ? "The comparison service is busy. Please try again shortly." : "The comparison service is temporarily unavailable.",
-      upstream.status === 429 ? 429 : 502,
-      upstream.status === 429 ? { "retry-after": "60" } : {},
-      access.origin,
-    );
-  }
-
-  try {
-    const providerResponse = JSON.parse(providerResponseText);
-    const draft = extractStructuredComparison(providerResponse);
-    const result = canonicalizeComparisonDraft(draft, input.roles, evidenceCatalog);
-    return noStoreJson(result, 200, Object.fromEntries(comparisonCorsHeaders(access.origin, {
-        "x-agent-model": model,
-        "x-comparison-catalog-digest": evidenceCatalog.digest,
-        "access-control-expose-headers": "x-agent-model, x-comparison-catalog-digest",
-      })));
-  } catch {
-    console.error("Comparison provider returned an invalid structured result");
-    return comparisonError("The comparison service returned an invalid result. Please try again.", 502, {}, access.origin);
-  }
+  return comparisonError("The comparison service returned an invalid result. Please try again.", 502, {}, access.origin);
 }
 
 export async function reserveComparisonBudget(env, now = new Date()) {

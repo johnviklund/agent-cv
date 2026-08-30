@@ -6,7 +6,15 @@ import { createWorkspaceController } from "../public/workspace-controller.js";
 
 const DIGEST = `sha256:${"a".repeat(64)}`;
 const OTHER_DIGEST = `sha256:${"b".repeat(64)}`;
-const CATALOG = { digest: DIGEST, items: [{ id: "cv.profile" }] };
+const CATALOG = {
+  digest: DIGEST,
+  items: [{
+    id: "cv.profile",
+    title: "Profile",
+    text: "Grounded public evidence.",
+    source: { path: "data/cv.md", headingPath: ["Profile"] },
+  }],
+};
 const ROLES = [{ title: "AI Product Lead", company: "Example", description: "Lead applied AI products." }];
 
 test("a successful comparison validates before replacing the prior result", async () => {
@@ -159,6 +167,28 @@ test("manual and agent callers share one path and produce identical state", asyn
   assert.equal(agent.getState().result.rows[0].cells[0].id, "cell_row_01_role_01");
 });
 
+test("the view can resolve only validated public evidence metadata", async () => {
+  const catalog = {
+    digest: DIGEST,
+    items: [{
+      id: "cv.profile",
+      title: "Profile",
+      text: "Grounded public evidence.",
+      source: { path: "data/cv.md", headingPath: ["Profile"] },
+      ignored: "not exposed",
+    }],
+  };
+  const controller = await initializedController({ loadCatalog: async () => catalog });
+
+  assert.deepEqual(controller.getEvidenceItems(), [{
+    id: "cv.profile",
+    title: "Profile",
+    text: "Grounded public evidence.",
+    source: { path: "data/cv.md", headingPath: ["Profile"] },
+  }]);
+  assert.notEqual(controller.getEvidenceItems(), controller.getEvidenceItems());
+});
+
 test("coverage gaps remain distinct and questions coexist with every state", async () => {
   const result = comparisonResult();
   result.rows.push(gapRow("row_02", 2, "not_documented", "Which project demonstrates this?"));
@@ -205,12 +235,14 @@ test("workspace mode changes cancel comparison work while chat work blocks navig
 test("external hash navigation restores the active hash when chat is streaming", () => {
   let hash = "";
   let listener;
+  const blocked = [];
   const workspace = createWorkspaceController({
     getHash: () => hash,
     replaceHash: (value) => { hash = value; },
     subscribeHashChange: (callback) => { listener = callback; return () => {}; },
     comparison: { isBusy: () => false, cancelComparison() {} },
     chat: { isBusy: () => true },
+    onBlocked: (reason, mode) => blocked.push([reason, mode]),
   });
   workspace.start();
 
@@ -218,6 +250,27 @@ test("external hash navigation restores the active hash when chat is streaming",
   listener();
   assert.equal(workspace.getMode(), "home");
   assert.equal(hash, "");
+  assert.deepEqual(blocked, [["chat_busy", "home"]]);
+});
+
+test("invalid hashes show home while direct mode changes update focus and history", () => {
+  let hash = "#unknown";
+  const focused = [];
+  const pushed = [];
+  const workspace = createWorkspaceController({
+    getHash: () => hash,
+    replaceHash: (value) => { hash = value; },
+    setHash: (value) => { hash = value; pushed.push(value); },
+    comparison: { isBusy: () => false, cancelComparison() {} },
+    chat: { isBusy: () => false },
+    focusMode: (mode) => focused.push(mode),
+  });
+
+  assert.equal(workspace.start(), "home");
+  assert.equal(workspace.requestMode("compare").status, "changed");
+  assert.equal(hash, "#compare");
+  assert.deepEqual(pushed, ["#compare"]);
+  assert.deepEqual(focused, ["home", "compare"]);
 });
 
 async function readyController(overrides = {}) {

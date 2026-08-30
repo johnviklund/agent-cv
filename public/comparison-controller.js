@@ -235,6 +235,10 @@ export function createComparisonController({
     return runtime.status === "analyzing";
   }
 
+  function getEvidenceItems() {
+    return cloneJson(catalog?.items || []);
+  }
+
   function invalidateRequest() {
     runtime.generation += 1;
     runtime.abortController?.abort();
@@ -274,6 +278,7 @@ export function createComparisonController({
   return {
     initialize,
     getState,
+    getEvidenceItems,
     isBusy,
     setRoles,
     submitComparison,
@@ -305,14 +310,40 @@ function validateCatalog(value) {
   if (typeof value.digest !== "string" || !CATALOG_DIGEST_PATTERN.test(value.digest)) throw new TypeError("Comparison catalog digest is invalid.");
   if (!Array.isArray(value.items)) throw new TypeError("Comparison catalog items are invalid.");
   const evidenceIds = new Set();
+  const items = [];
   for (const item of value.items) {
     if (!item || typeof item !== "object" || Array.isArray(item) || typeof item.id !== "string" || !EVIDENCE_ID_PATTERN.test(item.id)) {
       throw new TypeError("Comparison catalog evidence ID is invalid.");
     }
     if (evidenceIds.has(item.id)) throw new TypeError("Comparison catalog evidence IDs must be unique.");
     evidenceIds.add(item.id);
+    if (typeof item.title !== "string" || !item.title.trim() || item.title.length > 240) {
+      throw new TypeError("Comparison catalog evidence title is invalid.");
+    }
+    if (typeof item.text !== "string" || !item.text.trim() || item.text.length > 50_000) {
+      throw new TypeError("Comparison catalog evidence text is invalid.");
+    }
+    if (
+      !item.source
+      || typeof item.source !== "object"
+      || Array.isArray(item.source)
+      || !["data/cv.md", "data/overview.md", "data/projects.md"].includes(item.source.path)
+      || !Array.isArray(item.source.headingPath)
+      || item.source.headingPath.some((part) => typeof part !== "string" || !part.trim() || part.length > 240)
+    ) {
+      throw new TypeError("Comparison catalog evidence source is invalid.");
+    }
+    items.push({
+      id: item.id,
+      title: item.title.trim(),
+      text: item.text.trim(),
+      source: {
+        path: item.source.path,
+        headingPath: item.source.headingPath.map((part) => part.trim()),
+      },
+    });
   }
-  return { digest: value.digest, evidenceIds };
+  return { digest: value.digest, evidenceIds, items };
 }
 
 function assertResultRolesMatch(result, requestRoles) {

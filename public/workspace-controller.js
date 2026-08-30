@@ -3,6 +3,7 @@ const WORKSPACE_MODES = new Set(["home", "compare"]);
 export function createWorkspaceController({
   getHash = () => globalThis.location?.hash || "",
   replaceHash = (hash) => globalThis.history?.replaceState?.(null, "", hash || `${globalThis.location?.pathname || "/"}${globalThis.location?.search || ""}`),
+  setHash = replaceHash,
   subscribeHashChange = (listener) => {
     globalThis.addEventListener?.("hashchange", listener);
     return () => globalThis.removeEventListener?.("hashchange", listener);
@@ -11,6 +12,7 @@ export function createWorkspaceController({
   chat,
   onModeChange = () => {},
   focusMode = () => {},
+  onBlocked = () => {},
 } = {}) {
   if (!comparison || typeof comparison.cancelComparison !== "function" || typeof comparison.isBusy !== "function") {
     throw new TypeError("A comparison controller is required.");
@@ -39,7 +41,10 @@ export function createWorkspaceController({
       focusMode(mode);
       return { status: "unchanged", mode };
     }
-    if (chat.isBusy()) return { status: "blocked", reason: "chat_busy", mode };
+    if (chat.isBusy()) {
+      onBlocked("chat_busy", mode);
+      return { status: "blocked", reason: "chat_busy", mode };
+    }
     applyMode(nextMode, true);
     return { status: "changed", mode };
   }
@@ -49,6 +54,7 @@ export function createWorkspaceController({
     if (requestedMode === mode) return;
     if (chat.isBusy()) {
       replaceHash(hashForMode(mode));
+      onBlocked("chat_busy", mode);
       return;
     }
     applyMode(requestedMode, false);
@@ -59,7 +65,7 @@ export function createWorkspaceController({
       comparison.cancelComparison();
     }
     mode = nextMode;
-    if (updateHash) replaceHash(hashForMode(mode));
+    if (updateHash) setHash(hashForMode(mode));
     onModeChange(mode);
     focusMode(mode);
   }

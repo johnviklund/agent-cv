@@ -66,7 +66,7 @@
 
   <main id="main" class="home" data-home>
     <div class="home-stage">
-      <section class="hero" aria-labelledby="home-title">
+      <section class="hero" data-workspace-home aria-labelledby="home-title">
         <div class="hero-intro">
           <p class="eyebrow">CX AI LEAD · APPLIED-AI BUILDER</p>
           <h1 id="home-title">Ask about my work.</h1>
@@ -86,8 +86,10 @@
             <li><a href="/experience/" data-prompt="Summarize John's experience in three sentences."><span><span class="starter-number">01</span>Summarize John's experience</span><span aria-hidden="true">→</span></a></li>
             <li><a href="/projects/" data-prompt="What AI and automation projects has John built?"><span><span class="starter-number">02</span>Explore AI projects</span><span aria-hidden="true">→</span></a></li>
             <li><a href="/about/" data-prompt="What kind of roles and working environments is John looking for?"><span><span class="starter-number">03</span>Roles and working style</span><span aria-hidden="true">→</span></a></li>
-            <li><a href="/cv/"><span><span class="starter-number">04</span>Show the full CV</span><span aria-hidden="true">→</span></a></li>
+            <li><a href="/#compare" data-workspace-mode="compare" data-compare-entry><span><span class="starter-number">04</span>Compare up to three roles</span><span aria-hidden="true">→</span></a></li>
+            <li><a href="/cv/"><span><span class="starter-number">05</span>Show the full CV</span><span aria-hidden="true">→</span></a></li>
           </ol>
+          <p class="workspace-message" data-workspace-message role="status" hidden></p>
 
           <noscript>
             <section class="noscript-summary">
@@ -118,6 +120,63 @@
             <button type="button" data-followup="What scale has John worked at?">What scale has John worked at?</button>
             <button type="button" data-followup="Show me the technical details of John's recent AI work.">Show technical details</button>
           </div>
+        </section>
+      </section>
+
+      <section class="comparison-workspace" data-comparison-workspace hidden aria-labelledby="comparison-title">
+        <header class="comparison-header">
+          <div>
+            <p class="eyebrow">ROLE COMPARISON · PUBLIC EVIDENCE ONLY</p>
+            <h1 id="comparison-title" tabindex="-1">Read the roles side by side.</h1>
+            <p class="comparison-deck">Paste up to three openings. The dossier aligns their requirements with what John's published CV and project record can support—without scores, rankings or hiring recommendations.</p>
+          </div>
+          <a class="comparison-back" href="/" data-comparison-back>← Back to conversation</a>
+        </header>
+
+        <form class="comparison-form" data-comparison-form novalidate>
+          <div class="comparison-form-heading">
+            <div>
+              <p class="eyebrow">THE BRIEFS</p>
+              <h2>Roles to examine</h2>
+            </div>
+            <span data-role-count>2 of 3 roles</span>
+          </div>
+          <div class="role-editor-list" data-role-editors></div>
+          <div class="role-editor-actions">
+            <button class="secondary-action" data-add-role type="button">+ Add another role</button>
+          </div>
+          <p class="comparison-privacy-note"><strong>Before you compare:</strong> role text is sent to OpenAI for analysis. This site keeps it only in this browser session, but it may remain in your provider or browser-agent account history.</p>
+          <p class="comparison-form-error" data-comparison-form-error role="alert"></p>
+          <div class="comparison-submit-row">
+            <button class="primary-action" data-compare-submit type="submit">Compare the evidence</button>
+            <button class="secondary-action" data-compare-cancel type="button" hidden>Cancel analysis</button>
+            <button class="secondary-action" data-compare-clear type="button" hidden>Clear comparison</button>
+            <span>Requirements stay in source order. The comparison never decides which role is “best.”</span>
+          </div>
+        </form>
+
+        <p class="comparison-storage-note" data-comparison-storage-note role="status" hidden>This browser blocked session storage. You can continue, but the role drafts will disappear when you leave this page.</p>
+        <div class="comparison-live sr-only" data-comparison-status aria-live="polite" aria-atomic="true"></div>
+        <section class="comparison-error" data-comparison-error tabindex="-1" hidden aria-labelledby="comparison-error-title">
+          <p class="eyebrow">COMPARISON PAUSED</p>
+          <h2 id="comparison-error-title">The previous view is still safe.</h2>
+          <p data-comparison-error-copy></p>
+          <div class="comparison-error-actions">
+            <button class="secondary-action" data-comparison-retry type="button">Try again</button>
+            <a href="/cv/">Read the full CV instead →</a>
+          </div>
+        </section>
+
+        <section class="comparison-result" data-comparison-result hidden aria-labelledby="comparison-caption">
+          <header class="comparison-result-heading">
+            <div>
+              <p class="eyebrow">THE EVIDENCE LEDGER</p>
+              <h2 id="comparison-caption" data-comparison-caption tabindex="-1">One record, several role lenses.</h2>
+            </div>
+            <p data-comparison-result-notice></p>
+          </header>
+          <div class="comparison-table-scroll" data-comparison-table tabindex="0" aria-label="Scrollable role comparison table"></div>
+          <p class="comparison-method-note"><strong>How to read this:</strong> “Not documented yet” means the public record is silent—not that John lacks the capability. Open a cell to inspect the original role wording, evidence and questions worth asking.</p>
         </section>
       </section>
     </div>

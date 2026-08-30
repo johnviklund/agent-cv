@@ -3,6 +3,7 @@ import { renderMarkdown } from "./markdown.js";
 import { createLink } from "./dom.js";
 import { createComparisonController } from "./comparison-controller.js";
 import { createWorkspaceController } from "./workspace-controller.js";
+import { createComparisonView } from "./comparison-view.js";
 import {
   applicationSlugFromPath,
   canAddUserTurn,
@@ -26,14 +27,31 @@ const homeInput = document.querySelector("[data-initial-input]");
 const conversation = document.querySelector("[data-conversation]");
 const messageList = document.querySelector("[data-message-list]");
 const followups = document.querySelector("[data-followups]");
+const homeWorkspace = document.querySelector("[data-workspace-home]");
+const comparisonWorkspace = document.querySelector("[data-comparison-workspace]");
+const workspaceMessage = document.querySelector("[data-workspace-message]");
+let comparisonView = null;
+let workspaceFocusEnabled = window.location.hash.toLowerCase() === "#compare";
 
 export const comparisonController = home
-  ? createComparisonController({ storage: window.sessionStorage, fetchImpl: window.fetch.bind(window) })
+  ? createComparisonController({
+    storage: window.sessionStorage,
+    fetchImpl: window.fetch.bind(window),
+    onChange: (comparisonState) => comparisonView?.render(comparisonState),
+  })
   : null;
 export const workspaceController = comparisonController
   ? createWorkspaceController({
     comparison: comparisonController,
     chat: { isBusy: () => Boolean(state.controller) },
+    onModeChange: setWorkspaceMode,
+    focusMode,
+    onBlocked: explainBlockedWorkspace,
+    setHash: (hash) => window.history.pushState(
+      null,
+      "",
+      hash || `${window.location.pathname}${window.location.search}`,
+    ),
   })
   : null;
 
@@ -80,11 +98,48 @@ const contactValue = document.querySelector("[data-contact-value]");
 if (contactValue) loadContact(contactValue);
 
 if (home) {
+  comparisonView = createComparisonView({
+    root: comparisonWorkspace,
+    controller: comparisonController,
+    requestMode: (mode) => workspaceController.requestMode(mode),
+  });
+  document.querySelectorAll("[data-workspace-mode]").forEach((control) => {
+    control.addEventListener("click", (event) => {
+      event.preventDefault();
+      workspaceController.requestMode(control.dataset.workspaceMode);
+    });
+  });
   workspaceController.start();
   comparisonController.initialize();
   state.applicationSlug = readPendingApplication();
   const prompt = readPendingPrompt();
   if (prompt) startConversation(prompt);
+}
+
+function setWorkspaceMode(mode) {
+  const comparing = mode === "compare";
+  homeWorkspace.hidden = comparing;
+  comparisonWorkspace.hidden = !comparing;
+  home.classList.toggle("is-comparison", comparing);
+  if (workspaceMessage) workspaceMessage.hidden = true;
+}
+
+function focusMode(mode) {
+  if (!workspaceFocusEnabled) {
+    workspaceFocusEnabled = true;
+    return;
+  }
+  const target = mode === "compare"
+    ? comparisonWorkspace.querySelector("h1")
+    : document.querySelector("[data-compare-entry]");
+  target?.focus({ preventScroll: true });
+}
+
+function explainBlockedWorkspace() {
+  if (!workspaceMessage) return;
+  workspaceMessage.hidden = false;
+  workspaceMessage.textContent = "John's agent is still answering. Wait for the response before opening role comparison.";
+  workspaceMessage.focus?.({ preventScroll: true });
 }
 
 async function startConversation(prompt) {

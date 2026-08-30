@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Privacy — John Viklund's Agent CV</title>
-  <meta name="description" content="How the Agent CV handles conversation data, feedback, retention, and private exports.">
+  <meta name="description" content="How the Agent CV handles chat, transient role comparisons, processor retention, feedback, and private exports.">
   <meta name="theme-color" content="#f4f0e8">
   <link rel="canonical" href="https://johnviklund.com/privacy/">
   <link rel="describedby" href="/llms.txt" type="text/plain">
@@ -26,14 +26,20 @@
 
       <h2>Retention and processors</h2>
       <p>Cloudflare stores the rolling archive for up to 90 days, after which records expire automatically. John may create restricted local exports for the same content-improvement purpose and should delete them when no longer needed.</p>
-      <p>Chat prompts are processed by Cloudflare Workers and the OpenAI API. The request sets <code>store: false</code> to avoid Responses API application-state storage. Under OpenAI's default controls, prompts and responses may still appear in abuse-monitoring logs for up to 30 days unless additional data-retention controls apply. See OpenAI's <a href="https://developers.openai.com/api/docs/guides/your-data#default-usage-policies-by-endpoint">official data-controls documentation</a>.</p>
+      <p>Chat prompts are processed by Cloudflare Workers and the OpenAI API. The chat request sets <code>store: false</code> to avoid Responses API application-state storage. Under OpenAI's default controls, prompts and responses may still appear in abuse-monitoring logs for up to 30 days unless approved data-retention controls apply. API content is not used to train OpenAI models by default unless the API organization opts in. See OpenAI's <a href="https://platform.openai.com/docs/models/default-usage-policies-by-endpoint">official usage policies by endpoint</a>.</p>
+
+      <h2>Transient role comparisons</h2>
+      <p>The comparison workspace stores role drafts and completed results only in this site's same-origin <code>sessionStorage</code> for the current tab. Clearing the comparison removes the site-controlled comparison state in that tab. Tab duplication and browser restore behavior are controlled by your browser, however, so the site cannot promise immediate erasure from a duplicated or restored tab.</p>
+      <p>This site does not archive or persist role comparison postings or results in Cloudflare KV or in the chat archive. The site chat archive is separate and may last up to 90 days. Persistent private application links are also separate from the transient comparison workspace. The comparison's public WebMCP tool results omit human-entered role text and generated prose, although the visible page still needs that content to show the comparison.</p>
+      <p>To create a comparison, the job text is sent through a Cloudflare Worker to the OpenAI API. The OpenAI Responses call uses <code>store: false</code>, <code>background: false</code>, and no conversation object. For <code>/v1/responses</code>, <code>store: false</code> means no application-state retention; default abuse-monitoring logs may nevertheless contain prompts and responses for up to 30 days unless approved controls apply. API content is not used to train OpenAI models by default unless the API organization opts in. The same <a href="https://platform.openai.com/docs/models/default-usage-policies-by-endpoint">official OpenAI endpoint policy</a> explains those controls.</p>
+      <p>If you invoke the page through a browser agent or chat product, that agent, account, or provider may retain its own prompt, history, or activity according to its workspace settings. This site does not control those separate records.</p>
 
       <h2>What not to submit</h2>
-      <p>Please do not paste confidential job information, special-category personal data, credentials, or information about another person. The public chat is intended for questions about John's professional experience.</p>
+      <p>Please do not paste confidential job information, special-category personal data, credentials, or third-party information about another person. The public chat is intended for questions about John's professional experience, and the comparison needs only the public wording of a role.</p>
 
       <h2>Access or deletion</h2>
       <p>To ask about a conversation record or request deletion, use the contact route supplied with John's application or reach John through his <a href="https://github.com/johnviklund" rel="me">public GitHub profile</a>. Include the approximate date and wording of the question; do not send credentials.</p>
-      <p><strong>Last updated:</strong> 15 August 2026.</p>
+      <p><strong>Last updated:</strong> 30 August 2026.</p>
     </article>
   </main>
   <footer class="site-footer"><a href="/">Ask John's agent</a><span class="footer-separator" aria-hidden="true">|</span><a href="https://github.com/johnviklund/agent-cv">View source ↗</a></footer>

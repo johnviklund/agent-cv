@@ -19,6 +19,22 @@ Live site: [johnviklund.com](https://johnviklund.com/)
 
 The Worker converts the visitor-controlled transcript into one upstream user message. Client-authored `assistant` roles remain untrusted copies, and repository snapshots can support curated facts but cannot override them or independently establish personal contribution.
 
+## WebMCP Challenge extension — 2026-08-30
+
+The role-comparison workspace is a challenge extension to the pre-existing Agent CV, built for the [OpenAI WebMCP Challenge](https://openai.com/webmcp-challenge/) using [OpenAI's WebMCP documentation](https://learn.chatgpt.com/docs/webmcp) and the emerging [WebMCP specification](https://github.com/webmachinelearning/webmcp). It lets a recruiter place one to three openings side by side at `/#compare`, then inspect how each requirement maps to a versioned public evidence catalog. The output deliberately avoids scores, rankings, recommendations, and automated hiring decisions.
+
+The home page registers four page-scoped tools while it is open: `compare_candidate_roles`, `get_comparison_state`, `focus_comparison_cell`, and `clear_role_comparison`. They are browser-page capabilities, not an MCP server or four HTTP endpoints. The same workflow remains available through the manual interface, `/evidence.json`, and `POST /api/compare`.
+
+Current compatibility is intentionally stated narrowly:
+
+| Client path | Current status | Portable fallback |
+| --- | --- | --- |
+| OpenAI ChatGPT Work/Codex built-in browser | Implemented against OpenAI's documented site-tools API; live-client verification is pending | Manual UI and HTTP API |
+| Chrome experimental WebMCP implementation | Native registration and invocation tested locally | Manual UI and HTTP API |
+| Grok, Hermes Agent, OpenClaw, Claude, and other agents | No native WebMCP certification claimed | Ordinary browser automation, manual UI, public resources, or HTTP API |
+
+The comparison sends supplied role text through the Cloudflare Worker to the OpenAI API. It uses a strict structured contract, approved evidence IDs, same-origin browser controls, a separate rate limit and monthly budget, and transient per-tab state. See the deployed `/AGENTS.md` and `/privacy/` documents for the complete agent and data-handling contract.
+
 ## Run it locally
 
 ```sh

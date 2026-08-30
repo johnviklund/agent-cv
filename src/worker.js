@@ -41,6 +41,7 @@ const MAX_ARCHIVED_ANSWER_CHARACTERS = 16_000;
 const OPENAI_RESPONSE_HEADER_TIMEOUT_MS = 30_000;
 const OBSERVED_RESOURCE_PATHS = new Set([
   "/AGENTS.md",
+  "/evidence.json",
   "/llms.txt",
   "/cv.md",
   "/overview.md",

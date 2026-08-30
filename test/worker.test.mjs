@@ -519,24 +519,30 @@ test("bounded analytics reads report truncation instead of silently returning pa
   assert.equal(result.truncated, true);
 });
 
-test("machine-readable resource fetches create bot-friendly access telemetry without IP data", async () => {
+test("evidence catalog fetches create path-only bot telemetry without IP or content", async () => {
   const archive = memoryKv();
   const context = collectingContext();
-  const request = new Request("https://example.test/AGENTS.md", {
-    headers: { "user-agent": "ExampleBot/1.0", "cf-connecting-ip": "192.0.2.99" },
+  const request = new Request("https://example.test/evidence.json", {
+    headers: {
+      "user-agent": "ExampleBot/1.0",
+      "cf-connecting-ip": "192.0.2.99",
+      "x-role-text-sentinel": "CONFIDENTIAL_ROLE_TEXT",
+    },
   });
   const response = await handleRequest(request, baseEnv({
     ARCHIVE: archive,
-    ASSETS: { fetch: async () => new Response("# Agent instructions") },
+    ASSETS: { fetch: async () => Response.json({ schemaVersion: 1, items: [] }) },
   }), context);
   assert.equal(response.status, 200);
   await settleContext(context);
 
   const resourceWrite = archive.puts.find(({ key }) => key.startsWith("resource:"));
   const record = JSON.parse(resourceWrite.value);
-  assert.equal(record.path, "/AGENTS.md");
+  assert.deepEqual(Object.keys(record).sort(), ["createdAt", "expiresAt", "path", "schemaVersion", "type", "visitorType"].sort());
+  assert.equal(record.path, "/evidence.json");
   assert.equal(record.visitorType, "bot");
   assert.equal(JSON.stringify(record).includes("192.0.2.99"), false);
+  assert.equal(JSON.stringify(record).includes("CONFIDENTIAL_ROLE_TEXT"), false);
 });
 
 test("admin creates and revokes expiring application links without exposing JD or private notes publicly", async () => {

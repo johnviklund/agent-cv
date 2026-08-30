@@ -4,21 +4,26 @@ import { createLink } from "./dom.js";
 const COVERAGE_COPY = Object.freeze({
   documented: {
     label: "Documented evidence",
+    countLabel: "Documented",
     description: "John's public CV or project record directly documents relevant experience.",
   },
   transferable: {
     label: "Transferable evidence",
+    countLabel: "Transferable",
     description: "John's public record documents adjacent experience that may transfer to this requirement.",
   },
   not_documented: {
     label: "Not documented yet",
+    countLabel: "Not documented",
     description: "The public CV does not document evidence for this requirement. This is not a claim that John lacks the capability.",
   },
   not_listed: {
     label: "Not listed in role",
+    countLabel: "Not listed",
     description: "This role does not list the requirement represented by this row.",
   },
 });
+const COVERAGE_ORDER = Object.freeze(["documented", "transferable", "not_documented", "not_listed"]);
 
 const REASON_LABELS = Object.freeze({
   direct_responsibility: "Direct responsibility",
@@ -75,7 +80,6 @@ export function validateRoleDrafts(value) {
 export function buildComparisonViewModel(state, evidenceItems = []) {
   const evidenceById = new Map(evidenceItems.map((item) => [item.id, item]));
   const result = state?.result || null;
-  const roles = result?.roles?.map((role) => ({ ...role })) || [];
   const rows = result?.rows?.map((row) => ({
     id: row.id,
     position: row.position,
@@ -110,6 +114,14 @@ export function buildComparisonViewModel(state, evidenceItems = []) {
         questions: [...cell.questions],
       };
     }),
+  })) || [];
+  const roles = result?.roles?.map((role, roleIndex) => ({
+    ...role,
+    outcomeCounts: COVERAGE_ORDER.map((coverage) => ({
+      coverage,
+      label: COVERAGE_COPY[coverage].countLabel,
+      count: rows.reduce((total, row) => total + (row.cells[roleIndex]?.coverage === coverage ? 1 : 0), 0),
+    })),
   })) || [];
   const isStale = Boolean(result && state?.resultStale);
   return {
@@ -155,6 +167,7 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
   let hydrated = false;
   let latestState = controller.getState();
   let latestModel = buildComparisonViewModel(latestState, controller.getEvidenceItems?.() || []);
+  const expandedCellIds = new Set();
 
   form?.addEventListener("submit", submit);
   addButton?.addEventListener("click", addRole);
@@ -172,6 +185,7 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
   });
 
   function render(state) {
+    if (state?.status === "analyzing" && latestState?.status !== "analyzing") expandedCellIds.clear();
     latestState = state;
     if (!hydrated || !sameDrafts(drafts, state.roles)) {
       drafts = state.roles?.length ? state.roles.map((role) => ({ ...role })) : [emptyRole(), emptyRole()];
@@ -375,8 +389,9 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
       const title = document.createElement("strong");
       title.textContent = role.title;
       const company = document.createElement("span");
+      company.className = "matrix-role-company";
       company.textContent = role.company || "Company not supplied";
-      heading.append(ordinal, title, company);
+      heading.append(ordinal, title, company, createOutcomeLedger(role));
       headingRow.append(heading);
     });
     thead.append(headingRow);
@@ -387,18 +402,30 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
       const rowHeading = document.createElement("th");
       rowHeading.scope = "row";
       rowHeading.className = "requirement-column";
+      const theme = document.createElement("div");
+      theme.className = "theme-cell-shell";
       const number = document.createElement("span");
       number.className = "matrix-row-number";
       number.textContent = String(row.position).padStart(2, "0");
       const label = document.createElement("span");
       label.textContent = row.label;
-      rowHeading.append(number, label);
+      const allExpanded = row.cells.every((cell) => isCellExpanded(cell, model.selection));
+      const inspectAll = document.createElement("button");
+      inspectAll.type = "button";
+      inspectAll.className = "theme-detail-toggle";
+      inspectAll.dataset.themeToggle = row.id;
+      inspectAll.setAttribute("aria-expanded", String(allExpanded));
+      inspectAll.setAttribute("aria-controls", row.cells.map((cell) => `${cell.id}-details`).join(" "));
+      inspectAll.setAttribute("aria-label", `${allExpanded ? "Close" : "Inspect"} evidence for all roles in ${row.label}`);
+      inspectAll.textContent = allExpanded ? "Close evidence" : "Inspect evidence";
+      theme.append(number, label, inspectAll);
+      rowHeading.append(theme);
       tableRow.append(rowHeading);
       row.cells.forEach((cell, index) => tableRow.append(createCell(
         row,
         model.roles[index],
         cell,
-        model.selection.cellId === cell.id,
+        isCellExpanded(cell, model.selection),
       )));
       tbody.append(tableRow);
     });
@@ -409,6 +436,8 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
   function createCell(row, role, cell, expanded) {
     const td = document.createElement("td");
     td.dataset.coverage = cell.coverage;
+    const shell = document.createElement("div");
+    shell.className = "comparison-cell-shell";
     const badge = document.createElement("span");
     badge.className = "coverage-badge";
     badge.textContent = cell.coverageLabel;
@@ -425,11 +454,35 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
       "aria-label",
       `${expanded ? "Close" : "Inspect"} details for ${role.title}, ${row.label}`,
     );
-    button.textContent = expanded ? "Close details" : "Inspect evidence";
+    button.textContent = expanded ? "Close evidence" : "Inspect evidence";
     const panel = createCellPanel(cell);
     panel.hidden = !expanded;
-    td.append(badge, summary, button, panel);
+    shell.append(badge, summary, panel, button);
+    td.append(shell);
     return td;
+  }
+
+  function createOutcomeLedger(role) {
+    const ledger = document.createElement("div");
+    ledger.className = "role-outcome-ledger";
+    ledger.setAttribute("aria-label", `Theme outcomes for ${role.title}`);
+    const title = document.createElement("span");
+    title.className = "role-outcome-title";
+    title.textContent = "Theme outcomes";
+    const list = document.createElement("dl");
+    role.outcomeCounts.forEach((outcome) => {
+      const item = document.createElement("div");
+      item.className = "role-outcome-item";
+      item.dataset.coverage = outcome.coverage;
+      const label = document.createElement("dt");
+      label.textContent = outcome.label;
+      const count = document.createElement("dd");
+      count.textContent = String(outcome.count);
+      item.append(label, count);
+      list.append(item);
+    });
+    ledger.append(title, list);
+    return ledger;
   }
 
   function createCellPanel(cell) {
@@ -514,22 +567,59 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
       }
       return;
     }
+    const themeToggle = event.target.closest?.("[data-theme-toggle]");
+    if (themeToggle) {
+      toggleThemeDetails(themeToggle);
+      return;
+    }
     const toggle = event.target.closest?.("[data-cell-toggle]");
     if (!toggle) return;
     const expanded = toggle.getAttribute("aria-expanded") === "true";
     if (expanded) {
-      controller.selectComparisonCell({ rowId: "", roleId: "", cellId: "" });
-      root.querySelector(`[data-cell-toggle="${toggle.dataset.cellToggle}"]`)?.focus({ preventScroll: true });
+      expandedCellIds.delete(toggle.dataset.cellToggle);
+      if (latestModel.selection.cellId === toggle.dataset.cellToggle) {
+        controller.selectComparisonCell({ rowId: "", roleId: "", cellId: "" });
+      } else {
+        renderResult();
+      }
+      refocus(`[data-cell-toggle="${toggle.dataset.cellToggle}"]`);
       return;
     }
     const row = latestModel.rows.find(({ cells }) => cells.some(({ id }) => id === toggle.dataset.cellToggle));
     const cell = row?.cells.find(({ id }) => id === toggle.dataset.cellToggle);
     const role = latestModel.roles.find(({ id }) => id === cell?.roleId);
     if (row && role && cell) {
+      expandedCellIds.add(cell.id);
       controller.selectComparisonCell({ rowId: row.id, roleId: role.id, cellId: cell.id });
       root.querySelector(`#${cell.id}-details`)?.focus({ preventScroll: true });
       announce(describeComparisonSelection(row, role));
     }
+  }
+
+  function toggleThemeDetails(toggle) {
+    const row = latestModel.rows.find(({ id }) => id === toggle.dataset.themeToggle);
+    if (!row) return;
+    const expanded = toggle.getAttribute("aria-expanded") === "true";
+    row.cells.forEach((cell) => {
+      if (expanded) expandedCellIds.delete(cell.id);
+      else expandedCellIds.add(cell.id);
+    });
+    const selectionInRow = row.cells.some(({ id }) => id === latestModel.selection.cellId);
+    if (expanded && selectionInRow) {
+      controller.selectComparisonCell({ rowId: "", roleId: "", cellId: "" });
+    } else {
+      renderResult();
+    }
+    refocus(`[data-theme-toggle="${row.id}"]`);
+    announce(`${expanded ? "Closed" : "Opened"} evidence for all roles in ${row.label}.`);
+  }
+
+  function isCellExpanded(cell, selection) {
+    return expandedCellIds.has(cell.id) || selection?.cellId === cell.id;
+  }
+
+  function refocus(selector) {
+    requestAnimationFrame(() => root.querySelector(selector)?.focus({ preventScroll: true }));
   }
 
   function announce(message) {

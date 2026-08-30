@@ -92,6 +92,18 @@ test("builds an evidence-led matrix in API row and role order", () => {
   assert.equal(model.rows[0].cells[0].evidence[0].sourceUrl, "/cv/");
   assert.equal(model.rows[0].cells[0].evidence[0].reasonLabel, "Direct responsibility");
   assert.equal(model.rows[1].cells[1].evidence[0].projectStatus, "Active local-first personal system.");
+  assert.deepEqual(model.roles[0].outcomeCounts, [
+    { coverage: "documented", label: "Documented", count: 1 },
+    { coverage: "transferable", label: "Transferable", count: 0 },
+    { coverage: "not_documented", label: "Not documented", count: 1 },
+    { coverage: "not_listed", label: "Not listed", count: 0 },
+  ]);
+  assert.deepEqual(model.roles[1].outcomeCounts, [
+    { coverage: "documented", label: "Documented", count: 0 },
+    { coverage: "transferable", label: "Transferable", count: 1 },
+    { coverage: "not_documented", label: "Not documented", count: 0 },
+    { coverage: "not_listed", label: "Not listed", count: 1 },
+  ]);
 });
 
 test("keeps evidence gaps and absent requirements distinct without inventing evidence", () => {

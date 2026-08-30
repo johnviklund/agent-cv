@@ -873,16 +873,56 @@ test("server agents without Origin can create a grounded comparison without pers
   assert.equal([...archive.values.values()].some((value) => String(value).includes("ROLE_TEXT_PRIVACY_SENTINEL")), false);
 });
 
+test("comparison retries one invalid structured draft within the same budget reservation", async () => {
+  let providerCalls = 0;
+  let budgetCalls = 0;
+  const invalidEvidence = comparisonProviderResponse({ roleCount: 1 });
+  const invalidDraft = JSON.parse(invalidEvidence.output[0].content[0].text);
+  invalidDraft.rows[0].cells[0].evidence[0].evidenceId = "invented.employer";
+  invalidEvidence.output[0].content[0].text = JSON.stringify(invalidDraft);
+
+  const response = await handleRequest(compareRequest(), comparisonEnv({
+    COMPARISON_BUDGET: budgetBinding(true, () => { budgetCalls += 1; }),
+  }), emptyContext(), {
+    fetchImpl: async () => {
+      providerCalls += 1;
+      return Response.json(providerCalls === 1 ? invalidEvidence : comparisonProviderResponse({ roleCount: 1 }));
+    },
+  });
+
+  assert.equal(response.status, 200);
+  assert.equal(providerCalls, 2);
+  assert.equal(budgetCalls, 1);
+  assert.doesNotMatch(JSON.stringify(await response.json()), /invented\.employer/);
+});
+
 test("comparison rejects invalid model evidence and bounds provider failures", async () => {
   const invalidEvidence = comparisonProviderResponse({ roleCount: 1 });
   const draft = JSON.parse(invalidEvidence.output[0].content[0].text);
   draft.rows[0].cells[0].evidence[0].evidenceId = "invented.employer";
   invalidEvidence.output[0].content[0].text = JSON.stringify(draft);
-  const invalid = await handleRequest(compareRequest(), comparisonEnv(), emptyContext(), {
-    fetchImpl: async () => Response.json(invalidEvidence),
-  });
+  const errors = [];
+  const originalError = console.error;
+  console.error = (...parts) => { errors.push(parts); };
+  let invalid;
+  let providerCalls = 0;
+  try {
+    invalid = await handleRequest(compareRequest(), comparisonEnv(), emptyContext(), {
+      fetchImpl: async () => {
+        providerCalls += 1;
+        return Response.json(invalidEvidence);
+      },
+    });
+  } finally {
+    console.error = originalError;
+  }
   assert.equal(invalid.status, 502);
+  assert.equal(providerCalls, 2);
   assert.doesNotMatch(JSON.stringify(await invalid.json()), /invented\.employer/);
+  assert.deepEqual(errors, [
+    ["Comparison provider returned an invalid structured result", "draft_evidence_id", "retrying"],
+    ["Comparison provider returned an invalid structured result", "draft_evidence_id", "failed"],
+  ]);
 
   const provider = await handleRequest(compareRequest(), comparisonEnv(), emptyContext(), {
     fetchImpl: async () => new Response("PRIVATE_PROVIDER_DIAGNOSTIC", { status: 429 }),

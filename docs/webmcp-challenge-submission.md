@@ -44,15 +44,15 @@ The deployed configuration in `wrangler.jsonc` uses GPT-5.6 Luna for both model 
 
 The estimate deliberately treats each UTF-8 byte after worst-case boundary escaping as one input token. That is much more conservative than normal English tokenization and may exceed the model context, but it keeps the ceiling auditable without relying on typical prompts.
 
-| Path | Monthly requests | Input allowance used for estimate | Maximum output | Input cost | Output cost |
+| Path | Monthly provider calls | Input allowance used for estimate | Maximum output | Input cost | Output cost |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | Chat | 1,000 | 320,000 tokens/request | 700 tokens/request | $64.00 | $0.84 |
-| Role comparison | 60 | 100,000 tokens/request | 8,000 tokens/request | $1.20 | $0.576 |
-| **Combined** |  |  |  | **$65.20** | **$1.416** |
+| Role comparison | 120 (60 public requests × at most 2 attempts) | 100,000 tokens/attempt | 8,000 tokens/attempt | $2.40 | $1.152 |
+| **Combined** |  |  |  | **$66.40** | **$1.992** |
 
-**Worst-case configured total: $66.616, rounded up to $66.62 per month.**
+**Worst-case configured total: $68.392, rounded up to $68.40 per month.**
 
-The chat input allowance covers the current 64,379-byte system prompt, a maximum 24,000-character private application job description, the 24,000-byte request-body boundary, worst-case XML escaping, serialization, and framing. A deliberately hostile but valid construction using the current code measured 305,536 input bytes, which is rounded up to 320,000. The comparison allowance covers the 15,000-character combined role limit, the current 13,566-byte/20-item evidence payload, worst-case escaping, instructions, schema, serialization, and framing; its equivalent construction measured 92,147 bytes, rounded up to 100,000. These are billing-safety bounds, not expected English usage. Output costs use the server-enforced maxima. Validated attempts reserve the atomic application bucket before provider I/O, so billable request counts cannot exceed the configured caps even when requests fail later.
+The chat input allowance covers the current 64,379-byte system prompt, a maximum 24,000-character private application job description, the 24,000-byte request-body boundary, worst-case XML escaping, serialization, and framing. A deliberately hostile but valid construction using the current code measured 305,536 input bytes, which is rounded up to 320,000. The comparison allowance covers the 15,000-character combined role limit, the current 13,566-byte/20-item evidence payload, worst-case escaping, instructions, schema, serialization, and framing; its equivalent construction measured 92,147 bytes, rounded up to 100,000. These are billing-safety bounds, not expected English usage. Output costs use the server-enforced maxima. Each validated public comparison reserves the atomic application bucket once, then may make one additional provider attempt only when the first strict draft is invalid. Therefore the 60-request comparison cap bounds provider traffic to 120 calls even when every first draft fails validation.
 
 Pre-submission operations:
 

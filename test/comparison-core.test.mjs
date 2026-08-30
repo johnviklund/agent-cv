@@ -135,6 +135,12 @@ test("draft validation fails closed on evidence, coverage, cardinality, and extr
   for (const draft of invalidDrafts) {
     assert.throws(() => canonicalizeComparisonDraft(draft, roles, evidenceCatalog));
   }
+
+  const unknownEvidence = invalidDrafts[0];
+  assert.throws(
+    () => canonicalizeComparisonDraft(unknownEvidence, roles, evidenceCatalog),
+    (error) => error.name === "ComparisonOutputError" && error.reason === "draft_evidence_id",
+  );
 });
 
 test("provider question kinds become fixed neutral server-authored questions", () => {

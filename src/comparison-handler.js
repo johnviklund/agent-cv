@@ -17,6 +17,8 @@ const DEFAULT_COMPARISON_MONTHLY_CAP = 60;
 const DEFAULT_RESPONSE_HEADER_TIMEOUT_MS = 45_000;
 const JSON_CONTENT_TYPE = /^application\/json(?:\s*;|$)/i;
 
+class ComparisonBodyTooLargeError extends Error {}
+
 export async function handleCompare(
   request,
   env,
@@ -58,12 +60,10 @@ export async function handleCompare(
 
   let input;
   try {
-    const raw = await request.text();
-    if (new TextEncoder().encode(raw).byteLength > COMPARISON_CONTRACT.limits.maxBodyBytes) {
-      return comparisonError("The comparison request is too large.", 413, {}, access.origin);
-    }
+    const raw = await readBoundedRequestText(request, COMPARISON_CONTRACT.limits.maxBodyBytes);
     input = validateComparisonPayload(JSON.parse(raw), evidenceCatalog);
   } catch (error) {
+    if (error instanceof ComparisonBodyTooLargeError) return comparisonError("The comparison request is too large.", 413, {}, access.origin);
     if (error instanceof ComparisonInputError) return comparisonError(error.message, error.status, {}, access.origin);
     return comparisonError("Send valid JSON.", 400, {}, access.origin);
   }
@@ -168,6 +168,29 @@ async function useComparisonRateLimit(env, clientKey) {
   }
 }
 
+async function readBoundedRequestText(request, maximumBytes) {
+  if (!request.body) return "";
+  const reader = request.body.getReader();
+  const decoder = new TextDecoder();
+  let bytes = 0;
+  let raw = "";
+  let complete = false;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      bytes += value.byteLength;
+      if (bytes > maximumBytes) throw new ComparisonBodyTooLargeError();
+      raw += decoder.decode(value, { stream: true });
+    }
+    complete = true;
+    return raw + decoder.decode();
+  } finally {
+    if (!complete) await reader.cancel().catch(() => {});
+    reader.releaseLock();
+  }
+}
+
 async function readBoundedProviderText(response, signal) {
   const declared = Number(response.headers.get("content-length") || 0);
   if (Number.isFinite(declared) && declared > COMPARISON_CONTRACT.limits.maxProviderResponseBytes) throw new Error("oversized");
@@ -206,13 +229,15 @@ async function fetchComparisonProvider(fetchImpl, url, init, clientSignal, timeo
   };
   if (clientSignal.aborted) abortFromClient();
   else clientSignal.addEventListener("abort", abortFromClient, { once: true });
-  const timeout = setTimeout(() => {
+  let headerTimeout = setTimeout(() => {
     if (!abortKind) abortKind = "timeout";
     controller.abort();
   }, timeoutMs);
   try {
     if (abortKind) throw comparisonAbortError(abortKind);
     const response = await fetchImpl(url, { ...init, signal: controller.signal });
+    clearTimeout(headerTimeout);
+    headerTimeout = null;
     if (abortKind) throw comparisonAbortError(abortKind);
     if (!response.ok) return { response, bodyText: null };
     const bodyText = await readBoundedProviderText(response, controller.signal);
@@ -222,7 +247,7 @@ async function fetchComparisonProvider(fetchImpl, url, init, clientSignal, timeo
     if (abortKind) throw comparisonAbortError(abortKind);
     throw error;
   } finally {
-    clearTimeout(timeout);
+    if (headerTimeout !== null) clearTimeout(headerTimeout);
     clientSignal.removeEventListener("abort", abortFromClient);
   }
 }

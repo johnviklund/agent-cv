@@ -90,6 +90,7 @@ test("a valid provider draft becomes a deterministic canonical comparison", () =
     evidenceId: evidenceCatalog.items[0].id,
     reasonCode: "direct_responsibility",
   }]);
+  assert.deepEqual(result.rows[0].cells[1].questions, ["Which parts of this work did John own directly?"]);
   assert.equal(validateComparisonResult(result), true);
   assert.equal(validateBrowserComparisonResult(result), true);
   assert.deepEqual(BROWSER_COMPARISON_CONTRACT, COMPARISON_CONTRACT);
@@ -127,13 +128,82 @@ test("draft validation fails closed on evidence, coverage, cardinality, and extr
     }),
     mutateDraft((draft) => { draft.rows[0].cells.reverse(); }),
     mutateDraft((draft) => { draft.rows[0].cells[0].score = 92; }),
-    mutateDraft((draft) => { draft.rows[0].cells[0].questions = ["What is John's age?"]; }),
+    mutateDraft((draft) => { draft.rows[0].cells[0].questionKinds = ["birth_year"]; }),
     mutateDraft((draft) => { draft.rows[0].label = "<strong>Governance</strong>"; }),
   ];
 
   for (const draft of invalidDrafts) {
     assert.throws(() => canonicalizeComparisonDraft(draft, roles, evidenceCatalog));
   }
+});
+
+test("provider question kinds become fixed neutral server-authored questions", () => {
+  const roles = validateComparisonPayload({ roles: ROLES }).roles;
+  const draft = validDraft();
+  draft.rows[0].cells[0].questionKinds = ["evidence_depth", "gap_clarification"];
+  const result = canonicalizeComparisonDraft(draft, roles, evidenceCatalog);
+
+  assert.deepEqual(result.rows[0].cells[0].questions, [
+    "What additional documented example would help clarify this requirement?",
+    "What additional context could clarify this currently undocumented requirement?",
+  ]);
+
+  const protectedTraitSynonyms = [
+    "What year was John born?",
+    "What is John's faith?",
+    "Does John use a wheelchair?",
+    "Is John married?",
+    "What is John's nationality?",
+    "Is John transgender?",
+  ];
+  for (const attemptedQuestion of protectedTraitSynonyms) {
+    const arbitraryText = validDraft();
+    arbitraryText.rows[0].cells[0].questionKinds = [attemptedQuestion];
+    assert.throws(() => canonicalizeComparisonDraft(arbitraryText, roles, evidenceCatalog));
+
+    const legacyTextField = validDraft();
+    delete legacyTextField.rows[0].cells[0].questionKinds;
+    legacyTextField.rows[0].cells[0].questions = [attemptedQuestion];
+    assert.throws(() => canonicalizeComparisonDraft(legacyTextField, roles, evidenceCatalog));
+
+    const disguisedAsLabel = validDraft();
+    disguisedAsLabel.rows[0].label = attemptedQuestion;
+    assert.throws(() => canonicalizeComparisonDraft(disguisedAsLabel, roles, evidenceCatalog));
+
+    const disguisedAsRequirement = validDraft();
+    disguisedAsRequirement.rows[0].cells[0].requirement = attemptedQuestion;
+    assert.throws(() => canonicalizeComparisonDraft(disguisedAsRequirement, roles, evidenceCatalog));
+  }
+});
+
+test("provider conclusions fail closed without rejecting ordinary role terminology", () => {
+  const roles = validateComparisonPayload({ roles: ROLES }).roles;
+  const prohibited = [
+    "John fit: 99/100",
+    "Candidate match is 95%",
+    "Score: 9/10",
+    "John scores 99%",
+    "Role ranking: first choice",
+    "John ranks first",
+    "Recommendation: hire John",
+    "Best-fit role",
+    "Hiring decision: yes",
+    "The candidate is an excellent match",
+  ];
+  for (const conclusion of prohibited) {
+    const labelDraft = validDraft();
+    labelDraft.rows[0].label = conclusion;
+    assert.throws(() => canonicalizeComparisonDraft(labelDraft, roles, evidenceCatalog));
+
+    const requirementDraft = validDraft();
+    requirementDraft.rows[0].cells[0].requirement = conclusion;
+    assert.throws(() => canonicalizeComparisonDraft(requirementDraft, roles, evidenceCatalog));
+  }
+
+  const ordinary = validDraft();
+  ordinary.rows[0].label = "Search ranking and recommendation systems";
+  ordinary.rows[0].cells[0].requirement = "Build ranking and recommendation systems for product search";
+  assert.equal(canonicalizeComparisonDraft(ordinary, roles, evidenceCatalog).rows[0].label, ordinary.rows[0].label);
 });
 
 test("draft validation enforces eighteen rows and eight listed requirements per role", () => {
@@ -178,14 +248,14 @@ function validDraft() {
           requirement: "Lead applied AI products",
           coverage: "documented",
           evidence: [{ evidenceId: evidenceCatalog.items[0].id, reasonCode: "direct_responsibility" }],
-          questions: [],
+          questionKinds: [],
         },
         {
           roleIndex: 1,
           requirement: "Build agent systems",
           coverage: "transferable",
           evidence: [{ evidenceId: evidenceCatalog.items[0].id, reasonCode: "related_domain_experience" }],
-          questions: ["Which agent-system decisions did John own directly?"],
+          questionKinds: ["ownership_scope"],
         },
       ],
     }],

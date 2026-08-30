@@ -777,6 +777,37 @@ test("invalid comparison payloads consume abuse attempts but not monthly budget"
   assert.equal(budgetCalls, 0);
 });
 
+test("chunked comparison bodies without Content-Length are cancelled above the byte limit", async () => {
+  let bodyCancelled = false;
+  let budgetCalls = 0;
+  let upstreamCalls = 0;
+  const body = new ReadableStream({
+    start(controller) {
+      controller.enqueue(new Uint8Array(20_001));
+    },
+    cancel() { bodyCancelled = true; },
+  });
+  const request = new Request(COMPARE_URL, {
+    method: "POST",
+    headers: { "content-type": "application/json", "cf-connecting-ip": "192.0.2.2" },
+    body,
+    duplex: "half",
+  });
+  const env = comparisonEnv({
+    COMPARISON_BUDGET: budgetBinding(true, () => { budgetCalls += 1; }),
+  });
+
+  assert.equal(request.headers.get("content-length"), null);
+  const response = await handleRequest(request, env, emptyContext(), {
+    fetchImpl: async () => { upstreamCalls += 1; return new Response("unused"); },
+  });
+
+  assert.equal(response.status, 413);
+  assert.equal(bodyCancelled, true);
+  assert.equal(budgetCalls, 0);
+  assert.equal(upstreamCalls, 0);
+});
+
 test("comparison fails closed when production limiter, budget, or secret is missing", async () => {
   const cases = [
     comparisonEnv({ COMPARISON_RATE_LIMITER: undefined }),
@@ -827,6 +858,14 @@ test("server agents without Origin can create a grounded comparison without pers
   assert.equal(upstream.body.max_output_tokens, 8_000);
   assert.equal(upstream.body.text.format.type, "json_schema");
   assert.equal(upstream.body.text.format.strict, true);
+  const providerCellSchema = upstream.body.text.format.schema.properties.rows.items.properties.cells.items;
+  assert.equal(providerCellSchema.properties.questions, undefined);
+  assert.deepEqual(providerCellSchema.properties.questionKinds.items.enum, [
+    "ownership_scope",
+    "evidence_depth",
+    "transfer_context",
+    "gap_clarification",
+  ]);
   assert.match(JSON.stringify(upstream.body.input), /ROLE_TEXT_PRIVACY_SENTINEL/);
   assert.match(budgetReservation.id, /comparison:/);
   assert.equal(JSON.parse(budgetReservation.init.body).cap, 60);
@@ -865,6 +904,20 @@ test("comparison header timeout and client cancellation abort upstream work", as
   });
   assert.equal(timeout.status, 504);
   assert.equal(timeoutAborted, true);
+
+  const delayedProviderBody = JSON.stringify(comparisonProviderResponse({ roleCount: 1 }));
+  const headersArriveBeforeBody = await handleRequest(compareRequest(), comparisonEnv(), emptyContext(), {
+    comparisonOpenAIConnectTimeoutMs: 5,
+    fetchImpl: async () => new Response(new ReadableStream({
+      start(streamController) {
+        setTimeout(() => {
+          streamController.enqueue(new TextEncoder().encode(delayedProviderBody));
+          streamController.close();
+        }, 20);
+      },
+    })),
+  });
+  assert.equal(headersArriveBeforeBody.status, 200);
 
   const controller = new AbortController();
   let clientAborted = false;
@@ -1027,7 +1080,7 @@ function comparisonProviderResponse({ roleCount }) {
               requirement: "Lead applied AI products",
               coverage: "documented",
               evidence: [{ evidenceId: "cv.profile", reasonCode: "direct_responsibility" }],
-              questions: [],
+              questionKinds: [],
             })),
           }],
         }),

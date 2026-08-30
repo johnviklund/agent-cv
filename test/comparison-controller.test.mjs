@@ -69,6 +69,52 @@ test("a second submission while analyzing returns busy without another fetch", a
   await first;
 });
 
+test("a busy caller signal cannot abort the request owned by another submission", async () => {
+  const pending = deferred();
+  let activeSignal;
+  const controller = await initializedController({
+    fetchImpl: (_url, init) => {
+      activeSignal = init.signal;
+      return pending.promise;
+    },
+  });
+  const activeRequest = controller.submitComparison(ROLES, { source: "manual" });
+  await new Promise(setImmediate);
+  const caller = new AbortController();
+
+  assert.deepEqual(
+    await controller.submitComparison(ROLES, { source: "webmcp", signal: caller.signal }),
+    { status: "busy" },
+  );
+  caller.abort();
+  assert.equal(activeSignal.aborted, false);
+
+  controller.cancelComparison();
+  pending.resolve(response(comparisonResult()));
+  assert.equal((await activeRequest).status, "superseded");
+});
+
+test("an external signal aborts the comparison request that accepted it", async () => {
+  const pending = deferred();
+  let requestSignal;
+  const controller = await initializedController({
+    fetchImpl: (_url, init) => {
+      requestSignal = init.signal;
+      return pending.promise;
+    },
+  });
+  const caller = new AbortController();
+
+  const request = controller.submitComparison(ROLES, { source: "webmcp", signal: caller.signal });
+  await new Promise(setImmediate);
+  caller.abort();
+
+  assert.equal(requestSignal.aborted, true);
+  pending.resolve(response(comparisonResult({ label: "Too late" })));
+  assert.equal((await request).status, "superseded");
+  assert.equal(controller.getState().result, null);
+});
+
 test("abort, network, public API, invalid output, and catalog skew preserve roles and prior result", async () => {
   const failures = [
     { fetchImpl: async () => { throw new Error("offline"); }, code: "network_error" },
@@ -88,6 +134,71 @@ test("abort, network, public API, invalid output, and catalog skew preserve role
     assert.deepEqual(state.roles, ROLES);
     assert.deepEqual(state.result, prior);
   }
+});
+
+test("a failed replacement keeps the prior result paired with its evidence catalog", async () => {
+  const replacementCatalog = {
+    digest: OTHER_DIGEST,
+    items: [{
+      id: "projects.replacement",
+      title: "Replacement",
+      text: "Evidence from a newer catalog.",
+      source: { path: "data/projects.md", headingPath: ["Replacement"] },
+    }],
+  };
+  let catalogCalls = 0;
+  let fetchCalls = 0;
+  const controller = createComparisonController({
+    storage: memoryStorage(),
+    loadCatalog: async () => {
+      catalogCalls += 1;
+      return catalogCalls < 3 ? CATALOG : replacementCatalog;
+    },
+    fetchImpl: async () => {
+      fetchCalls += 1;
+      if (fetchCalls === 1) return response(comparisonResult({ label: "Prior evidence" }));
+      throw new Error("replacement request failed");
+    },
+  });
+
+  await controller.initialize();
+  await controller.submitComparison(ROLES);
+  const priorState = controller.getState();
+  const priorEvidence = controller.getEvidenceItems();
+
+  const outcome = await controller.submitComparison(ROLES);
+
+  assert.equal(outcome.status, "error");
+  assert.equal(outcome.error.code, "network_error");
+  assert.deepEqual(controller.getState().result, priorState.result);
+  assert.equal(controller.getState().catalogDigest, DIGEST);
+  assert.deepEqual(controller.getEvidenceItems(), priorEvidence);
+});
+
+test("a delayed initialize never restores over roles entered after it began", async () => {
+  const storage = memoryStorage();
+  const seeded = await initializedController({ storage });
+  await seeded.submitComparison(ROLES);
+  const pendingCatalog = deferred();
+  const controller = createComparisonController({
+    storage,
+    loadCatalog: () => pendingCatalog.promise,
+    fetchImpl: async () => response(comparisonResult()),
+  });
+  const enteredRoles = [{
+    title: "Newly entered role",
+    company: "Draft company",
+    description: "This draft was entered while initialization was still loading.",
+  }];
+
+  const initialization = controller.initialize();
+  controller.setRoles(enteredRoles);
+  pendingCatalog.resolve(CATALOG);
+  await initialization;
+
+  assert.deepEqual(controller.getState().roles, enteredRoles);
+  assert.equal(controller.getState().result, null);
+  assert.equal(controller.getState().catalogDigest, DIGEST);
 });
 
 test("cancel preserves inputs and prior result and rejects a late response", async () => {
@@ -139,6 +250,31 @@ test("editing roles during analysis aborts and supersedes the active request", a
   assert.equal(controller.getState().status, "editing");
   pending.resolve(response(comparisonResult()));
   assert.equal((await request).status, "superseded");
+});
+
+test("an invalid edit during analysis aborts the request and retains the last valid snapshot", async () => {
+  const pending = deferred();
+  let requestSignal;
+  const controller = await readyController({ fetchImpl: (_url, init) => {
+    requestSignal = init.signal;
+    return pending.promise;
+  } });
+  const prior = controller.getState();
+
+  const request = controller.submitComparison(ROLES);
+  await new Promise(setImmediate);
+  assert.throws(
+    () => controller.setRoles([ROLES[0], ROLES[0], ROLES[0], ROLES[0]]),
+    /roles are invalid/i,
+  );
+
+  assert.equal(requestSignal.aborted, true);
+  assert.equal(controller.getState().status, "ready");
+  assert.deepEqual(controller.getState().roles, prior.roles);
+  assert.deepEqual(controller.getState().result, prior.result);
+  pending.resolve(response(comparisonResult({ label: "Too late" })));
+  assert.equal((await request).status, "superseded");
+  assert.deepEqual(controller.getState().result, prior.result);
 });
 
 test("invalid role bounds fail locally without replacing state or calling the API", async () => {

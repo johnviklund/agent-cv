@@ -137,27 +137,20 @@ async function compareRoles({ comparison, workspace, view }, input, options) {
   const opened = openComparisonWorkspace(workspace, TOOL_NAMES.compare);
   if (opened) return opened;
 
-  let aborted = false;
-  const abort = () => {
-    aborted = true;
-    comparison.cancelComparison();
-  };
-  signal?.addEventListener("abort", abort, { once: true });
-  try {
-    const outcome = await comparison.submitComparison(roles, { source: "webmcp" });
-    if (aborted || signal?.aborted) return abortedResult(TOOL_NAMES.compare);
-    if (outcome?.status === "busy") {
-      return toolError(TOOL_NAMES.compare, "comparison_busy", "A role comparison is already in progress.");
-    }
-    if (outcome?.status !== "ready") {
-      return toolError(TOOL_NAMES.compare, "comparison_failed", "The role comparison could not be completed.");
-    }
-    await Promise.resolve();
-    view.focusComparisonResult();
-    return semanticState(TOOL_NAMES.compare, comparison.getState(), workspace.getMode(), knownEvidenceIds(comparison));
-  } finally {
-    signal?.removeEventListener("abort", abort);
+  const outcome = await comparison.submitComparison(roles, {
+    source: "webmcp",
+    ...(signal ? { signal } : {}),
+  });
+  if (signal?.aborted) return abortedResult(TOOL_NAMES.compare);
+  if (outcome?.status === "busy") {
+    return toolError(TOOL_NAMES.compare, "comparison_busy", "A role comparison is already in progress.");
   }
+  if (outcome?.status !== "ready") {
+    return toolError(TOOL_NAMES.compare, "comparison_failed", "The role comparison could not be completed.");
+  }
+  await Promise.resolve();
+  view.focusComparisonResult();
+  return semanticState(TOOL_NAMES.compare, comparison.getState(), workspace.getMode(), knownEvidenceIds(comparison));
 }
 
 function getComparisonState({ comparison, workspace }, input) {

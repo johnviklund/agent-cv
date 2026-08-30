@@ -134,9 +134,13 @@ test("clear cancels state and leaves the comparison workspace visible", async ()
   assert.equal(result.counts.roles, 0);
 });
 
-test("an external execution abort cancels the shared request and preserves the previous valid result", async () => {
+test("an external execution abort is routed through the request-owned signal", async () => {
   const pending = deferred();
-  const fixture = await setup({ submit: () => pending.promise });
+  let submittedOptions;
+  const fixture = await setup({ submit: (_roles, options) => {
+    submittedOptions = options;
+    return pending.promise;
+  } });
   const abortController = new AbortController();
   const request = execute(fixture, "compare_candidate_roles", { roles: ROLES.slice(0, 1) }, { signal: abortController.signal });
   await Promise.resolve();
@@ -144,10 +148,27 @@ test("an external execution abort cancels the shared request and preserves the p
   pending.resolve({ status: "superseded" });
 
   const result = await request;
-  assert.equal(fixture.cancels, 1);
+  assert.equal(submittedOptions.signal, abortController.signal);
+  assert.equal(fixture.cancels, 0);
   assert.equal(result.ok, false);
   assert.equal(result.error.code, "aborted");
   assert.equal(fixture.state.result.rows[0].id, "row_01");
+});
+
+test("aborting a busy WebMCP invocation never cancels the comparison it did not start", async () => {
+  const pending = deferred();
+  const fixture = await setup({ submit: () => pending.promise });
+  const abortController = new AbortController();
+  const request = execute(fixture, "compare_candidate_roles", { roles: ROLES.slice(0, 1) }, { signal: abortController.signal });
+  await Promise.resolve();
+
+  abortController.abort();
+  pending.resolve({ status: "busy" });
+
+  const result = await request;
+  assert.equal(fixture.cancels, 0);
+  assert.equal(result.ok, false);
+  assert.equal(result.error.code, "aborted");
 });
 
 test("missing APIs and rejected registrations fail closed without affecting the page", async () => {
@@ -185,7 +206,7 @@ async function setup({ submit } = {}) {
     getEvidenceItems: () => [{ id: "cv.profile" }],
     submitComparison: async (roles, options) => {
       submissions.push({ roles: structuredClone(roles), options });
-      return submit ? submit() : { status: "ready", result: state.result };
+      return submit ? submit(roles, options) : { status: "ready", result: state.result };
     },
     selectComparisonCell: (selection) => { selections.push(selection); state.selection = selection; },
     clearComparison: () => {

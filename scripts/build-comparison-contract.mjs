@@ -54,6 +54,12 @@ export const COMPARISON_REASON_CODES = Object.freeze({
   documented: Object.freeze([...COMPARISON_CONTRACT.reasonCodes.documented]),
   transferable: Object.freeze([...COMPARISON_CONTRACT.reasonCodes.transferable]),
 });
+export const COMPARISON_QUESTION_KINDS = Object.freeze([
+  "ownership_scope",
+  "evidence_depth",
+  "transfer_context",
+  "gap_clarification",
+]);
 
 const LIMITS = COMPARISON_CONTRACT.limits;
 const COVERAGE = new Set(COMPARISON_COVERAGE_STATES);
@@ -89,13 +95,13 @@ const providerEvidenceSchema = {
 };
 const providerCellSchema = {
   type: "object", additionalProperties: false,
-  required: ["roleIndex", "requirement", "coverage", "evidence", "questions"],
+  required: ["roleIndex", "requirement", "coverage", "evidence", "questionKinds"],
   properties: {
     roleIndex: { type: "integer", minimum: 0, maximum: LIMITS.maxRoles - 1 },
     requirement: { type: ["string", "null"], maxLength: LIMITS.maxRequirementCharacters },
     coverage: { type: "string", enum: COMPARISON_COVERAGE_STATES },
     evidence: { type: "array", maxItems: LIMITS.maxEvidencePerCell, items: providerEvidenceSchema },
-    questions: { type: "array", maxItems: LIMITS.maxQuestionsPerCell, items: { type: "string", minLength: 1, maxLength: LIMITS.maxQuestionCharacters } },
+    questionKinds: { type: "array", maxItems: LIMITS.maxQuestionsPerCell, items: { type: "string", enum: COMPARISON_QUESTION_KINDS } },
   },
 };
 export const COMPARISON_PROVIDER_SCHEMA = Object.freeze({

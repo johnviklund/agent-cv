@@ -5,6 +5,7 @@ import {
   COMPARISON_CONTRACT,
   COMPARISON_COVERAGE_STATES,
   COMPARISON_PROVIDER_SCHEMA,
+  COMPARISON_QUESTION_KINDS,
   COMPARISON_REASON_CODES,
   normalizeComparisonRequest,
   validateComparisonResult,
@@ -13,7 +14,29 @@ import evidenceCatalog from "./data/comparison-evidence.js";
 
 const COVERAGE_STATES = new Set(COMPARISON_COVERAGE_STATES);
 const UNSAFE_GENERATED_TEXT = /<[^>]*>|(?:https?|mailto|javascript|data):|www\./i;
-const PROTECTED_TRAIT_QUESTION = /\b(age|race|racial|ethnicity|ethnic|religion|religious|disability|disabled|pregnan(?:t|cy)|marital status|sexual orientation|gender identity|national origin)\b/i;
+const QUESTION_KINDS = new Set(COMPARISON_QUESTION_KINDS);
+const QUESTION_TEMPLATES = Object.freeze({
+  ownership_scope: "Which parts of this work did John own directly?",
+  evidence_depth: "What additional documented example would help clarify this requirement?",
+  transfer_context: "Which aspects of this experience transfer most directly to this requirement?",
+  gap_clarification: "What additional context could clarify this currently undocumented requirement?",
+});
+const PROTECTED_TRAIT_TEXT = /\b(?:age|date of birth|birth date|birth year|born|race|racial|skin colou?r|complexion|ethnicity|ethnic origin|religion|religious beliefs?|faith|creed|disability|disabled|wheelchair|pregnan(?:t|cy)|expecting (?:a )?(?:baby|child)|marital status|married|spouse|sexual orientation|gay|lesbian|bisexual|gender identity|transgender|trans identity|non-?binary|national origin|nationality)\b/i;
+const UNSAFE_PROVIDER_CONCLUSIONS = [
+  /\b(?:john(?:'s)?|candidate(?:'s)?|applicant(?:'s)?)?\s*(?:fit|match|suitability|compatibility|score|rating)(?:\s+(?:score|rating))?\s*(?::|=|-|\bis\b|\bof\b)\s*\d{1,3}(?:\.\d+)?\s*(?:%|\/\s*(?:5|10|100))(?![\d/])/i,
+  /\b(?:john|the candidate|this candidate|the applicant|this applicant)\s+(?:scores?|rates?)\s+\d{1,3}(?:\.\d+)?\s*(?:%|\/\s*(?:5|10|100))(?![\d/])/i,
+  /\b(?:role|candidate|fit)\s+rank(?:ing|ed)?\s*[:=-]/i,
+  /\brank(?:ed|ing)?\s+(?:john|the candidate|this candidate|this role)\b/i,
+  /\branked\s+(?:#?\d+|first|second|third|above|below|higher|lower|best|worst)\b/i,
+  /\b(?:john|the candidate|this candidate|the applicant|this applicant)\s+ranks?\s+(?:#?\d+|first|second|third|above|below|higher|lower|best|worst)\b/i,
+  /\brecommendation\s*[:=-]\s*(?:hire|select|choose|reject|advance|john|the candidate|this candidate|yes|no)\b/i,
+  /\brecommend(?:ed|ing)?\s+(?:john|the candidate|this candidate|hiring|selecting|choosing|rejecting|advancing|for (?:the|this) role|over)\b/i,
+  /\b(?:best[- ]fit|best suited|strongest role|weakest role|preferred role|most suitable role|least suitable role|top candidate|top choice)\b/i,
+  /\b(?:hiring decision|no[- ]hire|do not hire)\b/i,
+  /\b(?:should|would)\s+(?:hire|select|choose|advance|reject)\b/i,
+  /\b(?:hire|select|choose|advance|reject)\s+(?:john|the candidate|this candidate)\b/i,
+  /\b(?:john|the candidate|this candidate|the applicant|this applicant)\s+(?:is|appears|seems)\s+(?:an?\s+)?(?:strong|good|excellent|poor|weak|bad|ideal|best|unsuitable)\s+(?:fit|match|candidate)\b/i,
+];
 
 export class ComparisonInputError extends Error {
   constructor(message, status = 400) {
@@ -52,7 +75,8 @@ NON-NEGOTIABLE RULES
 - Use documented only for direct public evidence and transferable only for related public evidence. not_documented means the role lists a requirement but the catalog does not document it; it never means the candidate lacks the skill. not_listed means that role does not list the row requirement.
 - documented and transferable cells require one or two known evidence IDs and a reasonCode allowed for that coverage. not_documented and not_listed cells require no evidence.
 - requirement must preserve concise original role wording when listed and must be null only for not_listed.
-- Questions are optional, neutral questions for the candidate. Never ask about protected traits. Do not include URLs, markup, scores, conclusions, or instructions in output text.
+- Optional questionKinds may use only the schema's allowlisted kinds. The server turns them into fixed neutral questions for the candidate. Never write question text or ask about protected traits.
+- Do not include URLs, markup, scores, rankings, recommendations, best-role claims, hiring decisions, conclusions, or instructions in output text.
 - Return only the strict structured result requested by the schema.`;
 }
 
@@ -150,7 +174,7 @@ function normalizeDraftRow(row, rowIndex, roles, evidenceIds) {
 }
 
 function normalizeDraftCell(cell, rowId, roleIndex, evidenceIds) {
-  exactObject(cell, ["roleIndex", "requirement", "coverage", "evidence", "questions"], `Draft cell ${rowId}:${roleIndex + 1}`);
+  exactObject(cell, ["roleIndex", "requirement", "coverage", "evidence", "questionKinds"], `Draft cell ${rowId}:${roleIndex + 1}`);
   if (cell.roleIndex !== roleIndex) throw new TypeError("Draft cells must preserve role input order.");
   if (!COVERAGE_STATES.has(cell.coverage)) throw new TypeError("Draft coverage state is invalid.");
 
@@ -176,13 +200,14 @@ function normalizeDraftCell(cell, rowId, roleIndex, evidenceIds) {
     return { evidenceId: reference.evidenceId, reasonCode: reference.reasonCode };
   });
 
-  if (!Array.isArray(cell.questions) || cell.questions.length > COMPARISON_CONTRACT.limits.maxQuestionsPerCell) {
-    throw new TypeError("Draft questions are invalid.");
+  if (!Array.isArray(cell.questionKinds) || cell.questionKinds.length > COMPARISON_CONTRACT.limits.maxQuestionsPerCell) {
+    throw new TypeError("Draft question kinds are invalid.");
   }
-  const questions = cell.questions.map((question) => {
-    const clean = generatedText(question, COMPARISON_CONTRACT.limits.maxQuestionCharacters, "Draft question");
-    if (PROTECTED_TRAIT_QUESTION.test(clean)) throw new TypeError("Draft question requests a protected trait.");
-    return clean;
+  const seenQuestionKinds = new Set();
+  const questions = cell.questionKinds.map((kind) => {
+    if (!QUESTION_KINDS.has(kind) || seenQuestionKinds.has(kind)) throw new TypeError("Draft question kind is invalid or duplicated.");
+    seenQuestionKinds.add(kind);
+    return QUESTION_TEMPLATES[kind];
   });
 
   const roleId = canonicalRoleId(roleIndex);
@@ -200,6 +225,8 @@ function generatedText(value, maximum, label) {
   if (typeof value !== "string" || /[\u0000-\u001f\u007f]/.test(value)) throw new TypeError(`${label} must be text.`);
   const clean = value.replace(/\s+/g, " ").trim();
   if (!clean || clean.length > maximum || UNSAFE_GENERATED_TEXT.test(clean)) throw new TypeError(`${label} is unsafe or out of bounds.`);
+  if (PROTECTED_TRAIT_TEXT.test(clean)) throw new TypeError(`${label} contains protected-trait content.`);
+  if (UNSAFE_PROVIDER_CONCLUSIONS.some((pattern) => pattern.test(clean))) throw new TypeError(`${label} contains a prohibited conclusion.`);
   return clean;
 }
 

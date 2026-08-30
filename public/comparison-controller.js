@@ -29,6 +29,7 @@ export function createComparisonController({
 
   let catalog = null;
   let snapshot = buildComparisonSnapshot();
+  let stateRevision = 0;
   let runtime = {
     status: "editing",
     error: null,
@@ -39,21 +40,34 @@ export function createComparisonController({
 
   async function initialize() {
     const token = runtime.generation;
+    const revision = stateRevision;
     try {
       const restoredCatalog = await resolveCatalog(loadCatalog());
       if (!isCurrent(token)) return getState();
-      catalog = restoredCatalog;
-      const restored = restoreComparisonSnapshot(storage, catalog);
-      snapshot = restored.snapshot;
-      runtime.storageAvailable = restored.storageAvailable;
-      if (restored.reason !== "empty" && restored.storageAvailable) persist();
+      if (revision === stateRevision) {
+        const restored = restoreComparisonSnapshot(storage, snapshotCatalog(restoredCatalog));
+        catalog = restoredCatalog;
+        snapshot = restored.snapshot;
+        runtime.storageAvailable = restored.storageAvailable;
+        if (restored.reason !== "empty" && restored.storageAvailable) persist();
+      } else {
+        const revisedSnapshot = buildComparisonSnapshot({
+          ...snapshot,
+          catalogDigest: restoredCatalog.digest,
+        }, restoredCatalog);
+        catalog = restoredCatalog;
+        snapshot = revisedSnapshot;
+        persist();
+      }
       runtime.status = readyStatus(snapshot);
       runtime.error = null;
     } catch {
       if (!isCurrent(token)) return getState();
-      const restored = restoreComparisonSnapshot(storage);
-      snapshot = restored.snapshot;
-      runtime.storageAvailable = restored.storageAvailable;
+      if (revision === stateRevision) {
+        const restored = restoreComparisonSnapshot(storage);
+        snapshot = restored.snapshot;
+        runtime.storageAvailable = restored.storageAvailable;
+      }
       runtime.status = readyStatus(snapshot);
       runtime.error = comparisonError("catalog_unavailable", "The public evidence catalog is unavailable.");
     }
@@ -62,10 +76,22 @@ export function createComparisonController({
   }
 
   function setRoles(roles) {
-    const nextSnapshot = buildComparisonSnapshot({
-      ...snapshot,
-      roles,
-    }, catalog || {});
+    stateRevision += 1;
+    let nextSnapshot;
+    try {
+      nextSnapshot = buildComparisonSnapshot({
+        ...snapshot,
+        roles,
+      }, catalog || {});
+    } catch (error) {
+      if (runtime.status === "analyzing") {
+        invalidateRequest();
+        runtime.status = readyStatus(snapshot);
+        runtime.error = null;
+        emit();
+      }
+      throw error;
+    }
     if (
       runtime.status === "analyzing"
       && fingerprintComparisonRoles(nextSnapshot.roles) !== fingerprintComparisonRoles(snapshot.roles)
@@ -80,11 +106,12 @@ export function createComparisonController({
     return getState();
   }
 
-  async function submitComparison(roles = snapshot.roles, { source = "manual" } = {}) {
+  async function submitComparison(roles = snapshot.roles, { source = "manual", signal } = {}) {
     if (runtime.status === "analyzing") return { status: "busy" };
     if (!["manual", "agent", "webmcp"].includes(source)) {
       return fail("invalid_input", "Comparison source is invalid.");
     }
+    if (signal?.aborted) return { status: "superseded" };
 
     try {
       setRoles(roles);
@@ -107,6 +134,11 @@ export function createComparisonController({
       generation: token,
       abortController,
     };
+    const abortOwnedRequest = () => {
+      if (isCurrent(token)) invalidateRequest();
+    };
+    signal?.addEventListener?.("abort", abortOwnedRequest, { once: true });
+    if (signal?.aborted) abortOwnedRequest();
     emit();
 
     try {
@@ -118,8 +150,7 @@ export function createComparisonController({
         throw taggedError("catalog_unavailable", "The public evidence catalog is unavailable.");
       }
       if (!isCurrent(token)) return { status: "superseded" };
-      catalog = currentCatalog;
-      const request = normalizeComparisonRequest({ roles: snapshot.roles }, catalog.digest);
+      const request = normalizeComparisonRequest({ roles: snapshot.roles }, currentCatalog.digest);
 
       const response = await fetchImpl(endpoint, {
         method: "POST",
@@ -151,26 +182,29 @@ export function createComparisonController({
         throw taggedError("invalid_result", "The comparison result is invalid.");
       }
       if (
-        responseDigest !== catalog.digest
+        responseDigest !== currentCatalog.digest
         || (typeof result?.catalogDigest === "string"
           && CATALOG_DIGEST_PATTERN.test(result.catalogDigest)
-          && result.catalogDigest !== catalog.digest)
+          && result.catalogDigest !== currentCatalog.digest)
       ) {
         throw taggedError("catalog_skew", "The comparison used a different evidence catalog. Please retry.");
       }
       try {
-        validateComparisonResult(result, catalog);
+        validateComparisonResult(result, currentCatalog);
         assertResultRolesMatch(result, request.roles);
       } catch {
         throw taggedError("invalid_result", "The comparison result is invalid.");
       }
 
-      snapshot = buildComparisonSnapshot({
-        catalogDigest: catalog.digest,
+      const nextSnapshot = buildComparisonSnapshot({
+        catalogDigest: currentCatalog.digest,
         roles: snapshot.roles,
         result,
         resultRoleFingerprint: fingerprintComparisonRoles(snapshot.roles),
-      }, catalog);
+      }, currentCatalog);
+      catalog = currentCatalog;
+      snapshot = nextSnapshot;
+      stateRevision += 1;
       runtime.status = "ready";
       runtime.error = null;
       runtime.abortController = null;
@@ -187,6 +221,8 @@ export function createComparisonController({
       runtime.abortController = null;
       emit();
       return { status: "error", error: cloneJson(runtime.error) };
+    } finally {
+      signal?.removeEventListener?.("abort", abortOwnedRequest);
     }
   }
 
@@ -200,6 +236,7 @@ export function createComparisonController({
 
   function clearComparison() {
     invalidateRequest();
+    stateRevision += 1;
     snapshot = buildComparisonSnapshot({ catalogDigest: catalog?.digest || "" });
     runtime.status = "editing";
     runtime.error = null;
@@ -209,6 +246,7 @@ export function createComparisonController({
   }
 
   function selectComparisonCell(selection) {
+    stateRevision += 1;
     snapshot = buildComparisonSnapshot({ ...snapshot, selection }, catalog || {});
     persist();
     emit();
@@ -285,6 +323,10 @@ export function createComparisonController({
     clearComparison,
     selectComparisonCell,
   };
+}
+
+function snapshotCatalog(catalog) {
+  return { catalogDigest: catalog.digest, evidenceIds: catalog.evidenceIds };
 }
 
 export async function loadPublicComparisonCatalog(fetchImpl, signal) {

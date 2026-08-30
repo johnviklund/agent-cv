@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "synthetic": true,
+  "fixtures": {
+    "oneRole": {
+      "roles": [
+        {
+          "title": "Applied AI Product Lead",
+          "company": "Northstar Mobility (fictional)",
+          "description": "Lead the product strategy and delivery of customer-facing AI products. Define measurable outcomes, establish responsible-AI guardrails, align business and engineering teams, and take experiments from discovery through production readiness. Experience with conversational AI, agent workflows, and enterprise change is useful."
+        }
+      ]
+    },
+    "twoRoles": {
+      "roles": [
+        {
+          "title": "Applied AI Product Lead",
+          "company": "Northstar Mobility (fictional)",
+          "description": "Lead the product strategy and delivery of customer-facing AI products. Define measurable outcomes, establish responsible-AI guardrails, align business and engineering teams, and take experiments from discovery through production readiness. Experience with conversational AI, agent workflows, and enterprise change is useful."
+        },
+        {
+          "title": "Agent Platform Engineering Lead",
+          "company": "Harbor Systems (fictional)",
+          "description": "Guide a small engineering group building reliable agent infrastructure. Own tool integration, retrieval, structured outputs, evaluation, human review, observability, and safe release practices. The role combines hands-on architecture with technical product decisions and cross-functional communication."
+        }
+      ]
+    },
+    "threeRoles": {
+      "roles": [
+        {
+          "title": "Applied AI Product Lead",
+          "company": "Northstar Mobility (fictional)",
+          "description": "Lead the product strategy and delivery of customer-facing AI products. Define measurable outcomes, establish responsible-AI guardrails, align business and engineering teams, and take experiments from discovery through production readiness. Experience with conversational AI, agent workflows, and enterprise change is useful."
+        },
+        {
+          "title": "Agent Platform Engineering Lead",
+          "company": "Harbor Systems (fictional)",
+          "description": "Guide a small engineering group building reliable agent infrastructure. Own tool integration, retrieval, structured outputs, evaluation, human review, observability, and safe release practices. The role combines hands-on architecture with technical product decisions and cross-functional communication."
+        },
+        {
+          "title": "CX AI Transformation Lead",
+          "company": "Lumen Service Group (fictional)",
+          "description": "Shape an enterprise roadmap for AI across customer care and digital service. Connect opportunity discovery, governance, CRM and contact-center workflows, adoption, metrics, and operational change. Work across global business, product, technology, security, and service teams."
+        }
+      ]
+    }
+  }
+}

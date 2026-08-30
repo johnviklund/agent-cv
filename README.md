@@ -29,11 +29,13 @@ Current compatibility is intentionally stated narrowly:
 
 | Client path | Current status | Portable fallback |
 | --- | --- | --- |
-| OpenAI ChatGPT Work/Codex built-in browser | Implemented against OpenAI's documented site-tools API; live-client verification is pending | Manual UI and HTTP API |
+| OpenAI ChatGPT Work/Codex built-in browser | Localhost discovery and invocation verified in the in-app browser; production comparison validation is pending | Manual UI and HTTP API |
 | Chrome experimental WebMCP implementation | Native registration and invocation tested locally | Manual UI and HTTP API |
 | Grok, Hermes Agent, OpenClaw, Claude, and other agents | No native WebMCP certification claimed | Ordinary browser automation, manual UI, public resources, or HTTP API |
 
 The comparison sends supplied role text through the Cloudflare Worker to the OpenAI API. It uses a strict structured contract, approved evidence IDs, same-origin browser controls, a separate rate limit and monthly budget, and transient per-tab state. See the deployed `/AGENTS.md` and `/privacy/` documents for the complete agent and data-handling contract.
+
+Challenge reproduction fixtures, the submission checklist, the conservative cost ceiling, and the narrated demo script are in [`docs/webmcp-challenge-submission.md`](docs/webmcp-challenge-submission.md). Local ChatGPT/Codex verification covered discovery of all four tools, a safe state read, and four-role rejection; a successful production comparison remains a pre-submission gate.
 
 ## Run it locally
 

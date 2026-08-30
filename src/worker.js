@@ -21,6 +21,7 @@ import {
   loadApplicationContext,
 } from "./applications.js";
 import { sanitizeOpenAIResponseStream } from "./openai-stream.js";
+import { handleCompare } from "./comparison-handler.js";
 
 const JSON_HEADERS = {
   "content-type": "application/json; charset=utf-8",
@@ -40,6 +41,7 @@ const MAX_ARCHIVED_ANSWER_CHARACTERS = 16_000;
 const OPENAI_RESPONSE_HEADER_TIMEOUT_MS = 30_000;
 const OBSERVED_RESOURCE_PATHS = new Set([
   "/AGENTS.md",
+  "/evidence.json",
   "/llms.txt",
   "/cv.md",
   "/overview.md",
@@ -53,7 +55,12 @@ export async function handleRequest(
   request,
   env,
   context,
-  { fetchImpl = fetch, systemPrompt = "", openAIConnectTimeoutMs = OPENAI_RESPONSE_HEADER_TIMEOUT_MS } = {},
+  {
+    fetchImpl = fetch,
+    systemPrompt = "",
+    openAIConnectTimeoutMs = OPENAI_RESPONSE_HEADER_TIMEOUT_MS,
+    comparisonOpenAIConnectTimeoutMs,
+  } = {},
 ) {
   const url = new URL(request.url);
   if (LEGACY_HOSTS.has(url.hostname)) {
@@ -101,6 +108,13 @@ export async function handleRequest(
 
   if (url.pathname === "/api/ask") {
     return handleAsk(request, env, context, { fetchImpl, systemPrompt, openAIConnectTimeoutMs });
+  }
+
+  if (url.pathname === "/api/compare") {
+    return handleCompare(request, env, {
+      fetchImpl,
+      ...(comparisonOpenAIConnectTimeoutMs === undefined ? {} : { openAIConnectTimeoutMs: comparisonOpenAIConnectTimeoutMs }),
+    });
   }
 
   if (applicationPageMatch) {

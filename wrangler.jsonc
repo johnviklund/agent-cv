@@ -50,6 +50,10 @@
       {
         "name": "CHAT_BUDGET",
         "class_name": "BudgetCounter"
+      },
+      {
+        "name": "COMPARISON_BUDGET",
+        "class_name": "BudgetCounter"
       }
     ]
   },
@@ -73,6 +77,14 @@
         "limit": 12,
         "period": 60
       }
+    },
+    {
+      "name": "COMPARISON_RATE_LIMITER",
+      "namespace_id": "1002",
+      "simple": {
+        "limit": 6,
+        "period": 60
+      }
     }
   ],
   "vars": {
@@ -80,6 +92,9 @@
     "OPENAI_REASONING_EFFORT": "none",
     "MAX_OUTPUT_TOKENS": "700",
     "MONTHLY_REQUEST_CAP": "1000",
+    "COMPARISON_MODEL": "gpt-5.6-luna",
+    "COMPARISON_MAX_OUTPUT_TOKENS": "8000",
+    "COMPARISON_MONTHLY_REQUEST_CAP": "60",
     "ARCHIVE_RETENTION_DAYS": "90",
     "CONTACT_EMAIL": "johnwik@gmail.com"
   }

@@ -4,6 +4,7 @@ import { BudgetCounter, handleRequest } from "../src/worker.js";
 import { readRecordsWithStatus } from "../src/archive.js";
 
 const ASK_URL = "https://example.test/api/ask";
+const COMPARE_URL = "https://example.test/api/compare";
 const CANONICAL_ORIGIN = "https://johnviklund.com";
 const VALID_PAYLOAD = {
   messages: [{ role: "user", content: "What has John built?" }],
@@ -518,24 +519,30 @@ test("bounded analytics reads report truncation instead of silently returning pa
   assert.equal(result.truncated, true);
 });
 
-test("machine-readable resource fetches create bot-friendly access telemetry without IP data", async () => {
+test("evidence catalog fetches create path-only bot telemetry without IP or content", async () => {
   const archive = memoryKv();
   const context = collectingContext();
-  const request = new Request("https://example.test/AGENTS.md", {
-    headers: { "user-agent": "ExampleBot/1.0", "cf-connecting-ip": "192.0.2.99" },
+  const request = new Request("https://example.test/evidence.json", {
+    headers: {
+      "user-agent": "ExampleBot/1.0",
+      "cf-connecting-ip": "192.0.2.99",
+      "x-role-text-sentinel": "CONFIDENTIAL_ROLE_TEXT",
+    },
   });
   const response = await handleRequest(request, baseEnv({
     ARCHIVE: archive,
-    ASSETS: { fetch: async () => new Response("# Agent instructions") },
+    ASSETS: { fetch: async () => Response.json({ schemaVersion: 1, items: [] }) },
   }), context);
   assert.equal(response.status, 200);
   await settleContext(context);
 
   const resourceWrite = archive.puts.find(({ key }) => key.startsWith("resource:"));
   const record = JSON.parse(resourceWrite.value);
-  assert.equal(record.path, "/AGENTS.md");
+  assert.deepEqual(Object.keys(record).sort(), ["createdAt", "expiresAt", "path", "schemaVersion", "type", "visitorType"].sort());
+  assert.equal(record.path, "/evidence.json");
   assert.equal(record.visitorType, "bot");
   assert.equal(JSON.stringify(record).includes("192.0.2.99"), false);
+  assert.equal(JSON.stringify(record).includes("CONFIDENTIAL_ROLE_TEXT"), false);
 });
 
 test("admin creates and revokes expiring application links without exposing JD or private notes publicly", async () => {
@@ -697,6 +704,306 @@ test("application chat adds an untrusted JD to the prompt while excluding privat
   assert.doesNotMatch(upstreamBody.instructions, /PRIVATE_NOTE_SENTINEL/);
 });
 
+test("comparison preflight allows the request origin and rejects hostile browser origins", async () => {
+  const allowed = await handleRequest(new Request(COMPARE_URL, {
+    method: "OPTIONS",
+    headers: {
+      origin: "https://example.test",
+      "access-control-request-method": "POST",
+      "access-control-request-headers": "content-type",
+    },
+  }), baseEnv(), emptyContext());
+  assert.equal(allowed.status, 204);
+  assert.equal(allowed.headers.get("access-control-allow-origin"), "https://example.test");
+
+  const hostile = await handleRequest(new Request(COMPARE_URL, {
+    method: "OPTIONS",
+    headers: { origin: "https://hostile.example", "access-control-request-method": "POST" },
+  }), baseEnv(), emptyContext());
+  assert.equal(hostile.status, 403);
+  assert.equal(hostile.headers.get("access-control-allow-origin"), null);
+});
+
+test("comparison rejects hostile browser metadata and non-JSON posts before parsing", async () => {
+  let limiterCalls = 0;
+  const env = comparisonEnv({
+    COMPARISON_RATE_LIMITER: { limit: async () => { limiterCalls += 1; return { success: true }; } },
+  });
+  const hostile = await handleRequest(compareRequest(undefined, {
+    origin: "https://hostile.example",
+  }), env, emptyContext());
+  assert.equal(hostile.status, 403);
+
+  const crossSite = await handleRequest(compareRequest(undefined, {
+    "sec-fetch-site": "cross-site",
+  }), env, emptyContext());
+  assert.equal(crossSite.status, 403);
+
+  const spoofedBrowser = await handleRequest(compareRequest(undefined, {
+    origin: "",
+    "sec-fetch-site": "same-origin",
+  }), env, emptyContext());
+  assert.equal(spoofedBrowser.status, 403);
+
+  const formPost = await handleRequest(new Request(COMPARE_URL, {
+    method: "POST",
+    headers: { "content-type": "text/plain" },
+    body: "roles=not-json",
+  }), env, emptyContext());
+  assert.equal(formPost.status, 415);
+  assert.equal(limiterCalls, 4);
+});
+
+test("invalid comparison payloads consume abuse attempts but not monthly budget", async () => {
+  let limiterCalls = 0;
+  let budgetCalls = 0;
+  const env = comparisonEnv({
+    COMPARISON_RATE_LIMITER: { limit: async () => { limiterCalls += 1; return { success: true }; } },
+    COMPARISON_BUDGET: budgetBinding(true, () => { budgetCalls += 1; }),
+  });
+  const payloads = [
+    "{",
+    JSON.stringify({ roles: [] }),
+    JSON.stringify({ roles: Array.from({ length: 4 }, (_, index) => ({ title: `Role ${index}`, description: "Valid description" })) }),
+    JSON.stringify({ roles: [{ title: "Role", description: "x".repeat(20_000) }] }),
+    JSON.stringify({ roles: [{ title: "Role", description: "Valid description", score: 100 }] }),
+  ];
+
+  for (const body of payloads) {
+    const response = await handleRequest(compareRequest(body), env, emptyContext());
+    assert.ok(response.status === 400 || response.status === 413);
+  }
+  assert.equal(limiterCalls, payloads.length);
+  assert.equal(budgetCalls, 0);
+});
+
+test("chunked comparison bodies without Content-Length are cancelled above the byte limit", async () => {
+  let bodyCancelled = false;
+  let budgetCalls = 0;
+  let upstreamCalls = 0;
+  const body = new ReadableStream({
+    start(controller) {
+      controller.enqueue(new Uint8Array(20_001));
+    },
+    cancel() { bodyCancelled = true; },
+  });
+  const request = new Request(COMPARE_URL, {
+    method: "POST",
+    headers: { "content-type": "application/json", "cf-connecting-ip": "192.0.2.2" },
+    body,
+    duplex: "half",
+  });
+  const env = comparisonEnv({
+    COMPARISON_BUDGET: budgetBinding(true, () => { budgetCalls += 1; }),
+  });
+
+  assert.equal(request.headers.get("content-length"), null);
+  const response = await handleRequest(request, env, emptyContext(), {
+    fetchImpl: async () => { upstreamCalls += 1; return new Response("unused"); },
+  });
+
+  assert.equal(response.status, 413);
+  assert.equal(bodyCancelled, true);
+  assert.equal(budgetCalls, 0);
+  assert.equal(upstreamCalls, 0);
+});
+
+test("comparison fails closed when production limiter, budget, or secret is missing", async () => {
+  const cases = [
+    comparisonEnv({ COMPARISON_RATE_LIMITER: undefined }),
+    comparisonEnv({ COMPARISON_BUDGET: undefined }),
+    comparisonEnv({ OPENAI_API_KEY: undefined }),
+  ];
+  for (const env of cases) {
+    const response = await handleRequest(compareRequest(), env, emptyContext());
+    assert.equal(response.status, 503);
+    assert.equal((await response.json()).fallback, "/cv/");
+  }
+});
+
+test("server agents without Origin can create a grounded comparison without persistence", async () => {
+  const archive = memoryKv();
+  let upstream;
+  let budgetReservation;
+  const env = comparisonEnv({
+    ARCHIVE: archive,
+    COMPARISON_MAX_OUTPUT_TOKENS: "99999",
+    COMPARISON_MONTHLY_REQUEST_CAP: "999",
+    COMPARISON_BUDGET: budgetBinding(true, (value) => { budgetReservation = value; }),
+  });
+  const response = await handleRequest(compareRequest(JSON.stringify({
+    roles: [{
+      title: "AI Product Lead",
+      company: "Example Co",
+      description: "ROLE_TEXT_PRIVACY_SENTINEL Lead AI products and governance.",
+    }],
+  }), { origin: "" }), env, collectingContext(), {
+    fetchImpl: async (url, init) => {
+      upstream = { url, init, body: JSON.parse(init.body) };
+      return Response.json(comparisonProviderResponse({ roleCount: 1 }));
+    },
+  });
+
+  assert.equal(response.status, 200);
+  const result = await response.json();
+  assert.equal(result.roles[0].id, "role_01");
+  assert.equal(result.rows[0].cells[0].id, "cell_row_01_role_01");
+  assert.equal(result.rows[0].cells[0].coverage, "documented");
+  assert.equal(result.rows[0].cells[0].evidence[0].evidenceId, "cv.profile");
+  assert.equal(upstream.url, "https://api.openai.com/v1/responses");
+  assert.equal(upstream.body.store, false);
+  assert.equal(upstream.body.stream, false);
+  assert.equal(upstream.body.background, false);
+  assert.equal(upstream.body.model, "gpt-5.6-luna");
+  assert.equal(upstream.body.max_output_tokens, 8_000);
+  assert.equal(upstream.body.text.format.type, "json_schema");
+  assert.equal(upstream.body.text.format.strict, true);
+  const providerCellSchema = upstream.body.text.format.schema.properties.rows.items.properties.cells.items;
+  assert.equal(providerCellSchema.properties.questions, undefined);
+  assert.deepEqual(providerCellSchema.properties.questionKinds.items.enum, [
+    "ownership_scope",
+    "evidence_depth",
+    "transfer_context",
+    "gap_clarification",
+  ]);
+  assert.match(JSON.stringify(upstream.body.input), /ROLE_TEXT_PRIVACY_SENTINEL/);
+  assert.match(budgetReservation.id, /comparison:/);
+  assert.equal(JSON.parse(budgetReservation.init.body).cap, 60);
+  assert.doesNotMatch(JSON.stringify(result), /ROLE_TEXT_PRIVACY_SENTINEL/);
+  assert.equal([...archive.values.values()].some((value) => String(value).includes("ROLE_TEXT_PRIVACY_SENTINEL")), false);
+});
+
+test("comparison rejects invalid model evidence and bounds provider failures", async () => {
+  const invalidEvidence = comparisonProviderResponse({ roleCount: 1 });
+  const draft = JSON.parse(invalidEvidence.output[0].content[0].text);
+  draft.rows[0].cells[0].evidence[0].evidenceId = "invented.employer";
+  invalidEvidence.output[0].content[0].text = JSON.stringify(draft);
+  const invalid = await handleRequest(compareRequest(), comparisonEnv(), emptyContext(), {
+    fetchImpl: async () => Response.json(invalidEvidence),
+  });
+  assert.equal(invalid.status, 502);
+  assert.doesNotMatch(JSON.stringify(await invalid.json()), /invented\.employer/);
+
+  const provider = await handleRequest(compareRequest(), comparisonEnv(), emptyContext(), {
+    fetchImpl: async () => new Response("PRIVATE_PROVIDER_DIAGNOSTIC", { status: 429 }),
+  });
+  assert.equal(provider.status, 429);
+  assert.doesNotMatch(JSON.stringify(await provider.json()), /PRIVATE_PROVIDER_DIAGNOSTIC/);
+});
+
+test("comparison header timeout and client cancellation abort upstream work", async () => {
+  let timeoutAborted = false;
+  const timeout = await handleRequest(compareRequest(), comparisonEnv(), emptyContext(), {
+    comparisonOpenAIConnectTimeoutMs: 5,
+    fetchImpl: async (_url, init) => new Promise((_resolve, reject) => {
+      init.signal.addEventListener("abort", () => {
+        timeoutAborted = true;
+        reject(new DOMException("Timed out", "AbortError"));
+      });
+    }),
+  });
+  assert.equal(timeout.status, 504);
+  assert.equal(timeoutAborted, true);
+
+  const delayedProviderBody = JSON.stringify(comparisonProviderResponse({ roleCount: 1 }));
+  const headersArriveBeforeBody = await handleRequest(compareRequest(), comparisonEnv(), emptyContext(), {
+    comparisonOpenAIConnectTimeoutMs: 5,
+    fetchImpl: async () => new Response(new ReadableStream({
+      start(streamController) {
+        setTimeout(() => {
+          streamController.enqueue(new TextEncoder().encode(delayedProviderBody));
+          streamController.close();
+        }, 20);
+      },
+    })),
+  });
+  assert.equal(headersArriveBeforeBody.status, 200);
+
+  const controller = new AbortController();
+  let clientAborted = false;
+  let signalFetchStarted;
+  const fetchStarted = new Promise((resolve) => { signalFetchStarted = resolve; });
+  const pending = handleRequest(compareRequest(undefined, {}, controller.signal), comparisonEnv(), emptyContext(), {
+    fetchImpl: async (_url, init) => new Promise((_resolve, reject) => {
+      signalFetchStarted();
+      init.signal.addEventListener("abort", () => {
+        clientAborted = true;
+        reject(new DOMException("Cancelled", "AbortError"));
+      });
+    }),
+  });
+  await fetchStarted;
+  controller.abort();
+  const cancelled = await pending;
+  assert.equal(cancelled.status, 499);
+  assert.equal(clientAborted, true);
+
+  const lateController = new AbortController();
+  let resolveLate;
+  let signalLateFetchStarted;
+  const lateFetchStarted = new Promise((resolve) => { signalLateFetchStarted = resolve; });
+  const latePending = handleRequest(compareRequest(undefined, {}, lateController.signal), comparisonEnv(), emptyContext(), {
+    fetchImpl: async () => new Promise((resolve) => {
+      resolveLate = resolve;
+      signalLateFetchStarted();
+    }),
+  });
+  await lateFetchStarted;
+  lateController.abort();
+  resolveLate(Response.json(comparisonProviderResponse({ roleCount: 1 })));
+  const late = await latePending;
+  assert.equal(late.status, 499);
+
+  const bodyController = new AbortController();
+  let signalBodyReadStarted;
+  const bodyReadStarted = new Promise((resolve) => { signalBodyReadStarted = resolve; });
+  const bodyPending = handleRequest(compareRequest(undefined, {}, bodyController.signal), comparisonEnv(), emptyContext(), {
+    fetchImpl: async () => new Response(new ReadableStream({
+      pull() { signalBodyReadStarted(); },
+    })),
+  });
+  await bodyReadStarted;
+  bodyController.abort();
+  const bodyCancelled = await bodyPending;
+  assert.equal(bodyCancelled.status, 499);
+});
+
+test("comparison has an independent atomic monthly bucket", async () => {
+  const counter = new BudgetCounter({ storage: new TransactionalStorage({ count: 0 }) });
+  let upstreamCalls = 0;
+  const env = comparisonEnv({
+    COMPARISON_MONTHLY_REQUEST_CAP: "1",
+    COMPARISON_BUDGET: {
+      idFromName: (name) => `id:${name}`,
+      get: () => ({ fetch: (url, init) => counter.fetch(new Request(url, init)) }),
+    },
+  });
+  const fetchImpl = async () => {
+    upstreamCalls += 1;
+    return Response.json(comparisonProviderResponse({ roleCount: 1 }));
+  };
+  const [first, second] = await Promise.all([
+    handleRequest(compareRequest(), env, emptyContext(), { fetchImpl }),
+    handleRequest(compareRequest(), env, emptyContext(), { fetchImpl }),
+  ]);
+  assert.deepEqual([first.status, second.status].sort(), [200, 503]);
+  assert.equal(upstreamCalls, 1);
+});
+
+test("comparison routing does not change the sanitized ask stream contract", async () => {
+  const response = await handleRequest(askRequest(), comparisonEnv(), emptyContext(), {
+    fetchImpl: async () => new Response([
+      'event: response.output_text.delta\ndata: {"type":"response.output_text.delta","delta":"Still sanitized"}\n\n',
+      'event: response.completed\ndata: {"type":"response.completed","response":{"input":"PRIVATE"}}\n\n',
+    ].join("")),
+  });
+  assert.equal(response.status, 200);
+  assert.equal(await response.text(), [
+    'event: response.output_text.delta\ndata: {"type":"response.output_text.delta","delta":"Still sanitized"}\n\n',
+    'event: response.completed\ndata: {"type":"response.completed"}\n\n',
+  ].join(""));
+});
+
 test("the Durable Object grants only one concurrent reservation at cap minus one", async () => {
   const storage = new TransactionalStorage({ count: 4 });
   const counter = new BudgetCounter({ storage });
@@ -723,6 +1030,18 @@ function askRequest(body = JSON.stringify(VALID_PAYLOAD)) {
   });
 }
 
+function compareRequest(body = JSON.stringify({
+  roles: [{ title: "AI Product Lead", description: "Lead AI products and governance." }],
+}), extraHeaders = {}, signal) {
+  const headers = new Headers({
+    "content-type": "application/json",
+    "cf-connecting-ip": "192.0.2.2",
+    ...extraHeaders,
+  });
+  if (extraHeaders.origin === "") headers.delete("origin");
+  return new Request(COMPARE_URL, { method: "POST", headers, body, signal });
+}
+
 function baseEnv(overrides = {}) {
   return {
     OPENAI_API_KEY: "test-secret",
@@ -733,6 +1052,40 @@ function baseEnv(overrides = {}) {
     CHAT_RATE_LIMITER: { limit: async () => ({ success: true }) },
     CHAT_BUDGET: budgetBinding(true),
     ...overrides,
+  };
+}
+
+function comparisonEnv(overrides = {}) {
+  return baseEnv({
+    COMPARISON_MODEL: "gpt-5.6-luna",
+    COMPARISON_MAX_OUTPUT_TOKENS: "8000",
+    COMPARISON_MONTHLY_REQUEST_CAP: "60",
+    COMPARISON_RATE_LIMITER: { limit: async () => ({ success: true }) },
+    COMPARISON_BUDGET: budgetBinding(true),
+    ...overrides,
+  });
+}
+
+function comparisonProviderResponse({ roleCount }) {
+  return {
+    output: [{
+      type: "message",
+      content: [{
+        type: "output_text",
+        text: JSON.stringify({
+          rows: [{
+            label: "Applied AI leadership",
+            cells: Array.from({ length: roleCount }, (_, roleIndex) => ({
+              roleIndex,
+              requirement: "Lead applied AI products",
+              coverage: "documented",
+              evidence: [{ evidenceId: "cv.profile", reasonCode: "direct_responsibility" }],
+              questionKinds: [],
+            })),
+          }],
+        }),
+      }],
+    }],
   };
 }
 

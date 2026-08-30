@@ -1,6 +1,6 @@
 /*
   Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-NZJ3J2QgfnABTUrd2EG9lHsA+fiMAKDMxrVuT/jCzZA='; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
-  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), tools=(self)
   Referrer-Policy: strict-origin-when-cross-origin
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
@@ -11,6 +11,11 @@
 
 /llms.txt
   Access-Control-Allow-Origin: *
+
+/evidence.json
+  Access-Control-Allow-Origin: *
+  Content-Type: application/json; charset=utf-8
+  Cache-Control: public, max-age=0, must-revalidate
 
 /sitemap.xml
   Content-Type: application/xml; charset=utf-8

@@ -12,6 +12,7 @@ await checkApiResourceParity();
 await checkInlineScriptCsp();
 await checkDiscoveryResources();
 await checkFreshnessParity();
+await checkComparisonContractParity();
 
 for (const page of pages) {
   const html = await readFile(page, "utf8");
@@ -148,6 +149,93 @@ async function checkFreshnessParity() {
   ];
   if (dates.some((date) => !date) || new Set(dates).size !== 1) {
     failures.push("public freshness metadata is inconsistent");
+  }
+}
+
+async function checkComparisonContractParity() {
+  const [contract, evidence, agents, llms, webmcp, privacy, headers, worker] = await Promise.all([
+    readFile(resolve(root, "config/comparison-contract.json"), "utf8").then(JSON.parse),
+    readFile(resolve(publicDir, "evidence.json"), "utf8").then(JSON.parse),
+    readFile(resolve(publicDir, "AGENTS.md"), "utf8"),
+    readFile(resolve(publicDir, "llms.txt"), "utf8"),
+    readFile(resolve(publicDir, "webmcp.js"), "utf8"),
+    readFile(resolve(publicDir, "privacy", "index.html"), "utf8"),
+    readFile(resolve(publicDir, "_headers"), "utf8"),
+    readFile(resolve(root, "src", "worker.js"), "utf8"),
+  ]);
+  const discovery = [agents, llms];
+
+  for (const value of ["/#compare", "/evidence.json", "POST /api/compare"]) {
+    for (const resource of discovery) {
+      if (!resource.includes(value)) failures.push(`comparison discovery: missing ${value}`);
+    }
+  }
+
+  const toolBlock = webmcp.match(/const TOOL_NAMES = Object\.freeze\(\{([\s\S]*?)\}\);/)?.[1] || "";
+  const toolNames = [...toolBlock.matchAll(/:\s*"([a-z][a-z0-9_]*)"/g)].map((match) => match[1]);
+  if (toolNames.length !== 4 || new Set(toolNames).size !== 4) {
+    failures.push("webmcp.js: expected exactly four unique page tool names");
+  }
+  for (const name of toolNames) {
+    if (!agents.includes(`\`${name}\``) || !llms.includes(`\`${name}\``)) {
+      failures.push(`comparison discovery: missing WebMCP tool ${name}`);
+    }
+    if (new RegExp(`(?:GET|POST|PUT|PATCH|DELETE)\\s+/${name}`).test(`${agents}\n${llms}`)) {
+      failures.push(`comparison discovery: page tool documented as HTTP endpoint ${name}`);
+    }
+  }
+
+  const documentedLimits = [
+    contract.limits.minRoles,
+    contract.limits.maxRoles,
+    contract.limits.maxTitleCharacters,
+    contract.limits.maxCompanyCharacters,
+    contract.limits.maxDescriptionCharacters,
+    contract.limits.maxCombinedRoleCharacters,
+    contract.limits.maxBodyBytes,
+    contract.limits.maxRows,
+    contract.limits.maxRequirementsPerRole,
+  ];
+  for (const value of documentedLimits) {
+    const formatted = Number(value).toLocaleString("en-US");
+    if (!agents.includes(formatted) && !agents.includes(String(value))) {
+      failures.push(`AGENTS.md: missing comparison limit ${formatted}`);
+    }
+  }
+  for (const value of [...contract.coverageStates, ...Object.values(contract.reasonCodes).flat()]) {
+    if (!agents.includes(`\`${value}\``)) failures.push(`AGENTS.md: missing comparison enum ${value}`);
+  }
+  if (evidence.schemaVersion !== contract.schemaVersion || !/^sha256:[a-f0-9]{64}$/.test(evidence.digest || "")) {
+    failures.push("evidence.json: comparison schema version or digest is invalid");
+  }
+
+  const evidenceHeaders = headers.match(/\/evidence\.json\n([\s\S]*?)(?=\n\/|$)/)?.[1] || "";
+  for (const value of [
+    "Access-Control-Allow-Origin: *",
+    "Content-Type: application/json; charset=utf-8",
+    "Cache-Control: public, max-age=0, must-revalidate",
+  ]) {
+    if (!evidenceHeaders.includes(value)) failures.push(`_headers: evidence.json missing ${value}`);
+  }
+  if (!/Permissions-Policy:[^\n]*tools=\(self\)/.test(headers)) {
+    failures.push("_headers: WebMCP tools are not restricted to self");
+  }
+  if (!/Content-Security-Policy:[^\n]*script-src 'self'[^\n]*frame-ancestors 'none'/.test(headers)) {
+    failures.push("_headers: comparison page must preserve self-hosted scripts and frame blocking");
+  }
+
+  for (const pattern of [
+    /same-origin <code>sessionStorage<\/code>/i,
+    /does not archive or persist[^.]*role comparison/i,
+    /<code>store: false<\/code>/i,
+    /<code>background: false<\/code>/i,
+    /up to 30 days/i,
+    /90 days/i,
+  ]) {
+    if (!pattern.test(privacy)) failures.push(`privacy: missing comparison disclosure ${pattern}`);
+  }
+  if (!worker.match(/OBSERVED_RESOURCE_PATHS[\s\S]*["']\/evidence\.json["']/)) {
+    failures.push("worker: evidence.json is missing path-only resource telemetry");
   }
 }
 

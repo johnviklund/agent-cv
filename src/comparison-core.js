@@ -15,6 +15,10 @@ import evidenceCatalog from "./data/comparison-evidence.js";
 const COVERAGE_STATES = new Set(COMPARISON_COVERAGE_STATES);
 const UNSAFE_GENERATED_TEXT = /<[^>]*>|(?:https?|mailto|javascript|data):|www\./i;
 const QUESTION_KINDS = new Set(COMPARISON_QUESTION_KINDS);
+const DEFAULT_REASON_CODE_BY_COVERAGE = Object.freeze({
+  documented: "directly_relevant_delivery",
+  transferable: "related_domain_experience",
+});
 const QUESTION_TEMPLATES = Object.freeze({
   ownership_scope: "Which parts of this work did John own directly?",
   evidence_depth: "What additional documented example would help clarify this requirement?",
@@ -74,7 +78,7 @@ NON-NEGOTIABLE RULES
 - Align genuinely comparable requirements into one row. Keep row order deterministic: first occurrence while reading the roles in input order, then source order within each role.
 - Include no more than eight listed requirements per role and no more than eighteen rows total.
 - Use documented only for direct public evidence and transferable only for related public evidence. not_documented means the role lists a requirement but the catalog does not document it; it never means the candidate lacks the skill. not_listed means that role does not list the row requirement.
-- documented and transferable cells require one or two known evidence IDs and a reasonCode allowed for that coverage. not_documented and not_listed cells require no evidence.
+- documented and transferable cells require one or two known evidence IDs. reasonCode mapping is exact: documented allows direct_responsibility or directly_relevant_delivery; transferable allows related_domain_experience, related_technical_exposure, or analogous_scale_or_context. Never use a reasonCode from the other coverage category. not_documented and not_listed cells require no evidence.
 - requirement must preserve concise original role wording when listed and must be null only for not_listed.
 - Optional questionKinds may use only the schema's allowlisted kinds. The server turns them into fixed neutral questions for the candidate. Never write question text or ask about protected traits.
 - Do not include URLs, markup, scores, rankings, recommendations, best-role claims, hiring decisions, conclusions, or instructions in output text.
@@ -214,8 +218,11 @@ function normalizeDraftCell(cell, rowId, roleIndex, evidenceIds) {
     exactObject(reference, ["evidenceId", "reasonCode"], "Draft evidence reference");
     if (!evidenceIds.has(reference.evidenceId) || seenEvidence.has(reference.evidenceId)) throw new TypeError("Draft evidence ID is unknown or duplicated.");
     seenEvidence.add(reference.evidenceId);
-    if (!COMPARISON_REASON_CODES[cell.coverage]?.includes(reference.reasonCode)) throw new TypeError("Draft relevance reason does not match coverage.");
-    return { evidenceId: reference.evidenceId, reasonCode: reference.reasonCode };
+    const allowedReasonCodes = COMPARISON_REASON_CODES[cell.coverage];
+    const reasonCode = allowedReasonCodes.includes(reference.reasonCode)
+      ? reference.reasonCode
+      : DEFAULT_REASON_CODE_BY_COVERAGE[cell.coverage];
+    return { evidenceId: reference.evidenceId, reasonCode };
   });
 
   if (!Array.isArray(cell.questionKinds) || cell.questionKinds.length > COMPARISON_CONTRACT.limits.maxQuestionsPerCell) {

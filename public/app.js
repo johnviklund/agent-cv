@@ -1,6 +1,8 @@
 import { consumeEventStream } from "./stream.js";
 import { renderMarkdown } from "./markdown.js";
 import { createLink } from "./dom.js";
+import { createComparisonController } from "./comparison-controller.js";
+import { createWorkspaceController } from "./workspace-controller.js";
 import {
   applicationSlugFromPath,
   canAddUserTurn,
@@ -24,6 +26,16 @@ const homeInput = document.querySelector("[data-initial-input]");
 const conversation = document.querySelector("[data-conversation]");
 const messageList = document.querySelector("[data-message-list]");
 const followups = document.querySelector("[data-followups]");
+
+export const comparisonController = home
+  ? createComparisonController({ storage: window.sessionStorage, fetchImpl: window.fetch.bind(window) })
+  : null;
+export const workspaceController = comparisonController
+  ? createWorkspaceController({
+    comparison: comparisonController,
+    chat: { isBusy: () => Boolean(state.controller) },
+  })
+  : null;
 
 document.querySelectorAll("[data-prompt]").forEach((control) => {
   control.addEventListener("click", (event) => {
@@ -68,6 +80,8 @@ const contactValue = document.querySelector("[data-contact-value]");
 if (contactValue) loadContact(contactValue);
 
 if (home) {
+  workspaceController.start();
+  comparisonController.initialize();
   state.applicationSlug = readPendingApplication();
   const prompt = readPendingPrompt();
   if (prompt) startConversation(prompt);

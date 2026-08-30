@@ -97,6 +97,19 @@ test("a valid provider draft becomes a deterministic canonical comparison", () =
   assert.deepEqual(BROWSER_COMPARISON_RESULT_SCHEMA.required, ["schemaVersion", "catalogDigest", "roles", "rows"]);
 });
 
+test("provider reason-code category drift becomes safe server-authored metadata", () => {
+  const roles = validateComparisonPayload({ roles: ROLES }).roles;
+  const draft = validDraft();
+  draft.rows[0].cells[0].evidence[0].reasonCode = "related_technical_exposure";
+  draft.rows[0].cells[1].evidence[0].reasonCode = "direct_responsibility";
+
+  const result = canonicalizeComparisonDraft(draft, roles, evidenceCatalog);
+
+  assert.equal(result.rows[0].cells[0].evidence[0].reasonCode, "directly_relevant_delivery");
+  assert.equal(result.rows[0].cells[1].evidence[0].reasonCode, "related_domain_experience");
+  assert.equal(validateComparisonResult(result), true);
+});
+
 test("one-, two-, and three-role drafts preserve exact role and cell cardinality", () => {
   for (const roleCount of [1, 2, 3]) {
     const roles = Array.from({ length: roleCount }, (_, index) => ({

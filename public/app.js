@@ -2,7 +2,7 @@ import { consumeEventStream } from "./stream.js";
 import { renderMarkdown } from "./markdown.js";
 import { createLink } from "./dom.js";
 import { createComparisonController } from "./comparison-controller.js";
-import { createWorkspaceController } from "./workspace-controller.js";
+import { createWorkspaceController, modeFromHash } from "./workspace-controller.js";
 import { createComparisonView } from "./comparison-view.js";
 import { registerWebMCPTools } from "./webmcp.js";
 import {
@@ -33,7 +33,7 @@ const comparisonWorkspace = document.querySelector("[data-comparison-workspace]"
 const workspaceMessage = document.querySelector("[data-workspace-message]");
 let comparisonView = null;
 let webMCPRegistration = null;
-let workspaceFocusEnabled = window.location.hash.toLowerCase() === "#compare";
+let workspaceFocusEnabled = modeFromHash(window.location.hash) === "compare";
 
 export const comparisonController = home
   ? createComparisonController({

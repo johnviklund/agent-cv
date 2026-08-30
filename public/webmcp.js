@@ -1,9 +1,17 @@
 import {
   COMPARISON_CONTRACT,
   COMPARISON_COVERAGE_STATES,
+  COMPARISON_REQUEST_SCHEMA,
   COMPARISON_REASON_CODES,
   normalizeComparisonRequest,
 } from "./comparison-contract.js";
+
+const TOOL_NAMES = Object.freeze({
+  compare: "compare_candidate_roles",
+  state: "get_comparison_state",
+  focus: "focus_comparison_cell",
+  clear: "clear_role_comparison",
+});
 
 const DIGEST_PATTERN = /^sha256:[a-f0-9]{64}$/;
 const ROLE_ID_PATTERN = /^role_0[1-3]$/;
@@ -21,40 +29,6 @@ const EMPTY_INPUT_SCHEMA = Object.freeze({
   type: "object",
   additionalProperties: false,
   properties: {},
-});
-
-const COMPARE_INPUT_SCHEMA = Object.freeze({
-  type: "object",
-  additionalProperties: false,
-  required: ["roles"],
-  properties: {
-    roles: {
-      type: "array",
-      minItems: COMPARISON_CONTRACT.limits.minRoles,
-      maxItems: COMPARISON_CONTRACT.limits.maxRoles,
-      items: {
-        type: "object",
-        additionalProperties: false,
-        required: ["title", "description"],
-        properties: {
-          title: {
-            type: "string",
-            minLength: 1,
-            maxLength: COMPARISON_CONTRACT.limits.maxTitleCharacters,
-          },
-          company: {
-            type: "string",
-            maxLength: COMPARISON_CONTRACT.limits.maxCompanyCharacters,
-          },
-          description: {
-            type: "string",
-            minLength: 1,
-            maxLength: COMPARISON_CONTRACT.limits.maxDescriptionCharacters,
-          },
-        },
-      },
-    },
-  },
 });
 
 const FOCUS_INPUT_SCHEMA = Object.freeze({
@@ -100,43 +74,43 @@ export async function registerWebMCPTools({
 export function createToolDefinitions({ comparison, workspace, view }) {
   return [
     {
-      name: "compare_candidate_roles",
+      name: TOOL_NAMES.compare,
       title: "Compare roles (job text is sent to OpenAI)",
       description: "Compare one to three roles with John's published evidence. The supplied job titles, company names, and descriptions are sent to this site's comparison API and OpenAI for analysis before a result is shown on the page.",
-      inputSchema: COMPARE_INPUT_SCHEMA,
+      inputSchema: COMPARISON_REQUEST_SCHEMA,
       execute: (input, options) => safelyExecute(
-        "compare_candidate_roles",
+        TOOL_NAMES.compare,
         () => compareRoles({ comparison, workspace, view }, input, options),
       ),
     },
     {
-      name: "get_comparison_state",
+      name: TOOL_NAMES.state,
       title: "Get the visible role-comparison index",
       description: "Read a bounded index of the current comparison using only opaque IDs, controlled states, and public evidence identifiers. It excludes job text and generated prose.",
       inputSchema: EMPTY_INPUT_SCHEMA,
       annotations: { readOnlyHint: true },
       execute: (input) => safelyExecute(
-        "get_comparison_state",
+        TOOL_NAMES.state,
         () => getComparisonState({ comparison, workspace }, input),
       ),
     },
     {
-      name: "focus_comparison_cell",
+      name: TOOL_NAMES.focus,
       title: "Open a comparison cell",
       description: "Open and focus one existing role-and-requirement cell in the visible comparison workspace using its opaque IDs.",
       inputSchema: FOCUS_INPUT_SCHEMA,
       execute: (input) => safelyExecute(
-        "focus_comparison_cell",
+        TOOL_NAMES.focus,
         () => focusComparisonCell({ comparison, workspace, view }, input),
       ),
     },
     {
-      name: "clear_role_comparison",
+      name: TOOL_NAMES.clear,
       title: "Clear the role comparison",
       description: "Cancel any active comparison, clear its transient browser state, and leave the comparison workspace visible.",
       inputSchema: EMPTY_INPUT_SCHEMA,
       execute: (input) => safelyExecute(
-        "clear_role_comparison",
+        TOOL_NAMES.clear,
         () => clearComparison({ comparison, workspace }, input),
       ),
     },
@@ -152,15 +126,15 @@ async function compareRoles({ comparison, workspace, view }, input, options) {
       description,
     }));
   } catch {
-    return toolError("compare_candidate_roles", "invalid_input", "The WebMCP request is invalid.");
+    return toolError(TOOL_NAMES.compare, "invalid_input", "The WebMCP request is invalid.");
   }
 
   const signal = options?.signal;
   if (signal !== undefined && !isAbortSignal(signal)) {
-    return toolError("compare_candidate_roles", "invalid_input", "The WebMCP request is invalid.");
+    return toolError(TOOL_NAMES.compare, "invalid_input", "The WebMCP request is invalid.");
   }
-  if (signal?.aborted) return abortedResult("compare_candidate_roles");
-  const opened = openComparisonWorkspace(workspace, "compare_candidate_roles");
+  if (signal?.aborted) return abortedResult(TOOL_NAMES.compare);
+  const opened = openComparisonWorkspace(workspace, TOOL_NAMES.compare);
   if (opened) return opened;
 
   let aborted = false;
@@ -171,16 +145,16 @@ async function compareRoles({ comparison, workspace, view }, input, options) {
   signal?.addEventListener("abort", abort, { once: true });
   try {
     const outcome = await comparison.submitComparison(roles, { source: "webmcp" });
-    if (aborted || signal?.aborted) return abortedResult("compare_candidate_roles");
+    if (aborted || signal?.aborted) return abortedResult(TOOL_NAMES.compare);
     if (outcome?.status === "busy") {
-      return toolError("compare_candidate_roles", "comparison_busy", "A role comparison is already in progress.");
+      return toolError(TOOL_NAMES.compare, "comparison_busy", "A role comparison is already in progress.");
     }
     if (outcome?.status !== "ready") {
-      return toolError("compare_candidate_roles", "comparison_failed", "The role comparison could not be completed.");
+      return toolError(TOOL_NAMES.compare, "comparison_failed", "The role comparison could not be completed.");
     }
     await Promise.resolve();
     view.focusComparisonResult();
-    return semanticState("compare_candidate_roles", comparison.getState(), workspace.getMode(), knownEvidenceIds(comparison));
+    return semanticState(TOOL_NAMES.compare, comparison.getState(), workspace.getMode(), knownEvidenceIds(comparison));
   } finally {
     signal?.removeEventListener("abort", abort);
   }
@@ -188,9 +162,9 @@ async function compareRoles({ comparison, workspace, view }, input, options) {
 
 function getComparisonState({ comparison, workspace }, input) {
   if (!isEmptyObject(input)) {
-    return toolError("get_comparison_state", "invalid_input", "The WebMCP request is invalid.");
+    return toolError(TOOL_NAMES.state, "invalid_input", "The WebMCP request is invalid.");
   }
-  return semanticState("get_comparison_state", comparison.getState(), workspace.getMode(), knownEvidenceIds(comparison));
+  return semanticState(TOOL_NAMES.state, comparison.getState(), workspace.getMode(), knownEvidenceIds(comparison));
 }
 
 function focusComparisonCell({ comparison, workspace, view }, input) {
@@ -199,22 +173,22 @@ function focusComparisonCell({ comparison, workspace, view }, input) {
     || !ROLE_ID_PATTERN.test(input.roleId)
     || !ROW_ID_PATTERN.test(input.rowId)
   ) {
-    return toolError("focus_comparison_cell", "invalid_input", "The WebMCP request is invalid.");
+    return toolError(TOOL_NAMES.focus, "invalid_input", "The WebMCP request is invalid.");
   }
   const state = comparison.getState();
   const row = state?.result?.rows?.find(({ id }) => id === input.rowId);
   const cell = row?.cells?.find(({ roleId }) => roleId === input.roleId);
   if (!cell || !CELL_ID_PATTERN.test(cell.id)) {
-    return toolError("focus_comparison_cell", "cell_not_found", "That comparison cell is not available.");
+    return toolError(TOOL_NAMES.focus, "cell_not_found", "That comparison cell is not available.");
   }
-  const opened = openComparisonWorkspace(workspace, "focus_comparison_cell");
+  const opened = openComparisonWorkspace(workspace, TOOL_NAMES.focus);
   if (opened) return opened;
   const selection = { rowId: row.id, roleId: cell.roleId, cellId: cell.id };
   comparison.selectComparisonCell(selection);
   view.focusComparisonCell(selection);
   return {
     ok: true,
-    operation: "focus_comparison_cell",
+    operation: TOOL_NAMES.focus,
     visibleRegion: "comparison",
     ...selection,
   };
@@ -222,12 +196,12 @@ function focusComparisonCell({ comparison, workspace, view }, input) {
 
 function clearComparison({ comparison, workspace }, input) {
   if (!isEmptyObject(input)) {
-    return toolError("clear_role_comparison", "invalid_input", "The WebMCP request is invalid.");
+    return toolError(TOOL_NAMES.clear, "invalid_input", "The WebMCP request is invalid.");
   }
-  const opened = openComparisonWorkspace(workspace, "clear_role_comparison");
+  const opened = openComparisonWorkspace(workspace, TOOL_NAMES.clear);
   if (opened) return opened;
   comparison.clearComparison();
-  return semanticState("clear_role_comparison", comparison.getState(), workspace.getMode(), knownEvidenceIds(comparison));
+  return semanticState(TOOL_NAMES.clear, comparison.getState(), workspace.getMode(), knownEvidenceIds(comparison));
 }
 
 function semanticState(operation, state, visibleRegion, evidenceIds) {

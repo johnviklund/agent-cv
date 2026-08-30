@@ -1,4 +1,5 @@
 import { COMPARISON_CONTRACT } from "./comparison-contract.js";
+import { createLink } from "./dom.js";
 
 const COVERAGE_COPY = Object.freeze({
   documented: {
@@ -28,6 +29,11 @@ const REASON_LABELS = Object.freeze({
 });
 
 const EMPTY_ROLE = Object.freeze({ title: "", company: "", description: "" });
+const EVIDENCE_SOURCES = Object.freeze({
+  "data/cv.md": Object.freeze({ url: "/cv/", label: "View CV source" }),
+  "data/projects.md": Object.freeze({ url: "/projects/", label: "View project source" }),
+  "data/overview.md": Object.freeze({ url: "/overview.md", label: "View professional overview" }),
+});
 
 export function validateRoleDrafts(value) {
   if (!Array.isArray(value) || value.length < 1 || value.length > 3) {
@@ -89,6 +95,7 @@ export function buildComparisonViewModel(state, evidenceItems = []) {
         evidence: cell.evidence.flatMap((reference) => {
           const item = evidenceById.get(reference.evidenceId);
           if (!item) return [];
+          const source = EVIDENCE_SOURCES[item.source?.path] || { url: "", label: "View source" };
           return [{
             id: item.id,
             title: item.title,
@@ -96,8 +103,8 @@ export function buildComparisonViewModel(state, evidenceItems = []) {
             projectStatus: extractProjectStatus(item.text),
             reasonCode: reference.reasonCode,
             reasonLabel: REASON_LABELS[reference.reasonCode] || "Relevant public evidence",
-            sourceUrl: sourceUrl(item.source?.path),
-            sourceLabel: sourceLabel(item.source?.path),
+            sourceUrl: source.url,
+            sourceLabel: source.label,
           }];
         }),
         questions: [...cell.questions],
@@ -148,7 +155,6 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
   let hydrated = false;
   let latestState = controller.getState();
   let latestModel = buildComparisonViewModel(latestState, controller.getEvidenceItems?.() || []);
-  let localUpdate = false;
 
   form?.addEventListener("submit", submit);
   addButton?.addEventListener("click", addRole);
@@ -167,7 +173,7 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
 
   function render(state) {
     latestState = state;
-    if (!hydrated || (!localUpdate && !sameDrafts(drafts, state.roles))) {
+    if (!hydrated || !sameDrafts(drafts, state.roles)) {
       drafts = state.roles?.length ? state.roles.map((role) => ({ ...role })) : [emptyRole(), emptyRole()];
       hydrated = true;
       renderEditors();
@@ -286,13 +292,7 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
       announce("Check the role details before comparing.");
       return;
     }
-    let outcome;
-    localUpdate = true;
-    try {
-      outcome = await controller.submitComparison(validation.roles, { source: "manual" });
-    } finally {
-      localUpdate = false;
-    }
+    const outcome = await controller.submitComparison(validation.roles, { source: "manual" });
     if (outcome.status === "ready") {
       resultCaption.focus({ preventScroll: true });
       announce(`Comparison ready for ${validation.roles.length} ${validation.roles.length === 1 ? "role" : "roles"}.`);
@@ -496,9 +496,7 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
     }
     article.append(contribution);
     if (evidence.sourceUrl) {
-      const link = document.createElement("a");
-      link.href = evidence.sourceUrl;
-      link.textContent = `${evidence.sourceLabel} ↗`;
+      const link = createLink(`${evidence.sourceLabel} ↗`, evidence.sourceUrl);
       article.append(link);
     }
     return article;
@@ -518,7 +516,6 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
     }
     const toggle = event.target.closest?.("[data-cell-toggle]");
     if (!toggle) return;
-    const panel = root.querySelector(`#${toggle.getAttribute("aria-controls")}`);
     const expanded = toggle.getAttribute("aria-expanded") === "true";
     if (expanded) {
       controller.selectComparisonCell({ rowId: "", roleId: "", cellId: "" });
@@ -562,12 +559,7 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
   }
 
   function setControllerRoles(roles) {
-    localUpdate = true;
-    try {
-      return controller.setRoles(roles);
-    } finally {
-      localUpdate = false;
-    }
+    return controller.setRoles(roles);
   }
 }
 
@@ -589,18 +581,4 @@ function normalizedDraft(role) {
 function extractProjectStatus(text) {
   const match = String(text || "").match(/^\*\*Status:\*\*\s*([^\n]+)/i);
   return match?.[1]?.trim() || "";
-}
-
-function sourceUrl(path) {
-  if (path === "data/cv.md") return "/cv/";
-  if (path === "data/projects.md") return "/projects/";
-  if (path === "data/overview.md") return "/overview.md";
-  return "";
-}
-
-function sourceLabel(path) {
-  if (path === "data/cv.md") return "View CV source";
-  if (path === "data/projects.md") return "View project source";
-  if (path === "data/overview.md") return "View professional overview";
-  return "View source";
 }

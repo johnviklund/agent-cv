@@ -1,5 +1,6 @@
 import evidenceCatalog from "./data/comparison-evidence.js";
 import { COMPARISON_CONTRACT } from "./data/comparison-contract.js";
+import { noStoreJson } from "./http.js";
 import {
   buildComparisonInstructions,
   buildComparisonProviderInput,
@@ -15,11 +16,6 @@ const DEFAULT_COMPARISON_OUTPUT_TOKENS = 8_000;
 const DEFAULT_COMPARISON_MONTHLY_CAP = 60;
 const DEFAULT_RESPONSE_HEADER_TIMEOUT_MS = 45_000;
 const JSON_CONTENT_TYPE = /^application\/json(?:\s*;|$)/i;
-const JSON_BASE_HEADERS = {
-  "content-type": "application/json; charset=utf-8",
-  "cache-control": "no-store",
-  "x-content-type-options": "nosniff",
-};
 
 export async function handleCompare(
   request,
@@ -120,15 +116,11 @@ export async function handleCompare(
     const providerResponse = JSON.parse(providerResponseText);
     const draft = extractStructuredComparison(providerResponse);
     const result = canonicalizeComparisonDraft(draft, input.roles, evidenceCatalog);
-    return new Response(JSON.stringify(result), {
-      status: 200,
-      headers: comparisonCorsHeaders(access.origin, {
-        ...JSON_BASE_HEADERS,
+    return noStoreJson(result, 200, Object.fromEntries(comparisonCorsHeaders(access.origin, {
         "x-agent-model": model,
         "x-comparison-catalog-digest": evidenceCatalog.digest,
         "access-control-expose-headers": "x-agent-model, x-comparison-catalog-digest",
-      }),
-    });
+      })));
   } catch {
     console.error("Comparison provider returned an invalid structured result");
     return comparisonError("The comparison service returned an invalid result. Please try again.", 502, {}, access.origin);
@@ -254,10 +246,11 @@ function boundedComparisonMonthlyCap(value) {
 }
 
 function comparisonError(message, status, extraHeaders = {}, origin = null) {
-  return new Response(JSON.stringify({ error: message, fallback: "/cv/" }), {
+  return noStoreJson(
+    { error: message, fallback: "/cv/" },
     status,
-    headers: comparisonCorsHeaders(origin, { ...JSON_BASE_HEADERS, ...extraHeaders }),
-  });
+    Object.fromEntries(comparisonCorsHeaders(origin, extraHeaders)),
+  );
 }
 
 function comparisonCorsHeaders(origin, headers = {}) {

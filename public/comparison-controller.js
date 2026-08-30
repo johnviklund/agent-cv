@@ -92,9 +92,8 @@ export function createComparisonController({
       return fail("invalid_input", error.message);
     }
 
-    let request;
     try {
-      request = normalizeComparisonRequest({ roles: snapshot.roles }, catalog?.digest || "");
+      normalizeComparisonRequest({ roles: snapshot.roles }, catalog?.digest || "");
     } catch (error) {
       return fail("invalid_input", error.message);
     }
@@ -120,7 +119,7 @@ export function createComparisonController({
       }
       if (!isCurrent(token)) return { status: "superseded" };
       catalog = currentCatalog;
-      request = normalizeComparisonRequest({ roles: snapshot.roles }, catalog.digest);
+      const request = normalizeComparisonRequest({ roles: snapshot.roles }, catalog.digest);
 
       const response = await fetchImpl(endpoint, {
         method: "POST",

@@ -383,6 +383,8 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
     model.roles.forEach((role) => {
       const heading = document.createElement("th");
       heading.scope = "col";
+      const headingContent = document.createElement("div");
+      headingContent.className = "matrix-role-heading";
       const ordinal = document.createElement("span");
       ordinal.className = "matrix-role-number";
       ordinal.textContent = `ROLE ${String(role.position).padStart(2, "0")}`;
@@ -391,7 +393,8 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
       const company = document.createElement("span");
       company.className = "matrix-role-company";
       company.textContent = role.company || "Company not supplied";
-      heading.append(ordinal, title, company, createOutcomeLedger(role));
+      headingContent.append(ordinal, title, company, createOutcomeLedger(role));
+      heading.append(headingContent);
       headingRow.append(heading);
     });
     thead.append(headingRow);

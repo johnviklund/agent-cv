@@ -4,6 +4,7 @@ import { createLink } from "./dom.js";
 import { createComparisonController } from "./comparison-controller.js";
 import { createWorkspaceController } from "./workspace-controller.js";
 import { createComparisonView } from "./comparison-view.js";
+import { registerWebMCPTools } from "./webmcp.js";
 import {
   applicationSlugFromPath,
   canAddUserTurn,
@@ -31,6 +32,7 @@ const homeWorkspace = document.querySelector("[data-workspace-home]");
 const comparisonWorkspace = document.querySelector("[data-comparison-workspace]");
 const workspaceMessage = document.querySelector("[data-workspace-message]");
 let comparisonView = null;
+let webMCPRegistration = null;
 let workspaceFocusEnabled = window.location.hash.toLowerCase() === "#compare";
 
 export const comparisonController = home
@@ -111,6 +113,13 @@ if (home) {
   });
   workspaceController.start();
   comparisonController.initialize();
+  registerWebMCPTools({
+    document,
+    comparison: comparisonController,
+    workspace: workspaceController,
+    view: comparisonView,
+  }).then((registration) => { webMCPRegistration = registration; });
+  window.addEventListener("pagehide", () => webMCPRegistration?.cleanup(), { once: true });
   state.applicationSlug = readPendingApplication();
   const prompt = readPendingPrompt();
   if (prompt) startConversation(prompt);

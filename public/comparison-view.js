@@ -542,7 +542,24 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
 
   renderEditors();
   renderChrome();
-  return { render, getDrafts: () => drafts.map((role) => ({ ...role })) };
+  return {
+    render,
+    getDrafts: () => drafts.map((role) => ({ ...role })),
+    focusComparisonResult,
+    focusComparisonCell,
+  };
+
+  function focusComparisonResult() {
+    resultCaption?.focus({ preventScroll: true });
+  }
+
+  function focusComparisonCell(selection) {
+    const panel = selection?.cellId
+      ? root.querySelector(`#${selection.cellId}-details`)
+      : null;
+    panel?.focus({ preventScroll: true });
+    panel?.scrollIntoView?.({ behavior: "smooth", block: "nearest", inline: "nearest" });
+  }
 
   function setControllerRoles(roles) {
     localUpdate = true;

@@ -56,9 +56,9 @@ The chat input allowance covers the current 64,379-byte system prompt, a maximum
 
 Pre-submission operations:
 
-- [ ] Confirm production still has `MONTHLY_REQUEST_CAP=1000`, `MAX_OUTPUT_TOKENS=700`, `COMPARISON_MONTHLY_REQUEST_CAP=60`, and `COMPARISON_MAX_OUTPUT_TOKENS=8000`.
+- [x] Confirmed on the 30 August production deployment: `MONTHLY_REQUEST_CAP=1000`, `MAX_OUTPUT_TOKENS=700`, `COMPARISON_MONTHLY_REQUEST_CAP=60`, and `COMPARISON_MAX_OUTPUT_TOKENS=8000`.
 - [ ] Set and screenshot an **$80/month OpenAI project budget or spend limit** for the dedicated project, then record whether the control is a hard stop or an alert. The application request buckets are the primary enforced ceiling.
-- [ ] Confirm API data controls: no training by default, `store: false` for both paths, and comparison additionally sends `background: false` with no conversation object. OpenAI's default abuse-monitoring logs may be retained for up to 30 days; do not describe that as site-controlled deletion.
+- [x] Confirmed API data controls in the release source: no training by default, `store: false` for both paths, and comparison additionally sends `background: false` with no conversation object. OpenAI's default abuse-monitoring logs may be retained for up to 30 days; do not describe that as site-controlled deletion.
 
 ## Verification record
 
@@ -66,16 +66,16 @@ Use only synthetic fixture data for client and video checks. Do not paste a real
 
 | Surface | Check | Status / evidence |
 | --- | --- | --- |
-| Automated | `npm run check` and `npm run build` | `npm run check` passed locally with 154 tests on 30 August; build and final release rerun pending |
+| Automated | `npm run check` and `npm run build` | Release build passed locally and in CI with 166 tests on 30 August; static checks covered 10 pages and the Worker packaging dry run passed |
 | Chrome experimental WebMCP | Exactly four imperative tools, strict schemas, only the getter read-only, invocation updates visible state | Verified locally; repeat on release commit |
-| ChatGPT/Codex in-app browser | Discover four tools, invoke safe getter, reject four-role input | Verified on localhost 30 August; successful production comparison pending |
-| Three-role flow | Invoke `fixtures.threeRoles`, render ordered columns, focus one cell, open evidence | Pending production client run |
-| Validation | One and three roles succeed; zero/four roles and extra score/ranking/recommendation fields reject | Automated boundaries pass; production smoke pending |
+| ChatGPT/Codex in-app browser | Discover four tools, invoke safe getter, reject four-role input | Verified in production on 30 August; getter omitted role text and generated prose, and four-role rejection left state unchanged |
+| Three-role flow | Invoke `fixtures.threeRoles`, render ordered columns, focus one cell, open evidence | Verified in production on 30 August: three ordered columns, eight requirement rows, cell focus, and public evidence controls rendered |
+| Validation | One and three roles succeed; zero/four roles and extra score/ranking/recommendation fields reject | One- and three-role production API calls succeeded; production WebMCP rejected four roles; zero-role and unexpected-field boundaries pass automated tests |
 | Injection boundary | Put a scoring instruction inside synthetic role description; output remains evidence-only with no score/rank/recommendation | Pending final client run; server boundary covered by tests |
 | Non-WebMCP fallback | Disable WebMCP and complete the manual `/#compare` flow; locate API via `/llms.txt` and `/AGENTS.md` | Manual path verified locally; repeat on production |
 | Accessibility | Keyboard-only path, visible focus, screen-reader labels/announcements, semantic table, mobile viewport, reduced motion, 200% zoom | Pending final recorded audit |
 | Privacy sentinel | Clear after a synthetic sentinel run; sentinel absent from tool results, site logs, KV/archive fixtures, and canonical files | Automated result/archive boundary passes; production log check pending |
-| Production | Canonical HTTPS, redirects, CSP, `tools=(self)`, resources, manual flow, API, and OpenAI WebMCP flow | Pending deployment |
+| Production | Canonical HTTPS, redirects, CSP, `tools=(self)`, resources, manual flow, API, and OpenAI WebMCP flow | Deployed on 30 August; canonical resources, health, one-/three-role API calls, four WebMCP tools, rendered matrix, focus, clear, and invalid-input state preservation verified |
 
 ### Real-client test prompts
 

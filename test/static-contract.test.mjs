@@ -51,9 +51,9 @@ test("compatibility notes separate native WebMCP validation from portable fallba
     assert.match(resource, /browser automation|manual UI/i);
     assert.match(resource, /HTTP API/i);
   }
-  assert.match(readme, /Localhost discovery and invocation verified/i);
-  assert.match(readme, /production comparison validation is pending/i);
-  assert.match(agents, /live-client verification is still pending/i);
+  assert.match(readme, /Production discovery and invocation verified on 30 August/i);
+  assert.match(readme, /four-role rejection without state mutation/i);
+  assert.match(agents, /Production discovery and invocation were verified/i);
   assert.match(readme, /2026-08-30/);
   assert.match(readme, /WebMCP Challenge/i);
   assert.match(readme, /pre-existing Agent CV/i);

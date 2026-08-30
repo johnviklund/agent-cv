@@ -61,7 +61,7 @@ The home page registers exactly four page-scoped site tools through WebMCP:
 
 These capabilities are available only while the page at `/` remains open in a compatible top-level browser. They are not an MCP server, are not remote MCP tools, and are not HTTP endpoints. Only `get_comparison_state` is read-only; the other tools visibly mutate page state. Tool registration and in-flight work end when the page lifecycle ends.
 
-Native WebMCP is implemented against OpenAI's documented ChatGPT Work/Codex site-tools API; live-client verification is still pending and availability depends on a supported model and rollout. Registration and invocation have been tested locally with Chrome's experimental WebMCP implementation. This is not a claim of native WebMCP certification for Grok, Hermes Agent, OpenClaw, or Claude. Those and other agents can instead use ordinary browser automation or the manual UI at `/#compare`, fetch `/llms.txt`, `/AGENTS.md`, and `/evidence.json`, or call the documented HTTP API at `POST /api/compare`.
+Native WebMCP is implemented against OpenAI's documented ChatGPT Work/Codex site-tools API. Production discovery and invocation were verified in the OpenAI in-app browser on 30 August 2026; availability still depends on a supported model and rollout. Registration and invocation have also been tested locally with Chrome's experimental WebMCP implementation. This is not a claim of native WebMCP certification for Grok, Hermes Agent, OpenClaw, or Claude. Those and other agents can instead use ordinary browser automation or the manual UI at `/#compare`, fetch `/llms.txt`, `/AGENTS.md`, and `/evidence.json`, or call the documented HTTP API at `POST /api/compare`.
 
 ## Querying the agent
 

@@ -143,9 +143,9 @@
             <span data-role-count>2 of 3 roles</span>
           </div>
           <details class="comparison-batch">
-            <summary>Paste or upload multiple roles</summary>
-            <div class="comparison-batch-panel">
-              <p>Import one to three roles as JSON (<code>{ "roles": [...] }</code>) or Markdown with one explicit <code>## Role: Role title</code> marker per role and optional <code>Company:</code> and <code>Description:</code> labels. Other headings stay inside the role description.</p>
+            <summary id="comparison-batch-summary">Paste or upload multiple roles</summary>
+            <div class="comparison-batch-panel" role="region" aria-labelledby="comparison-batch-summary">
+              <p>Import one to three roles as JSON (<code>{ "roles": [...] }</code>) or Markdown with an explicit <code>## Role:</code> or <code>## Role title:</code> marker per role and optional <code>Company:</code> and <code>Description:</code> labels. Other headings stay inside the role description. <a href="/positions-template.md" download>Download Markdown template</a>.</p>
               <label for="comparison-role-batch">Role batch</label>
               <textarea id="comparison-role-batch" data-role-batch rows="10" placeholder="## Role: Support Operations Lead&#10;Company: Example&#10;Description:&#10;## Responsibilities&#10;Own vendor performance, workforce planning and QBRs."></textarea>
               <div class="comparison-batch-actions">
@@ -159,7 +159,7 @@
           <div class="role-editor-actions">
             <button class="secondary-action" data-add-role type="button">+ Add another role</button>
           </div>
-          <p class="comparison-privacy-note"><strong>Before you compare:</strong> role text is sent to OpenAI for analysis. This page keeps it in memory while open and, when available, in this browser session. It may remain in your provider or browser-agent account history.</p>
+          <p class="comparison-privacy-note"><strong>Before you compare:</strong> the role title, company and detected requirement statements are sent to OpenAI for analysis. Common informational sections such as “About the team,” benefits and equal-opportunity notices are ignored automatically. The complete draft stays in memory while this page is open and, when available, in this browser session. It may remain in your provider or browser-agent account history.</p>
           <p class="comparison-form-error" data-comparison-form-error role="alert"></p>
           <div class="comparison-submit-row">
             <button class="primary-action" data-compare-submit type="submit">Compare the evidence</button>

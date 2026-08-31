@@ -118,7 +118,17 @@ test("an external signal aborts the comparison request that accepted it", async 
 test("abort, network, public API, invalid output, and catalog skew preserve roles and prior result", async () => {
   const failures = [
     { fetchImpl: async () => { throw new Error("offline"); }, code: "network_error" },
-    { fetchImpl: async () => response({ error: "Monthly limit" }, 503), code: "api_error" },
+    { fetchImpl: async () => response({ error: "Monthly limit" }, 503), code: "service_error" },
+    { fetchImpl: async () => response({ error: "Role input is invalid" }, 400), code: "api_error" },
+    {
+      fetchImpl: async () => response({
+        error: "The comparison service could not validate its result.",
+        code: "comparison_service_invalid",
+        debugId: "cmp_0123456789abcdef",
+      }, 502),
+      code: "service_error",
+      debugId: "cmp_0123456789abcdef",
+    },
     { fetchImpl: async () => response({ score: 99 }), code: "invalid_result" },
     { fetchImpl: async () => response(comparisonResult({ digest: OTHER_DIGEST }), 200, OTHER_DIGEST), code: "catalog_skew" },
     { loadCatalog: async () => { throw new Error("catalog offline"); }, code: "catalog_unavailable" },
@@ -131,6 +141,7 @@ test("abort, network, public API, invalid output, and catalog skew preserve role
     const state = controller.getState();
     assert.equal(outcome.status, "error");
     assert.equal(state.error.code, failure.code);
+    if (failure.debugId) assert.equal(state.error.debugId, failure.debugId);
     assert.deepEqual(state.roles, ROLES);
     assert.deepEqual(state.result, prior);
   }

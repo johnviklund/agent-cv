@@ -6,6 +6,7 @@ import {
   describeComparisonSelection,
 } from "../public/comparison-view.js";
 import {
+  buildRoleRequirementPreview,
   createLatestFileImport,
   parseRoleBatch,
   serializeComparisonExport,
@@ -160,6 +161,14 @@ test("presents one unambiguous comparison state across editing, errors, and refr
     "Comparison unavailable. Review the message below and try again.",
   );
   assert.deepEqual(
+    buildComparisonStatusPresentation({ status: "editing", error: { code: "service_error" }, hasResult: false }),
+    {
+      indicator: "Comparison unavailable. Review the message below and try again.",
+      errorLabel: "COMPARISON SERVICE ERROR",
+      errorTitle: "The role briefs are safe. The comparison service needs another try.",
+    },
+  );
+  assert.deepEqual(
     buildComparisonStatusPresentation({ status: "ready", error: {}, hasResult: true, isStale: true }),
     {
       indicator: "Previous comparison visible. The refresh failed, so this result does not reflect the edited role drafts.",
@@ -234,11 +243,38 @@ Lead applied AI products and responsible delivery.
       description: "Lead applied AI products and responsible delivery.",
     },
   ]);
+  assert.deepEqual(
+    parseRoleBatch("## Role title: Support Operations Lead\n\nCompany: OpenAI\n\n## Responsibilities\n- Own vendor performance."),
+    [{
+      title: "Support Operations Lead",
+      company: "OpenAI",
+      description: "## Responsibilities\n- Own vendor performance.",
+    }],
+  );
   assert.throws(() => parseRoleBatch("# Positions\n\nNo role headings"), /explicit.*Role/i);
   assert.throws(
     () => parseRoleBatch("# Positions\n\n## Support Lead\n\n## Responsibilities\nOwn the operation."),
     /explicit.*Role/i,
   );
+});
+
+test("preflights requirement counts with the same informational-section rules as the server", () => {
+  const preview = buildRoleRequirementPreview([
+    "## About the team",
+    "We partner across Product, Sales, and Support.",
+    "",
+    "## Responsibilities",
+    "- Own vendor performance, commercials, and quarterly reviews",
+    "- Lead workforce planning and capacity forecasting",
+  ].join("\n"));
+
+  assert.deepEqual(preview, {
+    count: 2,
+    ignoredSections: 1,
+    assessedLimit: 16,
+    sourceLimit: 96,
+    notAssessedMinimum: 0,
+  });
 });
 
 test("exports compact JSON and Markdown with denominators, evidence IDs, questions, and unmapped requirements", () => {

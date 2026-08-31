@@ -23,11 +23,11 @@ const ROLES = [
   {
     title: "AI Product Lead",
     company: "Example One",
-    description: "Lead applied AI products, governance, and cross-functional delivery.",
+    description: "- Lead applied AI products\n- Own governance\n- Coordinate cross-functional delivery",
   },
   {
     title: "Agent Engineering Lead",
-    description: "Build agent systems with evaluations and human oversight.",
+    description: "- Build agent systems\n- Run evaluations\n- Maintain human oversight",
   },
 ];
 
@@ -41,8 +41,55 @@ test("comparison request validation preserves role order and assigns canonical I
   assert.equal(input.catalogDigest, evidenceCatalog.digest);
   assert.deepEqual(input.requirementInventory[0].requirements.map(({ id, text }) => ({ id, text })), [
     { id: "requirement_role_01_01", text: "Lead applied AI products" },
-    { id: "requirement_role_01_02", text: "governance" },
-    { id: "requirement_role_01_03", text: "cross-functional delivery" },
+    { id: "requirement_role_01_02", text: "Own governance" },
+    { id: "requirement_role_01_03", text: "Coordinate cross-functional delivery" },
+  ]);
+});
+
+test("realistic requirement lists stay at bullet granularity and ignore informational sections", () => {
+  const bullets = [
+    "Own vendor strategy, contract performance, commercial outcomes, and renewal decisions",
+    "Lead workforce planning, capacity forecasting, staffing decisions, and scheduling",
+    "Run quarterly business reviews, executive governance, service reviews, and escalation forums",
+    "Recover underperforming suppliers, establish corrective actions, track remediation, and restore performance",
+    "Define service levels, operating metrics, quality controls, and escalation paths",
+    "Partner with Support, Sales, Engineering, Product, and Finance leaders",
+    "Build reporting, automation, dashboards, and operational review mechanisms",
+    "Manage budgets, forecasts, invoices, and cost-to-serve improvements",
+    "Develop managers, coach teams, set goals, and create operating rhythms",
+    "Translate customer insights into process, policy, tooling, and product improvements",
+    "Coordinate launches, readiness, incident response, and postmortems",
+    "Ensure global coverage, regulatory alignment, consistency, and customer outcomes",
+    "Communicate risks, decisions, dependencies, and progress to senior leaders",
+  ];
+  const description = [
+    "## About the team",
+    "We resolve complex issues, partner across teams, and support customers at global scale.",
+    "",
+    "## Responsibilities",
+    ...bullets.map((bullet) => `- ${bullet}`),
+  ].join("\n");
+
+  const [inventory] = buildComparisonRequirementInventory([{ description }]);
+
+  assert.equal(inventory.requirements.length, bullets.length);
+  assert.deepEqual(inventory.requirements.map(({ text }) => text), bullets);
+});
+
+test("unfamiliar section headings cannot hide listed requirements", () => {
+  const [inventory] = buildComparisonRequirementInventory([{
+    description: [
+      "## Key outcomes",
+      "- Recover supplier performance and restore service levels",
+      "",
+      "## Qualifications",
+      "- Experience leading complex operations",
+    ].join("\n"),
+  }]);
+
+  assert.deepEqual(inventory.requirements.map(({ text }) => text), [
+    "Recover supplier performance and restore service levels",
+    "Experience leading complex operations",
   ]);
 });
 
@@ -248,7 +295,7 @@ test("draft validation enforces row and per-role completeness bounds", () => {
   assert.throws(() => canonicalizeComparisonDraft(validDraft(seventeenRequirements), denseInput.roles, evidenceCatalog));
 });
 
-test("completeness inventory is required, ordered, bounded, and restores source wording", () => {
+test("completeness inventory is required, repaired when harmless, bounded, and restores source wording", () => {
   const input = validateComparisonPayload({ roles: ROLES });
   const { roles } = input;
   const missingInventory = validDraft();
@@ -260,7 +307,7 @@ test("completeness inventory is required, ordered, bounded, and restores source 
 
   const gapRoles = [{
     title: "Support Operations",
-    description: "Vendor management, workforce planning, commercial ownership, QBRs, and performance recovery.",
+    description: "- Vendor management\n- Workforce planning\n- Commercial ownership\n- QBRs\n- Performance recovery",
   }];
   const gapInput = validateComparisonPayload({ roles: gapRoles });
   const visibleGap = validDraft(gapRoles);
@@ -269,25 +316,20 @@ test("completeness inventory is required, ordered, bounded, and restores source 
   const result = canonicalizeComparisonDraft(visibleGap, gapInput.roles, evidenceCatalog, gapInput.requirementInventory);
   assert.deepEqual(result.unmappedRequirements[0], {
     roleId: "role_01",
-    requirements: ["performance recovery"],
+    requirements: ["Performance recovery"],
   });
   assert.deepEqual(result.rows.slice(0, 4).map((row) => row.cells[0].requirement), [
-    "Vendor management", "workforce planning", "commercial ownership", "QBRs",
+    "Vendor management", "Workforce planning", "Commercial ownership", "QBRs",
   ]);
 
   const duplicate = validDraft();
   duplicate.unmappedRequirements[0].requirementIds = ["requirement_role_01_01"];
-  assert.throws(
-    () => canonicalizeComparisonDraft(duplicate, roles, evidenceCatalog),
-    (error) => error.name === "ComparisonOutputError" && error.reason === "draft_requirement_completeness",
-  );
+  assert.deepEqual(canonicalizeComparisonDraft(duplicate, roles, evidenceCatalog).unmappedRequirements[0].requirements, []);
 
   const missing = validDraft();
   missing.rows[2].cells[0] = notListedCell(0);
-  assert.throws(
-    () => canonicalizeComparisonDraft(missing, roles, evidenceCatalog),
-    (error) => error.name === "ComparisonOutputError" && error.reason === "draft_requirement_completeness",
-  );
+  const repaired = canonicalizeComparisonDraft(missing, roles, evidenceCatalog);
+  assert.deepEqual(repaired.unmappedRequirements[0].requirements, ["Coordinate cross-functional delivery"]);
 
   const unknown = validDraft();
   unknown.rows[0].cells[0].requirementId = "requirement_role_01_40";
@@ -301,25 +343,19 @@ test("completeness inventory is required, ordered, bounded, and restores source 
     outOfOrder.rows[1].cells[0].requirementId,
     outOfOrder.rows[0].cells[0].requirementId,
   ];
-  assert.throws(
-    () => canonicalizeComparisonDraft(outOfOrder, roles, evidenceCatalog),
-    (error) => error.name === "ComparisonOutputError" && error.reason === "draft_requirement_completeness",
-  );
+  assert.equal(canonicalizeComparisonDraft(outOfOrder, roles, evidenceCatalog).rows[0].cells[0].requirement, "Own governance");
 
   const duplicateUnmapped = validDraft(gapRoles);
   duplicateUnmapped.rows[4].cells[0] = notListedCell(0);
   duplicateUnmapped.unmappedRequirements[0].requirementIds = [
     "requirement_role_01_05", "requirement_role_01_05",
   ];
-  assert.throws(
-    () => canonicalizeComparisonDraft(
-      duplicateUnmapped,
-      gapInput.roles,
-      evidenceCatalog,
-      gapInput.requirementInventory,
-    ),
-    (error) => error.name === "ComparisonOutputError" && error.reason === "draft_requirement_completeness",
-  );
+  assert.deepEqual(canonicalizeComparisonDraft(
+    duplicateUnmapped,
+    gapInput.roles,
+    evidenceCatalog,
+    gapInput.requirementInventory,
+  ).unmappedRequirements[0].requirements, ["Performance recovery"]);
 
   const outOfOrderUnmapped = validDraft(gapRoles);
   outOfOrderUnmapped.rows[3].cells[0] = notListedCell(0);
@@ -327,29 +363,38 @@ test("completeness inventory is required, ordered, bounded, and restores source 
   outOfOrderUnmapped.unmappedRequirements[0].requirementIds = [
     "requirement_role_01_05", "requirement_role_01_04",
   ];
-  assert.throws(
-    () => canonicalizeComparisonDraft(
-      outOfOrderUnmapped,
-      gapInput.roles,
-      evidenceCatalog,
-      gapInput.requirementInventory,
-    ),
-    (error) => error.name === "ComparisonOutputError" && error.reason === "draft_requirement_completeness",
-  );
+  assert.deepEqual(canonicalizeComparisonDraft(
+    outOfOrderUnmapped,
+    gapInput.roles,
+    evidenceCatalog,
+    gapInput.requirementInventory,
+  ).unmappedRequirements[0].requirements, ["QBRs", "Performance recovery"]);
+
+  const unknownUnmapped = validDraft();
+  unknownUnmapped.unmappedRequirements[0].requirementIds = ["requirement_role_01_40"];
+  assert.deepEqual(canonicalizeComparisonDraft(unknownUnmapped, roles, evidenceCatalog).unmappedRequirements[0].requirements, []);
 
   const wrongRoleOrder = validDraft();
   wrongRoleOrder.unmappedRequirements.reverse();
-  assert.throws(
-    () => canonicalizeComparisonDraft(wrongRoleOrder, roles, evidenceCatalog),
-    (error) => error.name === "ComparisonOutputError" && error.reason === "draft_requirement_completeness",
-  );
+  assert.deepEqual(canonicalizeComparisonDraft(wrongRoleOrder, roles, evidenceCatalog).unmappedRequirements, [
+    { roleId: "role_01", requirements: [] },
+    { roleId: "role_02", requirements: [] },
+  ]);
 });
 
-test("source inventory rejects descriptions beyond the representable requirement capacity", () => {
-  const description = Array.from({ length: 41 }, (_, index) => `- Responsibility ${index + 1}`).join("\n");
+test("source inventory leaves realistic overflow visible before enforcing its expanded safety bound", () => {
+  const visibleOverflow = Array.from({ length: 41 }, (_, index) => `- Responsibility ${index + 1}`).join("\n");
+  assert.equal(
+    validateComparisonPayload({ roles: [{ title: "Dense role", description: visibleOverflow }] })
+      .requirementInventory[0].requirements.length,
+    41,
+  );
+
+  const capacity = COMPARISON_CONTRACT.limits.maxSourceRequirementsPerRole;
+  const description = Array.from({ length: capacity + 1 }, (_, index) => `- Responsibility ${index + 1}`).join("\n");
   assert.throws(
     () => validateComparisonPayload({ roles: [{ title: "Dense role", description }] }),
-    (error) => error instanceof ComparisonInputError && error.status === 422 && /at most 40/i.test(error.message),
+    (error) => error instanceof ComparisonInputError && error.status === 422 && new RegExp(`at most ${capacity}`).test(error.message),
   );
 });
 

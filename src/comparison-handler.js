@@ -74,6 +74,7 @@ export async function handleCompare(
   if (budget === "exhausted") return comparisonError("The monthly comparison limit has been reached.", 503, {}, access.origin);
 
   const model = env.COMPARISON_MODEL || DEFAULT_COMPARISON_MODEL;
+  const debugId = createComparisonDebugId();
   const providerRequest = {
       method: "POST",
       headers: {
@@ -138,11 +139,18 @@ export async function handleCompare(
         "Comparison provider returned an invalid structured result",
         error?.reason || "unknown",
         attempt === 0 ? "retrying" : "failed",
+        debugId,
       );
     }
   }
 
-  return comparisonError("The comparison service returned an invalid result. Please try again.", 502, {}, access.origin);
+  return comparisonError(
+    `The comparison service could not validate its result. Your role briefs were preserved. Please retry; if it continues, share debug ID ${debugId}.`,
+    502,
+    {},
+    access.origin,
+    { code: "comparison_service_invalid", debugId },
+  );
 }
 
 export async function reserveComparisonBudget(env, now = new Date()) {
@@ -288,12 +296,18 @@ function boundedComparisonMonthlyCap(value) {
     : DEFAULT_COMPARISON_MONTHLY_CAP;
 }
 
-function comparisonError(message, status, extraHeaders = {}, origin = null) {
+function comparisonError(message, status, extraHeaders = {}, origin = null, details = {}) {
   return noStoreJson(
-    { error: message, fallback: "/cv/" },
+    { error: message, fallback: "/cv/", ...details },
     status,
     Object.fromEntries(comparisonCorsHeaders(origin, extraHeaders)),
   );
+}
+
+function createComparisonDebugId() {
+  const bytes = new Uint8Array(8);
+  globalThis.crypto.getRandomValues(bytes);
+  return `cmp_${[...bytes].map((value) => value.toString(16).padStart(2, "0")).join("")}`;
 }
 
 function comparisonCorsHeaders(origin, headers = {}) {

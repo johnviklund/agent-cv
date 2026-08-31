@@ -23,7 +23,8 @@ A natural starting request is: “Visit johnviklund.com. I’m considering John 
 ## Human-readable pages
 
 - [Conversation](/): ask the grounded Agent CV
-- [Compare roles](/#compare): submit one to three role descriptions individually or as a Markdown/JSON batch, inspect requirement completeness and evidence side by side, and export compact Markdown or JSON. Markdown batches use an explicit `## Role: <title>` marker for each role so ordinary job-description headings stay within the role.
+- [Compare roles](/#compare): submit one to three role descriptions individually or as a Markdown/JSON batch, see source-requirement counts before analysis, inspect requirement completeness and evidence side by side, and export compact Markdown or JSON. Markdown batches accept explicit `## Role: <title>` or `## Role title: <title>` markers so ordinary job-description headings stay within the role.
+- [Role batch template](/positions-template.md): downloadable example for one-to-three-role Markdown imports
 - [Experience](/experience/): career timeline
 - [Projects](/projects/): selected-work index
 - [About](/about/): working style and AI philosophy

@@ -1,4 +1,7 @@
-import { COMPARISON_CONTRACT } from "./comparison-contract.js";
+import {
+  analyzeComparisonRequirements,
+  COMPARISON_CONTRACT,
+} from "./comparison-contract.js";
 
 const COVERAGE_ORDER = Object.freeze(["documented", "transferable", "not_documented"]);
 
@@ -57,6 +60,20 @@ export function parseRoleBatch(value, { filename = "" } = {}) {
     return validateImportedRoles(roles);
   }
   return validateImportedRoles(parseMarkdownRoles(source));
+}
+
+export function buildRoleRequirementPreview(description) {
+  const analysis = analyzeComparisonRequirements(description);
+  return {
+    count: analysis.requirements.length,
+    ignoredSections: analysis.ignoredSections,
+    assessedLimit: COMPARISON_CONTRACT.limits.maxRequirementsPerRole,
+    sourceLimit: COMPARISON_CONTRACT.limits.maxSourceRequirementsPerRole,
+    notAssessedMinimum: Math.max(
+      0,
+      analysis.requirements.length - COMPARISON_CONTRACT.limits.maxRequirementsPerRole,
+    ),
+  };
 }
 
 export function serializeComparisonExport(result, format) {
@@ -174,13 +191,13 @@ function validateImportedRoles(value) {
 }
 
 function parseMarkdownRoles(source) {
-  const roleHeadings = [...source.matchAll(/^##[ \t]+Role\s*:\s*(.+?)\s*$/gim)].map((match) => ({
+  const roleHeadings = [...source.matchAll(/^##[ \t]+Role(?:[ \t]+title)?\s*:\s*(.+?)\s*$/gim)].map((match) => ({
     label: cleanMarkdownLabel(match[1]),
     start: match.index,
     contentStart: match.index + match[0].length,
   }));
   if (!roleHeadings.length) {
-    throw new TypeError("Markdown batches need an explicit `## Role: <title>` heading for each role.");
+    throw new TypeError("Markdown batches need an explicit `## Role: <title>` or `## Role title: <title>` heading for each role.");
   }
   return roleHeadings.map((heading, index) => {
     const next = roleHeadings[index + 1];

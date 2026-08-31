@@ -166,7 +166,14 @@ export function createComparisonController({
       if (!isCurrent(token)) return { status: "superseded" };
       if (!response?.ok) {
         const problem = await readProblem(response);
-        throw taggedError("api_error", problem || "The comparison service is unavailable.");
+        const serviceFailure = problem.code === "comparison_service_invalid"
+          || response.status === 429
+          || response.status >= 500;
+        throw taggedError(
+          serviceFailure ? "service_error" : "api_error",
+          problem.message || "The comparison service is unavailable.",
+          problem.debugId,
+        );
       }
 
       const responseDigest = response.headers?.get?.("x-comparison-catalog-digest") || "";
@@ -218,6 +225,7 @@ export function createComparisonController({
       runtime.error = comparisonError(
         error?.comparisonCode || "network_error",
         boundedErrorMessage(error?.message),
+        error?.comparisonDebugId,
       );
       runtime.abortController = null;
       emit();
@@ -400,21 +408,26 @@ function assertResultRolesMatch(result, requestRoles) {
 async function readProblem(response) {
   try {
     const raw = await response.text();
-    if (byteLength(raw) > 4_000) return "";
+    if (byteLength(raw) > 4_000) return {};
     const value = JSON.parse(raw);
-    return typeof value?.error === "string" ? value.error.slice(0, 240) : "";
+    return {
+      message: typeof value?.error === "string" ? value.error.slice(0, 240) : "",
+      code: value?.code === "comparison_service_invalid" ? value.code : "",
+      debugId: /^cmp_[a-f0-9]{16}$/.test(value?.debugId) ? value.debugId : "",
+    };
   } catch {
-    return "";
+    return {};
   }
 }
 
-function comparisonError(code, message) {
-  return { code, message };
+function comparisonError(code, message, debugId = "") {
+  return debugId ? { code, message, debugId } : { code, message };
 }
 
-function taggedError(code, message) {
+function taggedError(code, message, debugId = "") {
   const error = new Error(message);
   error.comparisonCode = code;
+  if (debugId) error.comparisonDebugId = debugId;
   return error;
 }
 

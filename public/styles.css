@@ -5,7 +5,7 @@
   --muted: #68645d;
   --rule: rgba(23, 22, 19, 0.16);
   --rule-strong: rgba(23, 22, 19, 0.52);
-  --accent: #c95339;
+  --accent: #b34731;
   --accent-strong: #9b3824;
   --serif: "Iowan Old Style", "Baskerville", "Times New Roman", serif;
   --sans: "Avenir Next", "Avenir", "Helvetica Neue", sans-serif;
@@ -48,6 +48,8 @@ body::before {
 
 a { color: inherit; text-underline-offset: .22em; }
 button, input, textarea { font: inherit; }
+input::placeholder,
+textarea::placeholder { color: var(--muted); opacity: 1; }
 button, a { -webkit-tap-highlight-color: transparent; }
 
 :focus-visible {
@@ -630,6 +632,12 @@ h1, h2, h3, p { margin-top: 0; }
 .comparison-field input:focus,
 .comparison-field textarea:focus { border-color: var(--ink); box-shadow: inset 3px 0 0 var(--accent); }
 .comparison-field [aria-invalid="true"] { border-color: var(--accent); }
+.comparison-requirement-preview {
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
 .field-error {
   min-height: 18px;
   margin: 5px 0 0;

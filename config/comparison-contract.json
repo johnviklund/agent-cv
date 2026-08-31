@@ -10,7 +10,8 @@
     "maxCombinedRoleCharacters": 15000,
     "maxRows": 24,
     "maxRequirementsPerRole": 16,
-    "maxUnmappedRequirementsPerRole": 24,
+    "maxSourceRequirementsPerRole": 96,
+    "maxUnmappedRequirementsPerRole": 96,
     "maxRowLabelCharacters": 120,
     "maxRequirementCharacters": 600,
     "maxEvidencePerCell": 2,
@@ -51,6 +52,6 @@
     "rows": "one to twenty-four",
     "cells": "exactly one per role in every row",
     "listedRequirements": "no more than sixteen assessed per role",
-    "unmappedRequirements": "zero to twenty-four explicitly not assessed per role"
+    "unmappedRequirements": "zero to ninety-six explicitly not assessed per role"
   }
 }

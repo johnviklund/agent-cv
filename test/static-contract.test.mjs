@@ -53,6 +53,17 @@ test("machine-readable discovery documents the comparison surface without presen
   }
 });
 
+test("batch entry publishes a downloadable Markdown template", async () => {
+  const [home, template] = await Promise.all([
+    read("public/index.html"),
+    read("public/positions-template.md"),
+  ]);
+  assert.match(home, /href="\/positions-template\.md"[^>]*download/i);
+  assert.match(template, /^## Role(?: title)?:/m);
+  assert.match(template, /^Company:/m);
+  assert.match(template, /^## Responsibilities/m);
+});
+
 test("compatibility notes separate native WebMCP validation from portable fallbacks", async () => {
   const [agents, readme] = await Promise.all([read("public/AGENTS.md"), read("README.md")]);
   for (const resource of [agents, readme]) {

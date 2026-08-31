@@ -21,7 +21,7 @@ export function validateContract(value) {
   assertExactKeys(value.limits, [
     "maxBodyBytes", "minRoles", "maxRoles", "maxTitleCharacters", "maxCompanyCharacters",
     "maxDescriptionCharacters", "maxCombinedRoleCharacters", "maxRows", "maxRequirementsPerRole",
-    "maxUnmappedRequirementsPerRole",
+    "maxSourceRequirementsPerRole", "maxUnmappedRequirementsPerRole",
     "maxRowLabelCharacters", "maxRequirementCharacters", "maxEvidencePerCell", "maxQuestionsPerCell",
     "maxQuestionCharacters", "maxProviderResponseBytes",
   ], "Comparison limits");
@@ -29,8 +29,9 @@ export function validateContract(value) {
     if (!Number.isSafeInteger(limit) || limit < 1) throw new Error(`Comparison limit ${name} must be a positive integer.`);
   }
   if (value.limits.minRoles !== 1 || value.limits.maxRoles !== 3 || value.limits.maxRows !== 24
-    || value.limits.maxRequirementsPerRole !== 16 || value.limits.maxUnmappedRequirementsPerRole !== 24) {
-    throw new Error("Comparison cardinality is fixed at 1–3 roles, 24 rows, 16 assessed requirements, and 24 unmapped requirements per role.");
+    || value.limits.maxRequirementsPerRole !== 16 || value.limits.maxSourceRequirementsPerRole !== 96
+    || value.limits.maxUnmappedRequirementsPerRole !== 96) {
+    throw new Error("Comparison cardinality is fixed at 1–3 roles, 24 rows, 16 assessed requirements, and 96 source or unmapped requirements per role.");
   }
   if (JSON.stringify(value.coverageStates) !== JSON.stringify(["documented", "transferable", "not_documented", "not_listed"])) {
     throw new Error("Comparison coverage states are fixed and ordered.");
@@ -68,6 +69,8 @@ const COVERAGE = new Set(COMPARISON_COVERAGE_STATES);
 const EVIDENCE_ID = /^[a-z0-9]+(?:[.-][a-z0-9]+)*$/;
 const UNSAFE_GENERATED_TEXT = /<[^>]*>|(?:https?|mailto|javascript|data):|www\\./i;
 const PROTECTED_TRAIT_QUESTION = /\\b(age|race|racial|ethnicity|ethnic|religion|religious|disability|disabled|pregnan(?:t|cy)|marital status|sexual orientation|gender identity|national origin)\\b/i;
+
+${requirementAnalysisSource()}
 
 export const COMPARISON_REQUEST_SCHEMA = Object.freeze({
   type: "object",
@@ -323,6 +326,125 @@ function exactObject(value, allowed, label, optional = []) {
   for (const key of allowed) if (!optional.includes(key) && !(key in value)) throw new TypeError(\`\${label} requires \${key}.\`);
 }
 `;
+}
+
+function requirementAnalysisSource() {
+  return [analyzeComparisonRequirements, extractComparisonRequirements]
+    .map((implementation) => `export ${implementation.toString()}`)
+    .join("\n\n");
+}
+
+function analyzeComparisonRequirements(description) {
+  const informationalHeading = /^(?:about (?!you\b|(?:the )?(?:role|position|job)\b).+|company overview|our (?:company|team|mission|values)|why (?:join|work (?:at|with)).+|working (?:at|with).+|what we offer|additional information|benefits(?: and perks)?|perks|compensation(?: and benefits)?|pay and benefits|salary|pay range|diversity(?: and inclusion)?|equal opportunity|equal employment opportunity|workplace|work location|location|application process|how to apply|interview process|privacy|legal|accommodations?|background checks?|employment eligibility)$/i;
+  const requirementHeading = /^(?:about (?:you|(?:the )?(?:role|position|job))|the (?:role|opportunity)|your (?:role|impact|responsibilities)|role overview|overview|(?:key |role )?responsibilities|essential duties|what you(?:'|’)ll (?:do|bring)|what you will (?:do|bring)|you will|requirements|required experience|qualifications|minimum qualifications|preferred qualifications|desired qualifications|must have|skills|experience|who you are|what we look for|nice to have|preferred|you might thrive in this role if)$/i;
+  const seen = new Set();
+  const requirements = [];
+  const blocks = [];
+  const headings = [];
+  let mode = "neutral";
+  let block = null;
+  let hasRequirementSection = false;
+  let ignoredSections = 0;
+  const source = String(description || "")
+    .replace(/\r\n?/g, "\n")
+    .replace(/\[([^\]]+)\]\((?:[^()]|\([^)]*\))+\)/g, "$1")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/(?:https?|mailto):\/\/\S+|www\.\S+/gi, " ");
+
+  const flush = () => {
+    if (block?.text.trim()) blocks.push({ ...block, text: block.text.trim() });
+    block = null;
+  };
+
+  for (const rawLine of source.split("\n")) {
+    const heading = rawLine.match(/^\s*(#{1,6})\s+(.+?)\s*#*\s*$/);
+    if (heading) {
+      flush();
+      const level = heading[1].length;
+      while (headings.length && headings.at(-1).level >= level) headings.pop();
+      const label = cleanRequirementText(heading[2]).replace(/:$/, "");
+      const parentMode = headings.at(-1)?.mode || "neutral";
+      if (informationalHeading.test(label)) {
+        mode = "informational";
+        ignoredSections += 1;
+      } else if (requirementHeading.test(label)) {
+        mode = "requirement";
+        hasRequirementSection = true;
+      } else {
+        mode = parentMode;
+      }
+      headings.push({ level, mode });
+      continue;
+    }
+
+    if (!rawLine.trim()) {
+      flush();
+      continue;
+    }
+    const listItem = rawLine.match(/^\s*(?:[-*+]|\d{1,3}[.)])\s+(.+)$/);
+    if (listItem) {
+      flush();
+      block = { kind: "list", mode, text: listItem[1] };
+      continue;
+    }
+    if (block && block.mode === mode) block.text += ` ${rawLine.trim()}`;
+    else {
+      flush();
+      block = { kind: "prose", mode, text: rawLine.trim() };
+    }
+  }
+  flush();
+
+  for (const entry of blocks) {
+    if (entry.mode === "informational") continue;
+    if (hasRequirementSection && entry.mode !== "requirement" && entry.kind !== "list") continue;
+    const statements = entry.kind === "list"
+      ? [entry.text]
+      : entry.text.split(/(?:[.!?]+(?=\s|$)|[;•]+)/u);
+    for (const statement of statements) {
+      const clean = cleanRequirementText(statement);
+      if (!/[\p{L}\p{N}]/u.test(clean) || clean.length < 2 || requirementHeading.test(clean) || informationalHeading.test(clean)) continue;
+      for (const chunk of chunkRequirementText(clean, COMPARISON_CONTRACT.limits.maxRequirementCharacters)) {
+        const key = chunk.toLocaleLowerCase("en");
+        if (seen.has(key)) continue;
+        seen.add(key);
+        requirements.push(chunk);
+      }
+    }
+  }
+
+  return { requirements, ignoredSections };
+
+  function cleanRequirementText(value) {
+    return String(value || "")
+      .replace(/^\s*(?:#{1,6}\s*|[-*+]\s+|\d{1,3}[.)]\s+)/, "")
+      .replace(/[*`]+/g, "")
+      .replace(/^_+|_+$/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function chunkRequirementText(value, maximum) {
+    if (value.length <= maximum) return value ? [value] : [];
+    const words = value.split(" ");
+    const chunks = [];
+    let chunk = "";
+    for (const word of words) {
+      if (word.length > maximum) throw new TypeError(`A requirement statement contains an unbroken token longer than ${maximum} characters.`);
+      const candidate = chunk ? `${chunk} ${word}` : word;
+      if (candidate.length <= maximum) chunk = candidate;
+      else {
+        chunks.push(chunk);
+        chunk = word;
+      }
+    }
+    if (chunk) chunks.push(chunk);
+    return chunks;
+  }
+}
+
+function extractComparisonRequirements(description) {
+  return analyzeComparisonRequirements(description).requirements;
 }
 
 function assertStringMap(value, keys, label) {

@@ -1,6 +1,7 @@
 import { COMPARISON_CONTRACT } from "./comparison-contract.js";
 import { createLink } from "./dom.js";
 import {
+  buildRoleRequirementPreview,
   createLatestFileImport,
   parseRoleBatch,
   serializeComparisonExport,
@@ -153,6 +154,11 @@ export function buildComparisonStatusPresentation(model) {
     errorLabel: "COMPARISON UNAVAILABLE",
     errorTitle: "Check the role briefs and try again.",
   };
+
+  if (model.error?.code === "service_error" && !model.hasResult) {
+    presentation.errorLabel = "COMPARISON SERVICE ERROR";
+    presentation.errorTitle = "The role briefs are safe. The comparison service needs another try.";
+  }
 
   if (model.error && model.hasResult) {
     presentation.errorLabel = model.isStale
@@ -320,13 +326,23 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
     control.placeholder = placeholder;
     control.required = required;
     control.maxLength = COMPARISON_CONTRACT.limits[`max${capitalize(name)}Characters`];
-    control.setAttribute("aria-describedby", errorId);
+    const previewId = `${id}-preview`;
+    control.setAttribute("aria-describedby", multiline ? `${previewId} ${errorId}` : errorId);
     if (multiline) control.rows = 8;
     const error = document.createElement("p");
     error.id = errorId;
     error.className = "field-error";
     error.dataset.fieldError = `${index}:${name}`;
-    wrap.append(label, control, error);
+    wrap.append(label, control);
+    if (multiline) {
+      const preview = document.createElement("p");
+      preview.id = previewId;
+      preview.className = "field-hint comparison-requirement-preview";
+      preview.dataset.requirementPreview = String(index);
+      preview.textContent = describeRequirementPreview(value);
+      wrap.append(preview);
+    }
+    wrap.append(error);
     return wrap;
   }
 
@@ -336,6 +352,10 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
     const index = Number(control.dataset.roleIndex);
     const name = control.dataset.roleField;
     drafts[index][name] = control.value;
+    if (name === "description") {
+      const preview = editorList.querySelector(`[data-requirement-preview="${index}"]`);
+      if (preview) preview.textContent = describeRequirementPreview(control.value);
+    }
     clearFieldError(index, name);
     formError.textContent = "";
     try {
@@ -382,7 +402,8 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
     drafts = roles.map((role) => ({ ...role }));
     setControllerRoles(drafts);
     renderEditors({ focusIndex: 0 });
-    batchStatus.textContent = `${roles.length} ${roles.length === 1 ? "role" : "roles"} imported. Review the briefs, then compare.`;
+    const counts = roles.map(({ description }) => buildRoleRequirementPreview(description).count);
+    batchStatus.textContent = `${roles.length} ${roles.length === 1 ? "role" : "roles"} imported. Detected ${formatCountList(counts)} source ${counts.reduce((total, value) => total + value, 0) === 1 ? "requirement" : "requirements"} by role. Review the briefs, then compare.`;
     announce(`${roles.length} ${roles.length === 1 ? "role" : "roles"} imported.`);
   }
 
@@ -818,6 +839,29 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
   function setControllerRoles(roles) {
     return controller.setRoles(roles);
   }
+}
+
+function describeRequirementPreview(description) {
+  if (!description?.trim()) return "Requirement count appears here before analysis.";
+  try {
+    const preview = buildRoleRequirementPreview(description);
+    const requirementCopy = `${preview.count} of ${preview.sourceLimit} source ${preview.count === 1 ? "requirement" : "requirements"} detected before analysis.`;
+    const ignoredCopy = preview.ignoredSections
+      ? ` ${preview.ignoredSections} informational ${preview.ignoredSections === 1 ? "section" : "sections"} ignored.`
+      : "";
+    const remainderCopy = preview.notAssessedMinimum
+      ? ` Up to ${preview.assessedLimit} can be assessed; at least ${preview.notAssessedMinimum} will stay visible as not assessed.`
+      : ` Up to ${preview.assessedLimit} can be assessed; any remainder stays visible as not assessed.`;
+    return `${requirementCopy}${ignoredCopy}${remainderCopy}`;
+  } catch {
+    return "Requirement count is unavailable until this description is shortened.";
+  }
+}
+
+function formatCountList(values) {
+  if (values.length < 2) return String(values[0] ?? 0);
+  if (values.length === 2) return `${values[0]} and ${values[1]}`;
+  return `${values.slice(0, -1).join(", ")}, and ${values.at(-1)}`;
 }
 
 function emptyRole() { return { ...EMPTY_ROLE }; }

@@ -777,10 +777,11 @@ test("invalid comparison payloads consume abuse attempts but not monthly budget"
   assert.equal(budgetCalls, 0);
 });
 
-test("comparison rejects a source requirement inventory beyond result capacity before budget or provider use", async () => {
+test("comparison rejects only a source requirement inventory beyond the expanded safety bound before budget or provider use", async () => {
   let budgetCalls = 0;
   let providerCalls = 0;
-  const description = Array.from({ length: 41 }, (_, index) => `- Responsibility ${index + 1}`).join("\n");
+  const capacity = 96;
+  const description = Array.from({ length: capacity + 1 }, (_, index) => `- Responsibility ${index + 1}`).join("\n");
   const response = await handleRequest(compareRequest(JSON.stringify({
     roles: [{ title: "Dense role", description }],
   })), comparisonEnv({
@@ -790,7 +791,7 @@ test("comparison rejects a source requirement inventory beyond result capacity b
   });
 
   assert.equal(response.status, 422);
-  assert.match((await response.json()).error, /at most 40/i);
+  assert.match((await response.json()).error, new RegExp(`at most ${capacity}`));
   assert.equal(budgetCalls, 0);
   assert.equal(providerCalls, 0);
 });
@@ -853,7 +854,7 @@ test("server agents without Origin can create a grounded comparison without pers
     roles: [{
       title: "AI Product Lead",
       company: "Example Co",
-      description: "ROLE_TEXT_PRIVACY_SENTINEL Lead AI products and governance.",
+      description: "## About the team\nINFORMATIONALSECTIONPRIVACYSENTINEL\n\n## Responsibilities\n- ROLETEXTPRIVACYSENTINEL Lead AI products\n- governance",
     }],
   }), { origin: "" }), env, collectingContext(), {
     fetchImpl: async (url, init) => {
@@ -889,12 +890,13 @@ test("server agents without Origin can create a grounded comparison without pers
     "transfer_context",
     "gap_clarification",
   ]);
-  assert.match(JSON.stringify(upstream.body.input), /ROLE_TEXT_PRIVACY_SENTINEL/);
+  assert.match(JSON.stringify(upstream.body.input), /ROLETEXTPRIVACYSENTINEL/);
+  assert.doesNotMatch(JSON.stringify(upstream.body.input), /INFORMATIONALSECTIONPRIVACYSENTINEL/);
   assert.match(budgetReservation.id, /comparison:/);
   assert.equal(JSON.parse(budgetReservation.init.body).cap, 60);
-  assert.equal(result.rows[0].cells[0].requirement, "ROLE_TEXT_PRIVACY_SENTINEL Lead AI products");
+  assert.equal(result.rows[0].cells[0].requirement, "ROLETEXTPRIVACYSENTINEL Lead AI products");
   assert.deepEqual(result.unmappedRequirements[0].requirements, ["governance"]);
-  assert.equal([...archive.values.values()].some((value) => String(value).includes("ROLE_TEXT_PRIVACY_SENTINEL")), false);
+  assert.equal([...archive.values.values()].some((value) => String(value).includes("ROLETEXTPRIVACYSENTINEL")), false);
 });
 
 test("comparison retries one invalid structured draft within the same budget reservation", async () => {
@@ -942,10 +944,13 @@ test("comparison rejects invalid model evidence and bounds provider failures", a
   }
   assert.equal(invalid.status, 502);
   assert.equal(providerCalls, 2);
-  assert.doesNotMatch(JSON.stringify(await invalid.json()), /invented\.employer/);
+  const invalidProblem = await invalid.json();
+  assert.doesNotMatch(JSON.stringify(invalidProblem), /invented\.employer/);
+  assert.equal(invalidProblem.code, "comparison_service_invalid");
+  assert.match(invalidProblem.debugId, /^cmp_[a-f0-9]{16}$/);
   assert.deepEqual(errors, [
-    ["Comparison provider returned an invalid structured result", "draft_evidence_id", "retrying"],
-    ["Comparison provider returned an invalid structured result", "draft_evidence_id", "failed"],
+    ["Comparison provider returned an invalid structured result", "draft_evidence_id", "retrying", invalidProblem.debugId],
+    ["Comparison provider returned an invalid structured result", "draft_evidence_id", "failed", invalidProblem.debugId],
   ]);
 
   const provider = await handleRequest(compareRequest(), comparisonEnv(), emptyContext(), {

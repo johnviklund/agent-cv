@@ -37,6 +37,7 @@
     }
   }
   </script>
+  <script src="/navigation.js" type="module"></script>
   <script src="/app.js" type="module"></script>
 </head>
 <body>
@@ -141,11 +142,24 @@
             </div>
             <span data-role-count>2 of 3 roles</span>
           </div>
+          <details class="comparison-batch">
+            <summary>Paste or upload multiple roles</summary>
+            <div class="comparison-batch-panel">
+              <p>Import one to three roles as JSON (<code>{ "roles": [...] }</code>) or Markdown with one explicit <code>## Role: Role title</code> marker per role and optional <code>Company:</code> and <code>Description:</code> labels. Other headings stay inside the role description.</p>
+              <label for="comparison-role-batch">Role batch</label>
+              <textarea id="comparison-role-batch" data-role-batch rows="10" placeholder="## Role: Support Operations Lead&#10;Company: Example&#10;Description:&#10;## Responsibilities&#10;Own vendor performance, workforce planning and QBRs."></textarea>
+              <div class="comparison-batch-actions">
+                <input class="comparison-file-input" id="comparison-role-file" data-role-file type="file" aria-label="Choose a Markdown or JSON role file" accept=".md,.markdown,.json,text/markdown,application/json,text/plain">
+                <button class="secondary-action" data-import-roles type="button">Import roles</button>
+              </div>
+              <p class="comparison-batch-status" data-role-batch-status role="status"></p>
+            </div>
+          </details>
           <div class="role-editor-list" data-role-editors></div>
           <div class="role-editor-actions">
             <button class="secondary-action" data-add-role type="button">+ Add another role</button>
           </div>
-          <p class="comparison-privacy-note"><strong>Before you compare:</strong> role text is sent to OpenAI for analysis. This site keeps it only in this browser session, but it may remain in your provider or browser-agent account history.</p>
+          <p class="comparison-privacy-note"><strong>Before you compare:</strong> role text is sent to OpenAI for analysis. This page keeps it in memory while open and, when available, in this browser session. It may remain in your provider or browser-agent account history.</p>
           <p class="comparison-form-error" data-comparison-form-error role="alert"></p>
           <div class="comparison-submit-row">
             <button class="primary-action" data-compare-submit type="submit">Compare the evidence</button>
@@ -155,11 +169,12 @@
           </div>
         </form>
 
-        <p class="comparison-storage-note" data-comparison-storage-note role="status" hidden>This browser blocked session storage. You can continue, but the role drafts will disappear when you leave this page.</p>
+        <p class="comparison-storage-note" data-comparison-storage-note role="status" hidden>Private session storage is unavailable. The comparison remains fully usable in memory until this page closes.</p>
+        <p class="comparison-state-indicator" data-comparison-state role="status">Comparison draft ready for editing.</p>
         <div class="comparison-live sr-only" data-comparison-status aria-live="polite" aria-atomic="true"></div>
         <section class="comparison-error" data-comparison-error tabindex="-1" hidden aria-labelledby="comparison-error-title">
-          <p class="eyebrow">COMPARISON PAUSED</p>
-          <h2 id="comparison-error-title">The previous view is still safe.</h2>
+          <p class="eyebrow" data-comparison-error-label>COMPARISON UNAVAILABLE</p>
+          <h2 id="comparison-error-title" data-comparison-error-title>Check the role briefs and try again.</h2>
           <p data-comparison-error-copy></p>
           <div class="comparison-error-actions">
             <button class="secondary-action" data-comparison-retry type="button">Try again</button>
@@ -173,9 +188,23 @@
               <p class="eyebrow">THE EVIDENCE LEDGER</p>
               <h2 id="comparison-caption" data-comparison-caption tabindex="-1">One record, several role lenses.</h2>
             </div>
-            <p data-comparison-result-notice></p>
+            <div class="comparison-result-meta">
+              <p data-comparison-result-notice></p>
+              <div class="comparison-export-actions" role="group" aria-label="Export comparison">
+                <button class="text-button" data-export-comparison="markdown" type="button">Export Markdown</button>
+                <button class="text-button" data-export-comparison="json" type="button">Export JSON</button>
+              </div>
+            </div>
           </header>
-          <div class="comparison-table-scroll" data-comparison-table tabindex="0" aria-label="Scrollable role comparison table"></div>
+          <div class="comparison-table-scroll" data-comparison-table role="region" tabindex="0" aria-label="Scrollable role comparison table"></div>
+          <section class="comparison-unmapped" data-comparison-unmapped aria-label="Requirements not assessed" hidden></section>
+          <section class="comparison-evidence-library" data-comparison-evidence-library aria-labelledby="comparison-evidence-library-title" hidden>
+            <div class="comparison-library-heading">
+              <p class="eyebrow">CANONICAL EVIDENCE REFERENCES</p>
+              <h3 id="comparison-evidence-library-title">Evidence cited in this comparison</h3>
+            </div>
+            <div data-comparison-evidence-items></div>
+          </section>
           <p class="comparison-method-note"><strong>How to read this:</strong> “Not documented yet” means the public record is silent—not that John lacks the capability. Open a cell to inspect the original role wording, evidence and questions worth asking.</p>
         </section>
       </section>

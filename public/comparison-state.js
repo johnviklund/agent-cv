@@ -15,6 +15,15 @@ const ID_PATTERNS = {
   cellId: /^cell_row_[0-9]{2}_role_[0-9]{2}$/,
 };
 
+export function resolveSessionStorage(scope = globalThis) {
+  try {
+    const storage = scope?.sessionStorage;
+    return storage && typeof storage.getItem === "function" ? storage : null;
+  } catch {
+    return null;
+  }
+}
+
 export function buildComparisonSnapshot(
   {
     catalogDigest = "",

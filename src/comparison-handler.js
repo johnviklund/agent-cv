@@ -83,7 +83,10 @@ export async function handleCompare(
       body: JSON.stringify({
         model,
         instructions: buildComparisonInstructions(),
-        input: [{ role: "user", content: buildComparisonProviderInput(input.roles, evidenceCatalog) }],
+        input: [{
+          role: "user",
+          content: buildComparisonProviderInput(input.roles, evidenceCatalog, input.requirementInventory),
+        }],
         reasoning: { effort: "none" },
         max_output_tokens: boundedComparisonOutputTokens(env.COMPARISON_MAX_OUTPUT_TOKENS),
         text: { format: comparisonStructuredOutputFormat() },
@@ -124,7 +127,7 @@ export async function handleCompare(
     try {
       const providerResponse = JSON.parse(providerResponseText);
       const draft = extractStructuredComparison(providerResponse);
-      const result = canonicalizeComparisonDraft(draft, input.roles, evidenceCatalog);
+      const result = canonicalizeComparisonDraft(draft, input.roles, evidenceCatalog, input.requirementInventory);
       return noStoreJson(result, 200, Object.fromEntries(comparisonCorsHeaders(access.origin, {
           "x-agent-model": model,
           "x-comparison-catalog-digest": evidenceCatalog.digest,

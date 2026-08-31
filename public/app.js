@@ -2,6 +2,7 @@ import { consumeEventStream } from "./stream.js";
 import { renderMarkdown } from "./markdown.js";
 import { createLink } from "./dom.js";
 import { createComparisonController } from "./comparison-controller.js";
+import { resolveSessionStorage } from "./comparison-state.js";
 import { createWorkspaceController, modeFromHash } from "./workspace-controller.js";
 import { createComparisonView } from "./comparison-view.js";
 import { registerWebMCPTools } from "./webmcp.js";
@@ -34,10 +35,11 @@ const workspaceMessage = document.querySelector("[data-workspace-message]");
 let comparisonView = null;
 let webMCPRegistration = null;
 let workspaceFocusEnabled = modeFromHash(window.location.hash) === "compare";
+const browserSessionStorage = resolveSessionStorage(window);
 
 export const comparisonController = home
   ? createComparisonController({
-    storage: window.sessionStorage,
+    storage: browserSessionStorage,
     fetchImpl: window.fetch.bind(window),
     onChange: (comparisonState) => comparisonView?.render(comparisonState),
   })
@@ -345,12 +347,12 @@ function setBusy(busy) {
 
 function queuePromptAndGoHome(prompt) {
   const applicationSlug = applicationSlugFromPath(window.location.pathname);
-  const storedPrompt = storePendingPrompt(window.sessionStorage, prompt);
+  const storedPrompt = storePendingPrompt(browserSessionStorage, prompt);
   const storedApplication = !applicationSlug
-    || storePendingApplication(window.sessionStorage, applicationSlug);
+    || storePendingApplication(browserSessionStorage, applicationSlug);
   if (!storedPrompt || !storedApplication) {
-    takePendingPrompt(window.sessionStorage);
-    takePendingApplication(window.sessionStorage);
+    takePendingPrompt(browserSessionStorage);
+    takePendingApplication(browserSessionStorage);
     showPrivateNavigationError();
     return;
   }
@@ -371,7 +373,7 @@ function showPrivateNavigationError() {
 
 function readPendingApplication() {
   try {
-    return takePendingApplication(window.sessionStorage);
+    return takePendingApplication(browserSessionStorage);
   } catch {
     return "";
   }
@@ -379,7 +381,7 @@ function readPendingApplication() {
 
 function readPendingPrompt() {
   try {
-    return takePendingPrompt(window.sessionStorage);
+    return takePendingPrompt(browserSessionStorage);
   } catch {
     return "";
   }

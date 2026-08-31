@@ -15,8 +15,8 @@ const TOOL_NAMES = Object.freeze({
 
 const DIGEST_PATTERN = /^sha256:[a-f0-9]{64}$/;
 const ROLE_ID_PATTERN = /^role_0[1-3]$/;
-const ROW_ID_PATTERN = /^row_(?:0[1-9]|1[0-8])$/;
-const CELL_ID_PATTERN = /^cell_row_(?:0[1-9]|1[0-8])_role_0[1-3]$/;
+const ROW_ID_PATTERN = /^row_(?:0[1-9]|1[0-9]|2[0-4])$/;
+const CELL_ID_PATTERN = /^cell_row_(?:0[1-9]|1[0-9]|2[0-4])_role_0[1-3]$/;
 const EVIDENCE_ID_PATTERN = /^[a-z0-9]+(?:[.-][a-z0-9]+)*$/;
 const COVERAGE = new Set(COMPARISON_COVERAGE_STATES);
 const REASON_CODES = new Set([
@@ -37,7 +37,7 @@ const FOCUS_INPUT_SCHEMA = Object.freeze({
   required: ["roleId", "rowId"],
   properties: {
     roleId: { type: "string", pattern: "^role_0[1-3]$" },
-    rowId: { type: "string", pattern: "^row_(?:0[1-9]|1[0-8])$" },
+    rowId: { type: "string", pattern: "^row_(?:0[1-9]|1[0-9]|2[0-4])$" },
   },
 });
 
@@ -214,6 +214,24 @@ function semanticState(operation, state, visibleRegion, evidenceIds) {
       .flatMap((cell) => sanitizeCell(row.id, cell, evidenceIds));
   });
   const selection = sanitizeSelection(state?.selection, cells);
+  const requirementsByRole = roleIds.map((roleId, roleIndex) => {
+    const listedCells = cells.filter((cell) => cell.roleId === roleId && cell.coverage !== "not_listed")
+      .slice(0, COMPARISON_CONTRACT.limits.maxRequirementsPerRole);
+    const unmappedEntry = Array.isArray(result?.unmappedRequirements)
+      ? result.unmappedRequirements[roleIndex]
+      : undefined;
+    const unmapped = unmappedEntry?.roleId === roleId && Array.isArray(unmappedEntry.requirements)
+      ? Math.min(unmappedEntry.requirements.length, COMPARISON_CONTRACT.limits.maxUnmappedRequirementsPerRole)
+      : 0;
+    const coverage = {
+      documented: listedCells.filter((cell) => cell.coverage === "documented").length,
+      transferable: listedCells.filter((cell) => cell.coverage === "transferable").length,
+      notDocumented: listedCells.filter((cell) => cell.coverage === "not_documented").length,
+    };
+    const assessed = coverage.documented + coverage.transferable + coverage.notDocumented;
+    return { roleId, assessed, unmapped, total: assessed + unmapped, coverage };
+  });
+  const unmappedRequirements = requirementsByRole.reduce((total, role) => total + role.unmapped, 0);
   return {
     ok: true,
     operation,
@@ -224,8 +242,9 @@ function semanticState(operation, state, visibleRegion, evidenceIds) {
     catalogDigest: DIGEST_PATTERN.test(state?.catalogDigest || "") ? state.catalogDigest : "",
     visibleRegion: visibleRegion === "compare" ? "comparison" : "home",
     resultStale: state?.resultStale === true,
-    counts: { roles: roleIds.length, rows: rowIds.length, cells: cells.length },
+    counts: { roles: roleIds.length, rows: rowIds.length, cells: cells.length, unmappedRequirements },
     roleIds,
+    requirementsByRole,
     rowIds,
     cells,
     selection,

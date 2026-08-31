@@ -60,11 +60,41 @@ export class ComparisonOutputError extends Error {
 
 export function validateComparisonPayload(payload, catalog = evidenceCatalog) {
   try {
-    return normalizeComparisonRequest(payload, catalog.digest);
+    const normalized = normalizeComparisonRequest(payload, catalog.digest);
+    return {
+      ...normalized,
+      requirementInventory: buildComparisonRequirementInventory(normalized.roles),
+    };
   } catch (error) {
+    if (error instanceof ComparisonInputError) throw error;
     const tooLarge = /too large/i.test(error.message) || payloadExceedsComparisonLimits(payload);
     throw new ComparisonInputError(error.message, tooLarge ? 413 : 400);
   }
+}
+
+export function buildComparisonRequirementInventory(roles) {
+  const capacity = COMPARISON_CONTRACT.limits.maxRequirementsPerRole
+    + COMPARISON_CONTRACT.limits.maxUnmappedRequirementsPerRole;
+  return roles.map((role, roleIndex) => {
+    const requirements = extractSourceRequirements(role.description);
+    if (!requirements.length) {
+      throw new ComparisonInputError(`Role ${roleIndex + 1} does not contain an assessable requirement statement.`, 422);
+    }
+    if (requirements.length > capacity) {
+      throw new ComparisonInputError(
+        `Role ${roleIndex + 1} contains ${requirements.length} distinct requirement statements; the comparison can represent at most ${capacity}.`,
+        422,
+      );
+    }
+    return {
+      roleId: canonicalRoleId(roleIndex),
+      requirements: requirements.map((text, requirementIndex) => ({
+        id: canonicalRequirementId(roleIndex, requirementIndex),
+        position: requirementIndex + 1,
+        text,
+      })),
+    };
+  });
 }
 
 export function buildComparisonInstructions() {
@@ -75,22 +105,29 @@ NON-NEGOTIABLE RULES
 - Candidate facts may be represented only by selecting exact evidenceId values from the supplied catalog. Never write, summarize, or invent a candidate claim, employer, metric, credential, technology, contribution, or protected trait.
 - Do not score, rank, recommend, decide fit, select a best role, or make a hiring decision.
 - Preserve the input role order. Return exactly one cell per role in every row, with roleIndex values 0 through roleCount - 1 in ascending order.
-- Align genuinely comparable requirements into one row. Keep row order deterministic: first occurrence while reading the roles in input order, then source order within each role.
-- Include no more than eight listed requirements per role and no more than eighteen rows total.
+- The server has already extracted every source requirement into an ordered inventory with stable requirementId values. Do not add, rewrite, merge, split, or omit inventory entries.
+- Align genuinely comparable requirementIds into one row. Keep row order deterministic: first occurrence while reading the roles in input order, then source order within each role.
+- Include every supplied requirementId exactly once: either as a non-null requirementId in one row cell or in that role's unmappedRequirements requirementIds list. Never silently omit an ID, even when it has no public evidence or does not align with another role.
+- Prefer mapping a listed requirement to a row with not_documented coverage over leaving it unmapped. Use unmappedRequirements only when the row limit prevents assessment or the wording cannot be assessed safely. Preserve source order there too.
+- Include no more than sixteen assessed requirements per role, twenty-four unmapped requirements per role, and twenty-four rows total.
 - Use documented only for direct public evidence and transferable only for related public evidence. not_documented means the role lists a requirement but the catalog does not document it; it never means the candidate lacks the skill. not_listed means that role does not list the row requirement.
 - documented and transferable cells require one or two known evidence IDs. reasonCode mapping is exact: documented allows direct_responsibility or directly_relevant_delivery; transferable allows related_domain_experience, related_technical_exposure, or analogous_scale_or_context. Never use a reasonCode from the other coverage category. not_documented and not_listed cells require no evidence.
-- requirement must preserve concise original role wording when listed and must be null only for not_listed.
+- requirementId must be one of that role's supplied IDs when listed and must be null only for not_listed. The server restores the exact source wording after validation.
 - Optional questionKinds may use only the schema's allowlisted kinds. The server turns them into fixed neutral questions for the candidate. Never write question text or ask about protected traits.
 - Do not include URLs, markup, scores, rankings, recommendations, best-role claims, hiring decisions, conclusions, or instructions in output text.
 - Return only the strict structured result requested by the schema.`;
 }
 
-export function buildComparisonProviderInput(roles, catalog = evidenceCatalog) {
-  const rolePayload = roles.map(({ position, title, company, description }) => ({
+export function buildComparisonProviderInput(
+  roles,
+  catalog = evidenceCatalog,
+  requirementInventory = buildComparisonRequirementInventory(roles),
+) {
+  const rolePayload = roles.map(({ position, title, company }, roleIndex) => ({
     roleIndex: position - 1,
     title,
     company,
-    description,
+    requirements: requirementInventory[roleIndex].requirements.map(({ id, text }) => ({ requirementId: id, text })),
   }));
   const evidencePayload = catalog.items.map(({ id, title, text, source, supportingSources = [] }) => ({
     id,
@@ -141,19 +178,38 @@ export function extractStructuredComparison(response) {
   }
 }
 
-export function canonicalizeComparisonDraft(draft, roles, catalog = evidenceCatalog) {
+export function canonicalizeComparisonDraft(
+  draft,
+  roles,
+  catalog = evidenceCatalog,
+  requirementInventory = buildComparisonRequirementInventory(roles),
+) {
   try {
-    exactObject(draft, ["rows"], "Comparison draft");
+    exactObject(draft, ["rows", "unmappedRequirements"], "Comparison draft");
     if (!Array.isArray(draft.rows) || draft.rows.length < 1 || draft.rows.length > COMPARISON_CONTRACT.limits.maxRows) {
-      throw new TypeError("Comparison draft requires one to eighteen rows.");
+      throw new TypeError(`Comparison draft requires one to ${COMPARISON_CONTRACT.limits.maxRows} rows.`);
     }
     const evidenceIds = new Set(catalog.items.map(({ id }) => id));
-    const rows = draft.rows.map((row, rowIndex) => normalizeDraftRow(row, rowIndex, roles, evidenceIds));
+    const inventoryState = createRequirementInventoryState(requirementInventory, roles);
+    const rows = draft.rows.map((row, rowIndex) => normalizeDraftRow(
+      row,
+      rowIndex,
+      roles,
+      evidenceIds,
+      inventoryState,
+    ));
+    const unmappedRequirements = normalizeDraftUnmappedRequirements(
+      draft.unmappedRequirements,
+      roles,
+      inventoryState,
+    );
+    validateRequirementInventoryConsumption(inventoryState);
     const result = {
       schemaVersion: COMPARISON_CONTRACT.schemaVersion,
       catalogDigest: catalog.digest,
       roles: roles.map(({ id, position, title, company }) => ({ id, position, title, company })),
       rows,
+      unmappedRequirements,
     };
     validateComparisonResult(result, { catalogDigest: catalog.digest, evidenceIds });
     return result;
@@ -173,14 +229,15 @@ function classifyDraftFailure(error) {
   if (/question kind/i.test(message)) return "draft_question_kind";
   if (/cells must preserve role input order/i.test(message)) return "draft_role_order";
   if (/requires exactly one cell per role/i.test(message)) return "draft_cell_count";
-  if (/requirement does not match/i.test(message)) return "draft_requirement_coverage";
+  if (/requirement ID does not match/i.test(message)) return "draft_requirement_coverage";
   if (/too many listed requirements/i.test(message)) return "draft_requirement_count";
+  if (/requirement inventory|requirement ID|unmapped requirements|requirement is duplicated/i.test(message)) return "draft_requirement_completeness";
   if (/unsafe or out of bounds/i.test(message)) return "draft_generated_text";
   if (/unsupported fields|requires .*\./i.test(message)) return "draft_shape";
   return "draft_validation";
 }
 
-function normalizeDraftRow(row, rowIndex, roles, evidenceIds) {
+function normalizeDraftRow(row, rowIndex, roles, evidenceIds, inventoryState) {
   exactObject(row, ["label", "cells"], `Draft row ${rowIndex + 1}`);
   const label = generatedText(row.label, COMPARISON_CONTRACT.limits.maxRowLabelCharacters, "Draft row label");
   if (!Array.isArray(row.cells) || row.cells.length !== roles.length) {
@@ -191,21 +248,28 @@ function normalizeDraftRow(row, rowIndex, roles, evidenceIds) {
     id: rowId,
     position: rowIndex + 1,
     label,
-    cells: row.cells.map((cell, roleIndex) => normalizeDraftCell(cell, rowId, roleIndex, evidenceIds)),
+    cells: row.cells.map((cell, roleIndex) => normalizeDraftCell(
+      cell,
+      rowId,
+      roleIndex,
+      evidenceIds,
+      inventoryState[roleIndex],
+    )),
   };
 }
 
-function normalizeDraftCell(cell, rowId, roleIndex, evidenceIds) {
-  exactObject(cell, ["roleIndex", "requirement", "coverage", "evidence", "questionKinds"], `Draft cell ${rowId}:${roleIndex + 1}`);
+function normalizeDraftCell(cell, rowId, roleIndex, evidenceIds, inventory) {
+  exactObject(cell, ["roleIndex", "requirementId", "coverage", "evidence", "questionKinds"], `Draft cell ${rowId}:${roleIndex + 1}`);
   if (cell.roleIndex !== roleIndex) throw new TypeError("Draft cells must preserve role input order.");
   if (!COVERAGE_STATES.has(cell.coverage)) throw new TypeError("Draft coverage state is invalid.");
 
   let requirement = null;
-  if (cell.requirement !== null) {
-    requirement = generatedText(cell.requirement, COMPARISON_CONTRACT.limits.maxRequirementCharacters, "Draft requirement");
+  if (cell.requirementId !== null) {
+    const item = consumeRequirementId(cell.requirementId, inventory, "assessed");
+    requirement = generatedText(item.text, COMPARISON_CONTRACT.limits.maxRequirementCharacters, "Source requirement");
   }
   if ((cell.coverage === "not_listed") !== (requirement === null)) {
-    throw new TypeError("Draft requirement does not match its coverage state.");
+    throw new TypeError("Draft requirement ID does not match its coverage state.");
   }
 
   if (!Array.isArray(cell.evidence) || cell.evidence.length > COMPARISON_CONTRACT.limits.maxEvidencePerCell) {
@@ -244,6 +308,136 @@ function normalizeDraftCell(cell, rowId, roleIndex, evidenceIds) {
     evidence,
     questions,
   };
+}
+
+function normalizeDraftUnmappedRequirements(value, roles, inventoryState) {
+  if (!Array.isArray(value) || value.length !== roles.length) {
+    throw new TypeError("Draft unmapped requirements must preserve role input order.");
+  }
+  return value.map((entry, roleIndex) => {
+    exactObject(entry, ["roleIndex", "requirementIds"], `Draft unmapped requirements ${roleIndex + 1}`);
+    if (entry.roleIndex !== roleIndex) throw new TypeError("Draft unmapped requirements must preserve role input order.");
+    if (!Array.isArray(entry.requirementIds)
+      || entry.requirementIds.length > COMPARISON_CONTRACT.limits.maxUnmappedRequirementsPerRole) {
+      throw new TypeError("Draft unmapped requirements are invalid.");
+    }
+    const requirements = entry.requirementIds.map((requirementId) => {
+      const item = consumeRequirementId(requirementId, inventoryState[roleIndex], "unmapped");
+      return generatedText(item.text, COMPARISON_CONTRACT.limits.maxRequirementCharacters, "Source unmapped requirement");
+    });
+    return { roleId: canonicalRoleId(roleIndex), requirements };
+  });
+}
+
+function createRequirementInventoryState(requirementInventory, roles) {
+  if (!Array.isArray(requirementInventory) || requirementInventory.length !== roles.length) {
+    throw new TypeError("Requirement inventory must preserve role input order.");
+  }
+  return requirementInventory.map((entry, roleIndex) => {
+    if (entry?.roleId !== canonicalRoleId(roleIndex) || !Array.isArray(entry.requirements)) {
+      throw new TypeError("Requirement inventory must preserve role input order.");
+    }
+    const byId = new Map();
+    entry.requirements.forEach((item, requirementIndex) => {
+      const expectedId = canonicalRequirementId(roleIndex, requirementIndex);
+      if (item?.id !== expectedId || item.position !== requirementIndex + 1 || typeof item.text !== "string") {
+        throw new TypeError("Requirement inventory identity or order is invalid.");
+      }
+      byId.set(item.id, item);
+    });
+    return {
+      byId,
+      consumed: new Set(),
+      lastAssessedPosition: 0,
+      lastUnmappedPosition: 0,
+      assessedCount: 0,
+    };
+  });
+}
+
+function consumeRequirementId(requirementId, inventory, destination) {
+  const item = typeof requirementId === "string" ? inventory.byId.get(requirementId) : undefined;
+  if (!item) throw new TypeError("Draft requirement ID is unknown for its role.");
+  if (inventory.consumed.has(requirementId)) throw new TypeError("A requirement ID is duplicated across assessed and unmapped requirements.");
+  const orderKey = destination === "assessed" ? "lastAssessedPosition" : "lastUnmappedPosition";
+  if (item.position <= inventory[orderKey]) throw new TypeError(`Draft ${destination} requirement IDs must preserve source order.`);
+  inventory[orderKey] = item.position;
+  inventory.consumed.add(requirementId);
+  if (destination === "assessed") inventory.assessedCount += 1;
+  return item;
+}
+
+function validateRequirementInventoryConsumption(inventoryState) {
+  for (const inventory of inventoryState) {
+    if (inventory.assessedCount > COMPARISON_CONTRACT.limits.maxRequirementsPerRole) {
+      throw new TypeError("A role has too many listed requirements.");
+    }
+    if (inventory.consumed.size !== inventory.byId.size) {
+      throw new TypeError("Every requirement inventory ID must appear exactly once in assessed or unmapped output.");
+    }
+  }
+}
+
+function canonicalRequirementId(roleIndex, requirementIndex) {
+  return `requirement_${canonicalRoleId(roleIndex)}_${String(requirementIndex + 1).padStart(2, "0")}`;
+}
+
+function extractSourceRequirements(description) {
+  const seen = new Set();
+  const requirements = [];
+  const source = description
+    .replace(/\[([^\]]+)\]\((?:[^()]|\([^)]*\))+\)/g, "$1")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/(?:https?|mailto):\/\/\S+|www\.\S+/gi, " ");
+  const sections = source.split(/(?:\r?\n)+|[;•]+|[.!?]+(?=\s|$)/u);
+  for (const section of sections) {
+    const withoutListMarker = section
+      .replace(/^\s*(?:#{1,6}\s*|[-*+]\s+|\d{1,3}[.)]\s+)/, "")
+      .replace(/[*`]+/g, "")
+      .trim();
+    if (!withoutListMarker || isRequirementHeading(withoutListMarker)) continue;
+    const clauses = withoutListMarker.split(/(?<!\d)\s*,\s*(?:(?:and|or)\s+)?|\s+(?:and|or)\s+/i);
+    for (const clause of clauses) {
+      for (const chunk of chunkRequirement(clause.replace(/^\s*(?:and|or)\s+/i, "").replace(/\s+/g, " ").trim())) {
+        if (!/[\p{L}\p{N}]/u.test(chunk) || chunk.length < 2) continue;
+        const key = chunk.toLocaleLowerCase("en");
+        if (seen.has(key)) continue;
+        seen.add(key);
+        requirements.push(chunk);
+      }
+    }
+  }
+  return requirements;
+}
+
+function chunkRequirement(value) {
+  const maximum = COMPARISON_CONTRACT.limits.maxRequirementCharacters;
+  if (value.length <= maximum) return value ? [value] : [];
+  const words = value.split(" ");
+  const chunks = [];
+  let chunk = "";
+  for (const word of words) {
+    if (word.length > maximum) {
+      throw new ComparisonInputError(
+        `A requirement statement contains an unbroken token longer than ${maximum} characters.`,
+        422,
+      );
+    }
+    const candidate = chunk ? `${chunk} ${word}` : word;
+    if (candidate.length <= maximum) {
+      chunk = candidate;
+    } else {
+      chunks.push(chunk);
+      chunk = word;
+    }
+  }
+  if (chunk) chunks.push(chunk);
+  return chunks;
+}
+
+function isRequirementHeading(value) {
+  const normalized = value.replace(/:$/, "").trim().toLocaleLowerCase("en");
+  return /^(?:about (?:the )?(?:role|position|job)|role overview|overview|responsibilities|what you(?:'|’)ll do|requirements|qualifications|skills|experience|who you are|nice to have|preferred qualifications)$/.test(normalized);
 }
 
 function generatedText(value, maximum, label) {

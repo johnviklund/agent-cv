@@ -17,18 +17,20 @@ export async function writeComparisonContract({ repositoryRoot = root } = {}) {
 
 export function validateContract(value) {
   assertExactKeys(value, ["schemaVersion", "limits", "coverageStates", "reasonCodes", "identity", "ordering", "cardinality"], "Comparison contract");
-  if (value.schemaVersion !== 1) throw new Error("Comparison contract requires schemaVersion 1.");
+  if (value.schemaVersion !== 2) throw new Error("Comparison contract requires schemaVersion 2.");
   assertExactKeys(value.limits, [
     "maxBodyBytes", "minRoles", "maxRoles", "maxTitleCharacters", "maxCompanyCharacters",
     "maxDescriptionCharacters", "maxCombinedRoleCharacters", "maxRows", "maxRequirementsPerRole",
+    "maxUnmappedRequirementsPerRole",
     "maxRowLabelCharacters", "maxRequirementCharacters", "maxEvidencePerCell", "maxQuestionsPerCell",
     "maxQuestionCharacters", "maxProviderResponseBytes",
   ], "Comparison limits");
   for (const [name, limit] of Object.entries(value.limits)) {
     if (!Number.isSafeInteger(limit) || limit < 1) throw new Error(`Comparison limit ${name} must be a positive integer.`);
   }
-  if (value.limits.minRoles !== 1 || value.limits.maxRoles !== 3 || value.limits.maxRows !== 18 || value.limits.maxRequirementsPerRole !== 8) {
-    throw new Error("Comparison role, row, and requirement cardinality is fixed at 1–3 roles, 18 rows, and 8 requirements per role.");
+  if (value.limits.minRoles !== 1 || value.limits.maxRoles !== 3 || value.limits.maxRows !== 24
+    || value.limits.maxRequirementsPerRole !== 16 || value.limits.maxUnmappedRequirementsPerRole !== 24) {
+    throw new Error("Comparison cardinality is fixed at 1–3 roles, 24 rows, 16 assessed requirements, and 24 unmapped requirements per role.");
   }
   if (JSON.stringify(value.coverageStates) !== JSON.stringify(["documented", "transferable", "not_documented", "not_listed"])) {
     throw new Error("Comparison coverage states are fixed and ordered.");
@@ -40,8 +42,8 @@ export function validateContract(value) {
     }
   }
   assertStringMap(value.identity, ["role", "row", "cell"], "Comparison identity");
-  assertStringMap(value.ordering, ["roles", "rows", "cells"], "Comparison ordering");
-  assertStringMap(value.cardinality, ["roles", "rows", "cells", "listedRequirements"], "Comparison cardinality");
+  assertStringMap(value.ordering, ["roles", "rows", "cells", "unmappedRequirements"], "Comparison ordering");
+  assertStringMap(value.cardinality, ["roles", "rows", "cells", "listedRequirements", "unmappedRequirements"], "Comparison cardinality");
   return value;
 }
 
@@ -95,17 +97,27 @@ const providerEvidenceSchema = {
 };
 const providerCellSchema = {
   type: "object", additionalProperties: false,
-  required: ["roleIndex", "requirement", "coverage", "evidence", "questionKinds"],
+  required: ["roleIndex", "requirementId", "coverage", "evidence", "questionKinds"],
   properties: {
     roleIndex: { type: "integer", minimum: 0, maximum: LIMITS.maxRoles - 1 },
-    requirement: { type: ["string", "null"], maxLength: LIMITS.maxRequirementCharacters },
+    requirementId: { type: ["string", "null"], pattern: "^requirement_role_[0-9]{2}_[0-9]{2}$" },
     coverage: { type: "string", enum: COMPARISON_COVERAGE_STATES },
     evidence: { type: "array", maxItems: LIMITS.maxEvidencePerCell, items: providerEvidenceSchema },
     questionKinds: { type: "array", maxItems: LIMITS.maxQuestionsPerCell, items: { type: "string", enum: COMPARISON_QUESTION_KINDS } },
   },
 };
+const providerUnmappedRequirementsSchema = {
+  type: "object", additionalProperties: false, required: ["roleIndex", "requirementIds"],
+  properties: {
+    roleIndex: { type: "integer", minimum: 0, maximum: LIMITS.maxRoles - 1 },
+    requirementIds: {
+      type: "array", maxItems: LIMITS.maxUnmappedRequirementsPerRole,
+      items: { type: "string", pattern: "^requirement_role_[0-9]{2}_[0-9]{2}$" },
+    },
+  },
+};
 export const COMPARISON_PROVIDER_SCHEMA = Object.freeze({
-  type: "object", additionalProperties: false, required: ["rows"],
+  type: "object", additionalProperties: false, required: ["rows", "unmappedRequirements"],
   properties: {
     rows: {
       type: "array", minItems: 1, maxItems: LIMITS.maxRows,
@@ -116,6 +128,10 @@ export const COMPARISON_PROVIDER_SCHEMA = Object.freeze({
           cells: { type: "array", minItems: 1, maxItems: LIMITS.maxRoles, items: providerCellSchema },
         },
       },
+    },
+    unmappedRequirements: {
+      type: "array", minItems: LIMITS.minRoles, maxItems: LIMITS.maxRoles,
+      items: providerUnmappedRequirementsSchema,
     },
   },
 });
@@ -139,9 +155,19 @@ const resultCellSchema = {
     questions: { type: "array", maxItems: LIMITS.maxQuestionsPerCell, items: { type: "string", minLength: 1, maxLength: LIMITS.maxQuestionCharacters } },
   },
 };
+const resultUnmappedRequirementsSchema = {
+  type: "object", additionalProperties: false, required: ["roleId", "requirements"],
+  properties: {
+    roleId: { type: "string", pattern: "^role_[0-9]{2}$" },
+    requirements: {
+      type: "array", maxItems: LIMITS.maxUnmappedRequirementsPerRole,
+      items: { type: "string", minLength: 1, maxLength: LIMITS.maxRequirementCharacters },
+    },
+  },
+};
 export const COMPARISON_RESULT_SCHEMA = Object.freeze({
   type: "object", additionalProperties: false,
-  required: ["schemaVersion", "catalogDigest", "roles", "rows"],
+  required: ["schemaVersion", "catalogDigest", "roles", "rows", "unmappedRequirements"],
   properties: {
     schemaVersion: { const: COMPARISON_CONTRACT.schemaVersion },
     catalogDigest: { type: "string", pattern: "^sha256:[a-f0-9]{64}$" },
@@ -169,6 +195,10 @@ export const COMPARISON_RESULT_SCHEMA = Object.freeze({
         },
       },
     },
+    unmappedRequirements: {
+      type: "array", minItems: LIMITS.minRoles, maxItems: LIMITS.maxRoles,
+      items: resultUnmappedRequirementsSchema,
+    },
   },
 });
 
@@ -195,7 +225,7 @@ export function normalizeComparisonRequest(value, catalogDigest = "") {
 }
 
 export function validateComparisonResult(value, { catalogDigest, evidenceIds } = {}) {
-  exactObject(value, ["schemaVersion", "catalogDigest", "roles", "rows"], "Comparison result");
+  exactObject(value, ["schemaVersion", "catalogDigest", "roles", "rows", "unmappedRequirements"], "Comparison result");
   if (value.schemaVersion !== COMPARISON_CONTRACT.schemaVersion) throw new TypeError("Comparison result schema version is invalid.");
   if (typeof value.catalogDigest !== "string" || !/^sha256:[a-f0-9]{64}$/.test(value.catalogDigest)) throw new TypeError("Comparison catalog digest is invalid.");
   if (catalogDigest !== undefined && value.catalogDigest !== catalogDigest) throw new TypeError("Comparison catalog digest does not match.");
@@ -209,6 +239,7 @@ export function validateComparisonResult(value, { catalogDigest, evidenceIds } =
   if (!Array.isArray(value.rows) || value.rows.length < 1 || value.rows.length > LIMITS.maxRows) throw new TypeError("Comparison result rows are invalid.");
   const labels = new Set();
   const requirementCounts = Array(value.roles.length).fill(0);
+  const requirementKeys = Array.from({ length: value.roles.length }, () => new Set());
   value.rows.forEach((row, rowIndex) => {
     exactObject(row, ["id", "position", "label", "cells"], \`Result row \${rowIndex + 1}\`);
     const rowId = canonicalRowId(rowIndex);
@@ -226,7 +257,10 @@ export function validateComparisonResult(value, { catalogDigest, evidenceIds } =
       if (cell.requirement === null) {
         if (cell.coverage !== "not_listed") throw new TypeError("Only not_listed cells may omit requirement wording.");
       } else {
-        safeGeneratedText(cell.requirement, LIMITS.maxRequirementCharacters, "Result requirement");
+        const requirement = safeGeneratedText(cell.requirement, LIMITS.maxRequirementCharacters, "Result requirement");
+        const requirementKey = requirement.toLocaleLowerCase("en");
+        if (requirementKeys[roleIndex].has(requirementKey)) throw new TypeError("A role requirement is duplicated across assessed and unmapped requirements.");
+        requirementKeys[roleIndex].add(requirementKey);
         requirementCounts[roleIndex] += 1;
         if (cell.coverage === "not_listed") throw new TypeError("A not_listed cell cannot contain requirement wording.");
       }
@@ -250,6 +284,22 @@ export function validateComparisonResult(value, { catalogDigest, evidenceIds } =
     });
   });
   if (requirementCounts.some((count) => count > LIMITS.maxRequirementsPerRole)) throw new TypeError("A role has too many listed requirements.");
+  if (!Array.isArray(value.unmappedRequirements) || value.unmappedRequirements.length !== value.roles.length) {
+    throw new TypeError("Comparison unmapped requirements must preserve role input order.");
+  }
+  value.unmappedRequirements.forEach((entry, roleIndex) => {
+    exactObject(entry, ["roleId", "requirements"], \`Unmapped requirements \${roleIndex + 1}\`);
+    if (entry.roleId !== canonicalRoleId(roleIndex)) throw new TypeError("Comparison unmapped requirements must preserve role input order.");
+    if (!Array.isArray(entry.requirements) || entry.requirements.length > LIMITS.maxUnmappedRequirementsPerRole) {
+      throw new TypeError("Comparison unmapped requirements are invalid.");
+    }
+    entry.requirements.forEach((value) => {
+      const requirement = safeGeneratedText(value, LIMITS.maxRequirementCharacters, "Unmapped requirement");
+      const requirementKey = requirement.toLocaleLowerCase("en");
+      if (requirementKeys[roleIndex].has(requirementKey)) throw new TypeError("A role requirement is duplicated across assessed and unmapped requirements.");
+      requirementKeys[roleIndex].add(requirementKey);
+    });
+  });
   return true;
 }
 

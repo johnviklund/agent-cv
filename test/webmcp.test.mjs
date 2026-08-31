@@ -61,6 +61,30 @@ test("three-role comparison opens the workspace, uses the shared controller, and
     coverage: "documented",
     evidence: [{ evidenceId: "cv.profile", reasonCode: "direct_responsibility" }],
   });
+  assert.equal(result.counts.unmappedRequirements, 1);
+  assert.deepEqual(result.requirementsByRole, [
+    {
+      roleId: "role_01",
+      assessed: 1,
+      unmapped: 1,
+      total: 2,
+      coverage: { documented: 1, transferable: 0, notDocumented: 0 },
+    },
+    {
+      roleId: "role_02",
+      assessed: 1,
+      unmapped: 0,
+      total: 1,
+      coverage: { documented: 0, transferable: 0, notDocumented: 1 },
+    },
+    {
+      roleId: "role_03",
+      assessed: 1,
+      unmapped: 0,
+      total: 1,
+      coverage: { documented: 0, transferable: 0, notDocumented: 1 },
+    },
+  ]);
   const serialized = JSON.stringify(result);
   for (const secret of ["AI Product Lead", "Northstar", "Lead applied AI products", "Requirement from model", "What did John own?", "provider exploded"]) {
     assert.equal(serialized.includes(secret), false, secret);
@@ -102,8 +126,8 @@ test("read-only state exposes a bounded semantic index without untrusted text", 
     cellId: "cell_row_01_role_01",
   });
   assert.deepEqual(Object.keys(result).sort(), [
-    "catalogDigest", "cells", "counts", "ok", "operation", "resultStale", "roleIds",
-    "rowIds", "schemaVersion", "selection", "status", "visibleRegion",
+    "catalogDigest", "cells", "counts", "ok", "operation", "requirementsByRole", "resultStale",
+    "roleIds", "rowIds", "schemaVersion", "selection", "status", "visibleRegion",
   ]);
   assert.equal(JSON.stringify(result).includes("hostile"), false);
 });
@@ -241,7 +265,7 @@ function comparisonState() {
     roles: ROLES,
     selection: { rowId: "row_01", roleId: "role_01", cellId: "cell_row_01_role_01" },
     result: {
-      schemaVersion: 1,
+      schemaVersion: 2,
       catalogDigest: DIGEST,
       roles: ROLES.map((role, index) => ({ id: `role_0${index + 1}`, position: index + 1, title: role.title, company: role.company })),
       rows: [{
@@ -253,6 +277,10 @@ function comparisonState() {
           questions: ["What did John own?"],
         })),
       }],
+      unmappedRequirements: ROLES.map((_role, index) => ({
+        roleId: `role_0${index + 1}`,
+        requirements: index === 0 ? ["PRIVATE_UNMAPPED_REQUIREMENT"] : [],
+      })),
     },
   };
 }

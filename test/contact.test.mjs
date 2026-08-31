@@ -23,7 +23,8 @@ async function readTree(directory) {
 
 test("contact page promotes the deliberate public channels", () => {
   assert.match(contactPage, /href=["']https:\/\/www\.linkedin\.com\/in\/[^"'\s/?#]+\/["'][^>]*\brel=["']me["']/i);
-  assert.match(contactPage, /<[^>]+\bdata-contact-value\b[^>]*>[^<]*\bLinkedIn\b[^<]*<\/[^>]+>/i);
+  assert.match(contactPage, /href=["']mailto:johnwik@gmail\.com["']/i);
+  assert.doesNotMatch(contactPage, /temporarily unavailable/i);
 });
 
 test("deployable public files exclude unselected contact channels", () => {
@@ -34,7 +35,7 @@ test("deployable public files exclude unselected contact channels", () => {
   assert.doesNotMatch(publicTree, /\b(?:\d{2,4}[ .-]){2,3}\d{3,4}\b/);
 });
 
-test("contact endpoint leaves the LinkedIn fallback in place without an email", async () => {
+test("contact endpoint can report no configured email without removing the static direct route", async () => {
   const response = await handleRequest(
     new Request("https://example.test/api/contact"),
     {},
@@ -43,7 +44,21 @@ test("contact endpoint leaves the LinkedIn fallback in place without an email", 
 
   assert.equal(response.status, 200);
   assert.deepEqual(await response.json(), { email: null });
-  assert.match(contactPage, /<[^>]+\bdata-contact-value\b[^>]*>[^<]*\bLinkedIn\b[^<]*<\/[^>]+>/i);
+  assert.match(contactPage, /href=["']mailto:johnwik@gmail\.com["']/i);
+});
+
+test("agent guidance keeps the published email when the endpoint returns null", async () => {
+  const [agents, llms] = await Promise.all([
+    readFile(new URL("../public/AGENTS.md", import.meta.url), "utf8"),
+    readFile(new URL("../public/llms.txt", import.meta.url), "utf8"),
+  ]);
+
+  for (const guidance of [agents, llms]) {
+    assert.match(guidance, /mailto:/i);
+    assert.match(guidance, /returns? `null`|endpoint returns `null`/i);
+    assert.match(guidance, /LinkedIn[^.]*additional[^.]*not a replacement/i);
+    assert.match(guidance, /never infer or guess/i);
+  }
 });
 
 test("deployment config publishes the selected contact email", () => {

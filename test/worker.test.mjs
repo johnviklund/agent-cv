@@ -777,6 +777,24 @@ test("invalid comparison payloads consume abuse attempts but not monthly budget"
   assert.equal(budgetCalls, 0);
 });
 
+test("comparison rejects a source requirement inventory beyond result capacity before budget or provider use", async () => {
+  let budgetCalls = 0;
+  let providerCalls = 0;
+  const description = Array.from({ length: 41 }, (_, index) => `- Responsibility ${index + 1}`).join("\n");
+  const response = await handleRequest(compareRequest(JSON.stringify({
+    roles: [{ title: "Dense role", description }],
+  })), comparisonEnv({
+    COMPARISON_BUDGET: budgetBinding(true, () => { budgetCalls += 1; }),
+  }), emptyContext(), {
+    fetchImpl: async () => { providerCalls += 1; return Response.json(comparisonProviderResponse({ roleCount: 1 })); },
+  });
+
+  assert.equal(response.status, 422);
+  assert.match((await response.json()).error, /at most 40/i);
+  assert.equal(budgetCalls, 0);
+  assert.equal(providerCalls, 0);
+});
+
 test("chunked comparison bodies without Content-Length are cancelled above the byte limit", async () => {
   let bodyCancelled = false;
   let budgetCalls = 0;
@@ -840,7 +858,10 @@ test("server agents without Origin can create a grounded comparison without pers
   }), { origin: "" }), env, collectingContext(), {
     fetchImpl: async (url, init) => {
       upstream = { url, init, body: JSON.parse(init.body) };
-      return Response.json(comparisonProviderResponse({ roleCount: 1 }));
+      return Response.json(comparisonProviderResponse({
+        roleCount: 1,
+        unmappedByRole: [["requirement_role_01_02"]],
+      }));
     },
   });
 
@@ -860,6 +881,8 @@ test("server agents without Origin can create a grounded comparison without pers
   assert.equal(upstream.body.text.format.strict, true);
   const providerCellSchema = upstream.body.text.format.schema.properties.rows.items.properties.cells.items;
   assert.equal(providerCellSchema.properties.questions, undefined);
+  assert.equal(providerCellSchema.properties.requirement, undefined);
+  assert.match(providerCellSchema.properties.requirementId.pattern, /requirement_role/);
   assert.deepEqual(providerCellSchema.properties.questionKinds.items.enum, [
     "ownership_scope",
     "evidence_depth",
@@ -869,7 +892,8 @@ test("server agents without Origin can create a grounded comparison without pers
   assert.match(JSON.stringify(upstream.body.input), /ROLE_TEXT_PRIVACY_SENTINEL/);
   assert.match(budgetReservation.id, /comparison:/);
   assert.equal(JSON.parse(budgetReservation.init.body).cap, 60);
-  assert.doesNotMatch(JSON.stringify(result), /ROLE_TEXT_PRIVACY_SENTINEL/);
+  assert.equal(result.rows[0].cells[0].requirement, "ROLE_TEXT_PRIVACY_SENTINEL Lead AI products");
+  assert.deepEqual(result.unmappedRequirements[0].requirements, ["governance"]);
   assert.equal([...archive.values.values()].some((value) => String(value).includes("ROLE_TEXT_PRIVACY_SENTINEL")), false);
 });
 
@@ -1071,7 +1095,7 @@ function askRequest(body = JSON.stringify(VALID_PAYLOAD)) {
 }
 
 function compareRequest(body = JSON.stringify({
-  roles: [{ title: "AI Product Lead", description: "Lead AI products and governance." }],
+  roles: [{ title: "AI Product Lead", description: "Lead AI products." }],
 }), extraHeaders = {}, signal) {
   const headers = new Headers({
     "content-type": "application/json",
@@ -1106,7 +1130,7 @@ function comparisonEnv(overrides = {}) {
   });
 }
 
-function comparisonProviderResponse({ roleCount }) {
+function comparisonProviderResponse({ roleCount, unmappedByRole = [] }) {
   return {
     output: [{
       type: "message",
@@ -1117,12 +1141,16 @@ function comparisonProviderResponse({ roleCount }) {
             label: "Applied AI leadership",
             cells: Array.from({ length: roleCount }, (_, roleIndex) => ({
               roleIndex,
-              requirement: "Lead applied AI products",
+              requirementId: `requirement_role_${String(roleIndex + 1).padStart(2, "0")}_01`,
               coverage: "documented",
               evidence: [{ evidenceId: "cv.profile", reasonCode: "direct_responsibility" }],
               questionKinds: [],
             })),
           }],
+          unmappedRequirements: Array.from({ length: roleCount }, (_, roleIndex) => ({
+            roleIndex,
+            requirementIds: unmappedByRole[roleIndex] || [],
+          })),
         }),
       }],
     }],

@@ -10,6 +10,7 @@
   <link rel="describedby" href="/llms.txt" type="text/plain">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/styles.css">
+  <script src="/navigation.js" type="module"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -29,7 +30,7 @@
       <p>Chat prompts are processed by Cloudflare Workers and the OpenAI API. The chat request sets <code>store: false</code> to avoid Responses API application-state storage. Under OpenAI's default controls, prompts and responses may still appear in abuse-monitoring logs for up to 30 days unless approved data-retention controls apply. API content is not used to train OpenAI models by default unless the API organization opts in. See OpenAI's <a href="https://platform.openai.com/docs/models/default-usage-policies-by-endpoint">official usage policies by endpoint</a>.</p>
 
       <h2>Transient role comparisons</h2>
-      <p>The comparison workspace stores role drafts and completed results only in this site's same-origin <code>sessionStorage</code> for the current tab. Clearing the comparison removes the site-controlled comparison state in that tab. Tab duplication and browser restore behavior are controlled by your browser, however, so the site cannot promise immediate erasure from a duplicated or restored tab.</p>
+      <p>The comparison workspace keeps role drafts and completed results in memory while the page is open and also uses this site's same-origin <code>sessionStorage</code> for the current tab when the browser permits it. If session storage is blocked, the workflow remains usable in memory but its state disappears when the page closes. Clearing the comparison removes the site-controlled comparison state in that tab. Tab duplication and browser restore behavior are controlled by your browser, however, so the site cannot promise immediate erasure from a duplicated or restored tab.</p>
       <p>This site does not archive or persist role comparison postings or results in Cloudflare KV or in the chat archive. The site chat archive is separate and may last up to 90 days. Persistent private application links are also separate from the transient comparison workspace. The comparison's public WebMCP tool results omit human-entered role text and generated prose, although the visible page still needs that content to show the comparison.</p>
       <p>To create a comparison, the job text is sent through a Cloudflare Worker to the OpenAI API. The OpenAI Responses call uses <code>store: false</code>, <code>background: false</code>, and no conversation object. For <code>/v1/responses</code>, <code>store: false</code> means no application-state retention; default abuse-monitoring logs may nevertheless contain prompts and responses for up to 30 days unless approved controls apply. API content is not used to train OpenAI models by default unless the API organization opts in. The same <a href="https://platform.openai.com/docs/models/default-usage-policies-by-endpoint">official OpenAI endpoint policy</a> explains those controls.</p>
       <p>If you invoke the page through a browser agent or chat product, that agent, account, or provider may retain its own prompt, history, or activity according to its workspace settings. This site does not control those separate records.</p>

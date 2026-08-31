@@ -11,6 +11,17 @@ const TOOL_NAMES = [
   "clear_role_comparison",
 ];
 
+test("evidence and comparison result schemas evolve independently", async () => {
+  const [evidence, contract] = await Promise.all([
+    read("public/evidence.json").then(JSON.parse),
+    read("config/comparison-contract.json").then(JSON.parse),
+  ]);
+
+  assert.equal(evidence.schemaVersion, 1);
+  assert.equal(contract.schemaVersion, 2);
+  assert.match(evidence.digest, /^sha256:[a-f0-9]{64}$/);
+});
+
 test("machine-readable discovery documents the comparison surface without presenting WebMCP tools as endpoints", async () => {
   const [llms, agents, contract] = await Promise.all([
     read("public/llms.txt"),
@@ -81,6 +92,39 @@ test("privacy copy explains transient comparison state, processor retention, and
     /third-part(?:y|ies)/i,
   ]) assert.match(privacy, pattern);
   assert.match(privacy, /https:\/\/platform\.openai\.com\/docs\/models\/default-usage-policies-by-endpoint/);
+});
+
+test("every page loads the shared navigation controller and preserves its CSS-only fallback", async () => {
+  const pages = [
+    "public/index.html", "public/about/index.html", "public/application/index.html",
+    "public/contact/index.html", "public/cv/index.html", "public/experience/index.html",
+    "public/privacy/index.html", "public/projects/index.html", "public/admin/index.html",
+    "public/404.html",
+  ];
+  for (const path of pages) {
+    const html = await read(path);
+    assert.match(html, /<script\s+src="\/navigation\.js"\s+type="module"><\/script>/i, path);
+    assert.match(html, /<details\s+class="mobile-nav">/i, path);
+    assert.doesNotMatch(
+      html,
+      /<details\s+class="mobile-nav"[^>]*\b(?:hidden|aria-hidden|inert)\b/i,
+      path,
+    );
+  }
+
+  const [app, navigation, styles] = await Promise.all([
+    read("public/app.js"),
+    read("public/navigation.js"),
+    read("public/styles.css"),
+  ]);
+  assert.doesNotMatch(app, /initializeResponsiveNavigation/);
+  assert.match(navigation, /\(max-width: 900px\)/);
+  assert.match(navigation, /aria-hidden/);
+  assert.match(navigation, /\.inert/);
+  assert.match(styles, /\.desktop-nav\s*\{[^}]*display:\s*flex/s);
+  assert.match(styles, /\.mobile-nav\s*\{[^}]*display:\s*none/s);
+  assert.match(styles, /@media\s*\(max-width:\s*900px\)[\s\S]*?\.desktop-nav\s*\{[^}]*display:\s*none/s);
+  assert.match(styles, /@media\s*\(max-width:\s*900px\)[\s\S]*?\.mobile-nav\s*\{[^}]*display:\s*block/s);
 });
 
 test("headers expose evidence JSON safely and keep WebMCP same-origin", async () => {

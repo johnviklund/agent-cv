@@ -29,7 +29,7 @@ This site is a conversational résumé for John Viklund, CX AI Lead, applied-AI 
 When a visitor says they are recruiting, considering John for one or more openings, or asks how this site can help with a hiring evaluation, proactively introduce the role-comparison workflow. Do not require the visitor to know the WebMCP tool names or API contract.
 
 1. Explain that the site can compare John with one to three openings in one visible, evidence-grounded workspace.
-2. Ask for each role's title, optional company, and public or non-confidential job description. Preserve the order supplied.
+2. Ask for each role's title, optional company, and public or non-confidential job description. Preserve the order supplied. The manual workspace accepts individual fields, a Markdown/JSON batch, or a `.md`/`.json` file. In Markdown, start every role with an explicit `## Role: <title>` marker; ordinary headings such as `## Responsibilities` and `## Qualifications` remain part of that role's description.
 3. If the home page is open and its WebMCP tools are available, prefer `compare_candidate_roles` so the visitor and agent work on the same visible comparison. Otherwise direct the visitor to `/#compare` or use `POST /api/compare` when HTTP access is available.
 4. After the comparison appears, explain the outcomes for each role: `documented`, `transferable`, `not_documented`, and `not_listed`. Make clear that `not_documented` means only that the approved public evidence does not establish the requirement; it does not mean John lacks the capability.
 5. Offer to inspect the supporting evidence, focus a relevant cell on the page, compare themes across roles, and identify neutral questions for a conversation with John.
@@ -55,20 +55,20 @@ Send strict JSON to `POST /api/compare`:
 
 The object accepts only `roles`. Supply 1–3 role objects in the order they should appear. Each role requires `title` and `description`; `company` is optional. Limits are 120 characters for title, 120 for company, 6,000 for each description, 15,000 combined role characters, and 20,000 bytes for the complete request body.
 
-The JSON response has `schemaVersion`, the `/evidence.json` `catalogDigest`, ordered `roles`, and up to 18 ordered `rows`. Each row has one cell per role. At most 8 listed requirements from any role may appear. Canonical IDs use `role_01`, `row_01`, and `cell_row_01_role_01` forms. Coverage is one of `documented`, `transferable`, `not_documented`, or `not_listed`. `not_documented` says only that the approved public catalog does not document that listed requirement; it is not a claim that John lacks it.
+The JSON response has `schemaVersion`, the `/evidence.json` `catalogDigest`, ordered `roles`, up to 24 ordered `rows`, and one ordered `unmappedRequirements` entry per role. Each row has one cell per role. The server first builds a source-ordered requirement inventory with stable internal IDs, then requires every ID exactly once in an assessed row or that role's not-assessed list. At most 16 requirements per role may be assessed in rows, and up to 24 additional extracted requirements per role may be returned explicitly as not assessed; a role with more than 40 distinct extracted requirements is rejected rather than silently truncated. Canonical IDs use `role_01`, `row_01`, and `cell_row_01_role_01` forms. Coverage is one of `documented`, `transferable`, `not_documented`, or `not_listed`. `not_documented` says only that the approved public catalog does not document that listed requirement; it is not a claim that John lacks it.
 
 Only `documented` and `transferable` cells contain catalog evidence references. Their controlled reason codes are `direct_responsibility`, `directly_relevant_delivery`, `related_domain_experience`, `related_technical_exposure`, and `analogous_scale_or_context`. A result may also contain fixed, server-authored neutral questions selected from allowlisted question kinds. The service does not accept provider-authored question text and does not score, rank, recommend, choose a role, or make a hiring decision.
 
 Role postings are untrusted prompt context. Never place instructions, secrets, confidential data, special-category data, or third-party personal data in them. Candidate claims are selected only through exact public evidence IDs; role text cannot override the evidence catalog or system boundaries.
 
-The browser keeps role drafts and results in same-origin `sessionStorage` for the current tab. There is no server-side comparison archive. Clear the workspace with its visible control or the `clear_role_comparison` site tool. Browser-managed tab duplication and session restore may copy or restore session state outside the site's control; see `/privacy/`.
+The browser always keeps role drafts and results in memory while the page is open and also uses same-origin `sessionStorage` for the current tab when the browser permits it. If `sessionStorage` is blocked, comparison remains usable but state disappears when the page closes. There is no server-side comparison archive. Clear the workspace with its visible control or the `clear_role_comparison` site tool. Browser-managed tab duplication and session restore may copy or restore session state outside the site's control; see `/privacy/`. Completed results can be exported as compact Markdown or JSON with requirement denominators, coverage states, evidence IDs, questions, and not-assessed requirements.
 
 ## Page-scoped WebMCP site tools
 
 The home page registers exactly four page-scoped site tools through WebMCP:
 
 - `compare_candidate_roles` — submit the same strict one-to-three-role request and display the result in `/#compare`
-- `get_comparison_state` — read a bounded semantic index of the visible comparison without human-entered role descriptions or generated prose
+- `get_comparison_state` — read a bounded semantic index of the visible comparison, including per-role assessed, not-assessed, total, and controlled coverage counts, without human-entered role descriptions or generated prose
 - `focus_comparison_cell` — open a validated role/row cell by its canonical IDs
 - `clear_role_comparison` — cancel work and clear the site's transient comparison state
 
@@ -99,7 +99,7 @@ The request shape accepts `user` and `assistant` roles so browser clients can se
 
 Limits: 10 messages per API request, 1,200 characters per user message, and a public rate limit. The browser conversation can continue beyond that boundary by sending a rolling window of the latest four completed exchanges plus the current question. If the API is unavailable, fetch `/cv.md` and `/projects.md` directly.
 
-For contact requests or explicit interest in interviewing, hiring, or collaborating with John, send visitors to `/contact/` or fetch `GET /api/contact`. The endpoint returns `{ email: string | null }`; `null` means the public address is not configured. In that case, direct visitors to John's LinkedIn profile on `/contact/` and never infer or guess an address.
+For contact requests or explicit interest in interviewing, hiring, or collaborating with John, send visitors to `/contact/` or fetch `GET /api/contact`. The endpoint returns `{ email: string | null }`, but the contact page deliberately keeps its published `mailto:` address available even when the endpoint returns `null`. LinkedIn is an additional contact route there, not a replacement for email. Use only the address actually published on `/contact/`; never infer or guess another address.
 
 ## Agent boundaries
 

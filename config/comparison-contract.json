@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "limits": {
     "maxBodyBytes": 20000,
     "minRoles": 1,
@@ -8,8 +8,9 @@
     "maxCompanyCharacters": 120,
     "maxDescriptionCharacters": 6000,
     "maxCombinedRoleCharacters": 15000,
-    "maxRows": 18,
-    "maxRequirementsPerRole": 8,
+    "maxRows": 24,
+    "maxRequirementsPerRole": 16,
+    "maxUnmappedRequirementsPerRole": 24,
     "maxRowLabelCharacters": 120,
     "maxRequirementCharacters": 600,
     "maxEvidencePerCell": 2,
@@ -42,12 +43,14 @@
   "ordering": {
     "roles": "request input order",
     "rows": "provider row order after complete-draft validation",
-    "cells": "request input order within every row"
+    "cells": "request input order within every row",
+    "unmappedRequirements": "request input order, then source order within each role"
   },
   "cardinality": {
     "roles": "one to three",
-    "rows": "one to eighteen",
+    "rows": "one to twenty-four",
     "cells": "exactly one per role in every row",
-    "listedRequirements": "no more than eight per role"
+    "listedRequirements": "no more than sixteen assessed per role",
+    "unmappedRequirements": "zero to twenty-four explicitly not assessed per role"
   }
 }

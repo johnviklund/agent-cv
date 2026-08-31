@@ -205,8 +205,8 @@ async function checkComparisonContractParity() {
   for (const value of [...contract.coverageStates, ...Object.values(contract.reasonCodes).flat()]) {
     if (!agents.includes(`\`${value}\``)) failures.push(`AGENTS.md: missing comparison enum ${value}`);
   }
-  if (evidence.schemaVersion !== contract.schemaVersion || !/^sha256:[a-f0-9]{64}$/.test(evidence.digest || "")) {
-    failures.push("evidence.json: comparison schema version or digest is invalid");
+  if (!Number.isSafeInteger(evidence.schemaVersion) || evidence.schemaVersion < 1 || !/^sha256:[a-f0-9]{64}$/.test(evidence.digest || "")) {
+    failures.push("evidence.json: evidence schema version or digest is invalid");
   }
 
   const evidenceHeaders = headers.match(/\/evidence\.json\n([\s\S]*?)(?=\n\/|$)/)?.[1] || "";

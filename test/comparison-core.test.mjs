@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import evidenceCatalog from "../src/data/comparison-evidence.js";
 import {
+  buildComparisonRequirementInventory,
   buildComparisonProviderInput,
   canonicalizeComparisonDraft,
   ComparisonInputError,
@@ -38,6 +39,11 @@ test("comparison request validation preserves role order and assigns canonical I
     { id: "role_02", position: 2, title: "Agent Engineering Lead", company: "" },
   ]);
   assert.equal(input.catalogDigest, evidenceCatalog.digest);
+  assert.deepEqual(input.requirementInventory[0].requirements.map(({ id, text }) => ({ id, text })), [
+    { id: "requirement_role_01_01", text: "Lead applied AI products" },
+    { id: "requirement_role_01_02", text: "governance" },
+    { id: "requirement_role_01_03", text: "cross-functional delivery" },
+  ]);
 });
 
 test("comparison request validation rejects count, bounds, and unexpected fields", () => {
@@ -71,9 +77,11 @@ test("provider input treats role text as delimited untrusted data", () => {
   const providerInput = buildComparisonProviderInput(input.roles, evidenceCatalog);
 
   assert.match(providerInput, /untrusted_roles/);
-  assert.match(providerInput, /&lt;\/untrusted_roles&gt;/);
+  assert.doesNotMatch(providerInput, /<\/untrusted_roles><instructions>/);
   assert.doesNotMatch(providerInput, /<instructions>score John/);
   assert.match(providerInput, new RegExp(evidenceCatalog.items[0].id.replaceAll(".", "\\.")));
+  assert.match(providerInput, /requirement_role_01_01/);
+  assert.doesNotMatch(providerInput, /"description"/);
 });
 
 test("a valid provider draft becomes a deterministic canonical comparison", () => {
@@ -94,7 +102,13 @@ test("a valid provider draft becomes a deterministic canonical comparison", () =
   assert.equal(validateComparisonResult(result), true);
   assert.equal(validateBrowserComparisonResult(result), true);
   assert.deepEqual(BROWSER_COMPARISON_CONTRACT, COMPARISON_CONTRACT);
-  assert.deepEqual(BROWSER_COMPARISON_RESULT_SCHEMA.required, ["schemaVersion", "catalogDigest", "roles", "rows"]);
+  assert.deepEqual(BROWSER_COMPARISON_RESULT_SCHEMA.required, [
+    "schemaVersion", "catalogDigest", "roles", "rows", "unmappedRequirements",
+  ]);
+  assert.deepEqual(result.unmappedRequirements, [
+    { roleId: "role_01", requirements: [] },
+    { roleId: "role_02", requirements: [] },
+  ]);
 });
 
 test("provider reason-code category drift becomes safe server-authored metadata", () => {
@@ -117,11 +131,7 @@ test("one-, two-, and three-role drafts preserve exact role and cell cardinality
       description: `Requirement source ${index + 1}`,
     }));
     const normalized = validateComparisonPayload({ roles });
-    const draft = validDraft();
-    draft.rows[0].cells = Array.from({ length: roleCount }, (_, roleIndex) => ({
-      ...structuredClone(draft.rows[0].cells[0]),
-      roleIndex,
-    }));
+    const draft = validDraft(roles);
     const result = canonicalizeComparisonDraft(draft, normalized.roles, evidenceCatalog);
     assert.equal(result.roles.length, roleCount);
     assert.equal(result.rows[0].cells.length, roleCount);
@@ -214,32 +224,141 @@ test("provider conclusions fail closed without rejecting ordinary role terminolo
     labelDraft.rows[0].label = conclusion;
     assert.throws(() => canonicalizeComparisonDraft(labelDraft, roles, evidenceCatalog));
 
-    const requirementDraft = validDraft();
-    requirementDraft.rows[0].cells[0].requirement = conclusion;
-    assert.throws(() => canonicalizeComparisonDraft(requirementDraft, roles, evidenceCatalog));
   }
 
   const ordinary = validDraft();
   ordinary.rows[0].label = "Search ranking and recommendation systems";
-  ordinary.rows[0].cells[0].requirement = "Build ranking and recommendation systems for product search";
   assert.equal(canonicalizeComparisonDraft(ordinary, roles, evidenceCatalog).rows[0].label, ordinary.rows[0].label);
 });
 
-test("draft validation enforces eighteen rows and eight listed requirements per role", () => {
+test("draft validation enforces row and per-role completeness bounds", () => {
   const roles = validateComparisonPayload({ roles: ROLES }).roles;
   const tooManyRows = validDraft();
-  tooManyRows.rows = Array.from({ length: 19 }, (_, index) => ({
+  tooManyRows.rows = Array.from({ length: COMPARISON_CONTRACT.limits.maxRows + 1 }, (_, index) => ({
     ...structuredClone(tooManyRows.rows[0]),
     label: `Requirement ${index + 1}`,
   }));
   assert.throws(() => canonicalizeComparisonDraft(tooManyRows, roles, evidenceCatalog));
 
-  const tooManyRequirements = validDraft();
-  tooManyRequirements.rows = Array.from({ length: 9 }, (_, index) => ({
-    ...structuredClone(tooManyRequirements.rows[0]),
-    label: `Requirement ${index + 1}`,
-  }));
-  assert.throws(() => canonicalizeComparisonDraft(tooManyRequirements, roles, evidenceCatalog));
+  const seventeenRequirements = [{
+    title: "Dense role",
+    description: Array.from({ length: COMPARISON_CONTRACT.limits.maxRequirementsPerRole + 1 }, (_, index) => `- Responsibility ${index + 1}`).join("\n"),
+  }];
+  const denseInput = validateComparisonPayload({ roles: seventeenRequirements });
+  assert.throws(() => canonicalizeComparisonDraft(validDraft(seventeenRequirements), denseInput.roles, evidenceCatalog));
+});
+
+test("completeness inventory is required, ordered, bounded, and restores source wording", () => {
+  const input = validateComparisonPayload({ roles: ROLES });
+  const { roles } = input;
+  const missingInventory = validDraft();
+  delete missingInventory.unmappedRequirements;
+  assert.throws(
+    () => canonicalizeComparisonDraft(missingInventory, roles, evidenceCatalog),
+    (error) => error.name === "ComparisonOutputError" && error.reason === "draft_shape",
+  );
+
+  const gapRoles = [{
+    title: "Support Operations",
+    description: "Vendor management, workforce planning, commercial ownership, QBRs, and performance recovery.",
+  }];
+  const gapInput = validateComparisonPayload({ roles: gapRoles });
+  const visibleGap = validDraft(gapRoles);
+  visibleGap.rows[4].cells[0] = notListedCell(0);
+  visibleGap.unmappedRequirements[0].requirementIds = ["requirement_role_01_05"];
+  const result = canonicalizeComparisonDraft(visibleGap, gapInput.roles, evidenceCatalog, gapInput.requirementInventory);
+  assert.deepEqual(result.unmappedRequirements[0], {
+    roleId: "role_01",
+    requirements: ["performance recovery"],
+  });
+  assert.deepEqual(result.rows.slice(0, 4).map((row) => row.cells[0].requirement), [
+    "Vendor management", "workforce planning", "commercial ownership", "QBRs",
+  ]);
+
+  const duplicate = validDraft();
+  duplicate.unmappedRequirements[0].requirementIds = ["requirement_role_01_01"];
+  assert.throws(
+    () => canonicalizeComparisonDraft(duplicate, roles, evidenceCatalog),
+    (error) => error.name === "ComparisonOutputError" && error.reason === "draft_requirement_completeness",
+  );
+
+  const missing = validDraft();
+  missing.rows[2].cells[0] = notListedCell(0);
+  assert.throws(
+    () => canonicalizeComparisonDraft(missing, roles, evidenceCatalog),
+    (error) => error.name === "ComparisonOutputError" && error.reason === "draft_requirement_completeness",
+  );
+
+  const unknown = validDraft();
+  unknown.rows[0].cells[0].requirementId = "requirement_role_01_40";
+  assert.throws(
+    () => canonicalizeComparisonDraft(unknown, roles, evidenceCatalog),
+    (error) => error.name === "ComparisonOutputError" && error.reason === "draft_requirement_completeness",
+  );
+
+  const outOfOrder = validDraft();
+  [outOfOrder.rows[0].cells[0].requirementId, outOfOrder.rows[1].cells[0].requirementId] = [
+    outOfOrder.rows[1].cells[0].requirementId,
+    outOfOrder.rows[0].cells[0].requirementId,
+  ];
+  assert.throws(
+    () => canonicalizeComparisonDraft(outOfOrder, roles, evidenceCatalog),
+    (error) => error.name === "ComparisonOutputError" && error.reason === "draft_requirement_completeness",
+  );
+
+  const duplicateUnmapped = validDraft(gapRoles);
+  duplicateUnmapped.rows[4].cells[0] = notListedCell(0);
+  duplicateUnmapped.unmappedRequirements[0].requirementIds = [
+    "requirement_role_01_05", "requirement_role_01_05",
+  ];
+  assert.throws(
+    () => canonicalizeComparisonDraft(
+      duplicateUnmapped,
+      gapInput.roles,
+      evidenceCatalog,
+      gapInput.requirementInventory,
+    ),
+    (error) => error.name === "ComparisonOutputError" && error.reason === "draft_requirement_completeness",
+  );
+
+  const outOfOrderUnmapped = validDraft(gapRoles);
+  outOfOrderUnmapped.rows[3].cells[0] = notListedCell(0);
+  outOfOrderUnmapped.rows[4].cells[0] = notListedCell(0);
+  outOfOrderUnmapped.unmappedRequirements[0].requirementIds = [
+    "requirement_role_01_05", "requirement_role_01_04",
+  ];
+  assert.throws(
+    () => canonicalizeComparisonDraft(
+      outOfOrderUnmapped,
+      gapInput.roles,
+      evidenceCatalog,
+      gapInput.requirementInventory,
+    ),
+    (error) => error.name === "ComparisonOutputError" && error.reason === "draft_requirement_completeness",
+  );
+
+  const wrongRoleOrder = validDraft();
+  wrongRoleOrder.unmappedRequirements.reverse();
+  assert.throws(
+    () => canonicalizeComparisonDraft(wrongRoleOrder, roles, evidenceCatalog),
+    (error) => error.name === "ComparisonOutputError" && error.reason === "draft_requirement_completeness",
+  );
+});
+
+test("source inventory rejects descriptions beyond the representable requirement capacity", () => {
+  const description = Array.from({ length: 41 }, (_, index) => `- Responsibility ${index + 1}`).join("\n");
+  assert.throws(
+    () => validateComparisonPayload({ roles: [{ title: "Dense role", description }] }),
+    (error) => error instanceof ComparisonInputError && error.status === 422 && /at most 40/i.test(error.message),
+  );
+});
+
+test("source inventory rejects an unrepresentable unbroken requirement token", () => {
+  const description = `Lead ${"x".repeat(COMPARISON_CONTRACT.limits.maxRequirementCharacters + 1)}`;
+  assert.throws(
+    () => validateComparisonPayload({ roles: [{ title: "Dense role", description }] }),
+    (error) => error instanceof ComparisonInputError && error.status === 422 && /unbroken token/i.test(error.message),
+  );
 });
 
 test("structured Responses output accepts one JSON text part and rejects other shapes", () => {
@@ -257,27 +376,41 @@ test("structured Responses output accepts one JSON text part and rejects other s
   }));
 });
 
-function validDraft() {
+function validDraft(sourceRoles = ROLES) {
+  const inventory = buildComparisonRequirementInventory(
+    sourceRoles.map((role, index) => ({ ...role, id: `role_0${index + 1}`, position: index + 1 })),
+  );
+  const rowCount = Math.max(...inventory.map(({ requirements }) => requirements.length));
   return {
-    rows: [{
-      label: "Applied AI leadership",
-      cells: [
-        {
-          roleIndex: 0,
-          requirement: "Lead applied AI products",
-          coverage: "documented",
-          evidence: [{ evidenceId: evidenceCatalog.items[0].id, reasonCode: "direct_responsibility" }],
-          questionKinds: [],
-        },
-        {
-          roleIndex: 1,
-          requirement: "Build agent systems",
-          coverage: "transferable",
-          evidence: [{ evidenceId: evidenceCatalog.items[0].id, reasonCode: "related_domain_experience" }],
-          questionKinds: ["ownership_scope"],
-        },
-      ],
-    }],
+    rows: Array.from({ length: rowCount }, (_, rowIndex) => ({
+      label: rowIndex === 0 ? "Applied AI leadership" : `Requirement ${rowIndex + 1}`,
+      cells: inventory.map(({ requirements }, roleIndex) => {
+        const item = requirements[rowIndex];
+        if (!item) return notListedCell(roleIndex);
+        const documented = roleIndex === 0;
+        return {
+          roleIndex,
+          requirementId: item.id,
+          coverage: documented ? "documented" : "transferable",
+          evidence: [{
+            evidenceId: evidenceCatalog.items[0].id,
+            reasonCode: documented ? "direct_responsibility" : "related_domain_experience",
+          }],
+          questionKinds: roleIndex === 1 ? ["ownership_scope"] : [],
+        };
+      }),
+    })),
+    unmappedRequirements: inventory.map((_entry, roleIndex) => ({ roleIndex, requirementIds: [] })),
+  };
+}
+
+function notListedCell(roleIndex) {
+  return {
+    roleIndex,
+    requirementId: null,
+    coverage: "not_listed",
+    evidence: [],
+    questionKinds: [],
   };
 }
 

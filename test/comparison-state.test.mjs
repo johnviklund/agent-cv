@@ -7,6 +7,7 @@ import {
   buildComparisonSnapshot,
   clearComparisonSnapshot,
   persistComparisonSnapshot,
+  resolveSessionStorage,
   restoreComparisonSnapshot,
 } from "../public/comparison-state.js";
 
@@ -148,6 +149,15 @@ test("storage exceptions degrade to memory and clear remains safe", () => {
   assert.deepEqual(restored.snapshot.roles, []);
 });
 
+test("blocked sessionStorage getters resolve to the memory-only fallback without throwing", () => {
+  const blockedWindow = Object.defineProperty({}, "sessionStorage", {
+    get() { throw new Error("SecurityError"); },
+  });
+  assert.equal(resolveSessionStorage(blockedWindow), null);
+  const storage = memoryStorage();
+  assert.equal(resolveSessionStorage({ sessionStorage: storage }), storage);
+});
+
 test("snapshot serialization refuses values beyond the session byte budget", () => {
   const storage = memoryStorage();
   const snapshot = buildComparisonSnapshot({ catalogDigest: DIGEST, roles: roles() });
@@ -186,7 +196,7 @@ function roles() {
 
 function result() {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     catalogDigest: DIGEST,
     roles: [{ id: "role_01", position: 1, title: "AI Product Lead", company: "Example" }],
     rows: [{
@@ -202,6 +212,7 @@ function result() {
         questions: ["Which delivery decisions did John own?"],
       }],
     }],
+    unmappedRequirements: [{ roleId: "role_01", requirements: [] }],
   };
 }
 

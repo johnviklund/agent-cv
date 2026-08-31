@@ -23,7 +23,7 @@ A natural starting request is: “Visit johnviklund.com. I’m considering John 
 ## Human-readable pages
 
 - [Conversation](/): ask the grounded Agent CV
-- [Compare roles](/#compare): submit one to three role descriptions and inspect a side-by-side, evidence-grounded comparison
+- [Compare roles](/#compare): submit one to three role descriptions individually or as a Markdown/JSON batch, inspect requirement completeness and evidence side by side, and export compact Markdown or JSON. Markdown batches use an explicit `## Role: <title>` marker for each role so ordinary job-description headings stay within the role.
 - [Experience](/experience/): career timeline
 - [Projects](/projects/): selected-work index
 - [About](/about/): working style and AI philosophy
@@ -32,11 +32,11 @@ A natural starting request is: “Visit johnviklund.com. I’m considering John 
 ## API
 
 - `POST /api/ask` — bounded, rate-limited, streaming grounded Q&A
-- `POST /api/compare` — compare one to three untrusted role postings against the versioned public evidence catalog; returns controlled coverage states, evidence IDs, and fixed server-authored neutral follow-up questions, never scores or rankings
+- `POST /api/compare` — compare one to three untrusted role postings against the versioned public evidence catalog; returns controlled coverage states, explicit not-assessed requirements, evidence IDs, and fixed server-authored neutral follow-up questions, never scores or rankings
 - `POST /api/feedback` — record helpful/not-helpful feedback using the returned `x-conversation-turn-id`
 - `GET /api/application/:slug` — active role-link metadata; job descriptions and private notes are not returned
 - `GET /api/health` — service status
-- `GET /api/contact` — public contact lookup; returns `{ email: string | null }`. For contact requests or explicit interest in interviewing, hiring, or collaborating, direct visitors to `/contact/`. A `null` email means the public address is not configured, so use the LinkedIn fallback there rather than guessing an address.
+- `GET /api/contact` — public contact lookup; returns `{ email: string | null }`. For contact requests or explicit interest in interviewing, hiring, or collaborating, direct visitors to `/contact/`. The page keeps its published `mailto:` address available when the endpoint returns `null`; LinkedIn is an additional route, not a replacement. Never infer or guess another address.
 
 ## Page-scoped WebMCP site tools
 

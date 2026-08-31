@@ -1,5 +1,14 @@
 import { COMPARISON_CONTRACT } from "./comparison-contract.js";
 import { createLink } from "./dom.js";
+import {
+  createLatestFileImport,
+  parseRoleBatch,
+  serializeComparisonExport,
+  summarizeRoleRequirements,
+  validateRoleDrafts,
+} from "./comparison-transfer.js";
+
+export { parseRoleBatch, serializeComparisonExport, validateRoleDrafts } from "./comparison-transfer.js";
 
 const COVERAGE_COPY = Object.freeze({
   documented: {
@@ -22,8 +31,13 @@ const COVERAGE_COPY = Object.freeze({
     countLabel: "Not listed",
     description: "This role does not list the requirement represented by this row.",
   },
+  unmapped: {
+    label: "Not assessed",
+    countLabel: "Not assessed",
+    description: "The comparison did not assess this extracted role requirement, so it is not included in any evidence outcome.",
+  },
 });
-const COVERAGE_ORDER = Object.freeze(["documented", "transferable", "not_documented", "not_listed"]);
+const COVERAGE_ORDER = Object.freeze(["documented", "transferable", "not_documented"]);
 
 const REASON_LABELS = Object.freeze({
   direct_responsibility: "Direct responsibility",
@@ -40,46 +54,12 @@ const EVIDENCE_SOURCES = Object.freeze({
   "data/overview.md": Object.freeze({ url: "/overview.md", label: "View professional overview" }),
 });
 
-export function validateRoleDrafts(value) {
-  if (!Array.isArray(value) || value.length < 1 || value.length > 3) {
-    return { valid: false, roles: [], fieldErrors: [], formError: "Compare one to three roles." };
-  }
-
-  const limits = COMPARISON_CONTRACT.limits;
-  let combined = 0;
-  const fieldErrors = [];
-  const roles = value.map((role) => {
-    const title = cleanSingleLine(role?.title);
-    const company = cleanSingleLine(role?.company);
-    const description = cleanMultiline(role?.description);
-    combined += title.length + company.length + description.length;
-    fieldErrors.push({
-      title: !title
-        ? "Enter a role title."
-        : title.length > limits.maxTitleCharacters
-          ? `Keep the title to ${limits.maxTitleCharacters} characters or fewer.`
-          : "",
-      company: company.length > limits.maxCompanyCharacters
-        ? `Keep the company to ${limits.maxCompanyCharacters} characters or fewer.`
-        : "",
-      description: !description
-        ? "Paste the role description."
-        : description.length > limits.maxDescriptionCharacters
-          ? `Keep the description to ${limits.maxDescriptionCharacters.toLocaleString("en")} characters or fewer.`
-          : "",
-    });
-    return { title, company, description };
-  });
-  const formError = combined > limits.maxCombinedRoleCharacters
-    ? `Keep the combined role text to ${limits.maxCombinedRoleCharacters.toLocaleString("en")} characters or fewer.`
-    : "";
-  const valid = !formError && fieldErrors.every((errors) => Object.values(errors).every((message) => !message));
-  return { valid, roles, fieldErrors, formError };
-}
-
 export function buildComparisonViewModel(state, evidenceItems = []) {
   const evidenceById = new Map(evidenceItems.map((item) => [item.id, item]));
   const result = state?.result || null;
+  const unmappedByRoleId = new Map(
+    (result?.unmappedRequirements || []).map(({ roleId, requirements }) => [roleId, [...requirements]]),
+  );
   const rows = result?.rows?.map((row) => ({
     id: row.id,
     position: row.position,
@@ -115,15 +95,30 @@ export function buildComparisonViewModel(state, evidenceItems = []) {
       };
     }),
   })) || [];
-  const roles = result?.roles?.map((role, roleIndex) => ({
-    ...role,
-    outcomeCounts: COVERAGE_ORDER.map((coverage) => ({
-      coverage,
-      label: COVERAGE_COPY[coverage].countLabel,
-      count: rows.reduce((total, row) => total + (row.cells[roleIndex]?.coverage === coverage ? 1 : 0), 0),
-    })),
-  })) || [];
+  const roles = result?.roles?.map((role, roleIndex) => {
+    const unmappedRequirements = unmappedByRoleId.get(role.id) || [];
+    const summary = summarizeRoleRequirements(rows, roleIndex, unmappedRequirements);
+    return {
+      ...role,
+      assessedCount: summary.assessedCount,
+      requirementTotal: summary.requirementTotal,
+      unmappedRequirements,
+      outcomeCounts: [...COVERAGE_ORDER.map((coverage) => ({
+        coverage,
+        label: COVERAGE_COPY[coverage].countLabel,
+        count: summary.coverageCounts[coverage],
+      })), {
+        coverage: "unmapped",
+        label: COVERAGE_COPY.unmapped.countLabel,
+        count: unmappedRequirements.length,
+      }],
+    };
+  }) || [];
+  const evidenceLibrary = uniqueEvidence(rows);
   const isStale = Boolean(result && state?.resultStale);
+  const assessedTotal = roles.reduce((total, role) => total + role.assessedCount, 0);
+  const requirementTotal = roles.reduce((total, role) => total + role.requirementTotal, 0);
+  const unmappedTotal = requirementTotal - assessedTotal;
   return {
     status: state?.status || "editing",
     error: state?.error || null,
@@ -132,15 +127,57 @@ export function buildComparisonViewModel(state, evidenceItems = []) {
     isStale,
     resultNotice: isStale
       ? "Showing the last comparison, based on the previous role descriptions. Compare again to refresh it."
-      : "Comparison grounded in John's published CV and project evidence.",
+      : `Comparison complete: ${assessedTotal} of ${requirementTotal} extracted role requirements assessed; ${unmappedTotal} not assessed.`,
     roles,
     rows,
+    evidenceLibrary,
     selection: state?.selection || { rowId: "", roleId: "", cellId: "" },
   };
 }
 
+function uniqueEvidence(rows) {
+  const items = new Map();
+  rows.forEach(({ cells }) => cells.forEach(({ evidence }) => evidence.forEach((item) => {
+    if (!items.has(item.id)) items.set(item.id, item);
+  })));
+  return [...items.values()];
+}
+
 export function describeComparisonSelection(row, role) {
   return `Opened details for ${role.title}, ${row.label}.`;
+}
+
+export function buildComparisonStatusPresentation(model) {
+  const presentation = {
+    indicator: "Comparison draft ready for editing.",
+    errorLabel: "COMPARISON UNAVAILABLE",
+    errorTitle: "Check the role briefs and try again.",
+  };
+
+  if (model.error && model.hasResult) {
+    presentation.errorLabel = model.isStale
+      ? "REFRESH FAILED · PREVIOUS RESULT VISIBLE"
+      : "REFRESH FAILED · PREVIOUS RESULT READY";
+    presentation.errorTitle = model.isStale
+      ? "The previous comparison is visible but no longer current."
+      : "The completed comparison remains available.";
+  }
+
+  if (model.status === "analyzing") {
+    presentation.indicator = "Comparison in progress.";
+  } else if (model.error && model.hasResult) {
+    presentation.indicator = model.isStale
+      ? "Previous comparison visible. The refresh failed, so this result does not reflect the edited role drafts."
+      : "Comparison ready. The latest refresh failed, so the previous complete result remains visible.";
+  } else if (model.error) {
+    presentation.indicator = "Comparison unavailable. Review the message below and try again.";
+  } else if (model.isStale) {
+    presentation.indicator = "Previous comparison visible. Role drafts changed; compare again for a current result.";
+  } else if (model.hasResult) {
+    presentation.indicator = "Comparison ready.";
+  }
+
+  return presentation;
 }
 
 export function createComparisonView({ root, controller, requestMode = () => ({ status: "invalid" }) } = {}) {
@@ -152,8 +189,13 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
   const submitButton = root.querySelector("[data-compare-submit]");
   const clearButton = root.querySelector("[data-compare-clear]");
   const cancelButton = root.querySelector("[data-compare-cancel]");
+  const batchInput = root.querySelector("[data-role-batch]");
+  const batchFile = root.querySelector("[data-role-file]");
+  const batchImportButton = root.querySelector("[data-import-roles]");
+  const batchStatus = root.querySelector("[data-role-batch-status]");
   const formError = root.querySelector("[data-comparison-form-error]");
   const status = root.querySelector("[data-comparison-status]");
+  const stateIndicator = root.querySelector("[data-comparison-state]");
   const storageNote = root.querySelector("[data-comparison-storage-note]");
   const resultRegion = root.querySelector("[data-comparison-result]");
   const resultNotice = root.querySelector("[data-comparison-result-notice]");
@@ -161,22 +203,46 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
   const resultCaption = root.querySelector("[data-comparison-caption]");
   const retryButton = root.querySelector("[data-comparison-retry]");
   const errorBox = root.querySelector("[data-comparison-error]");
+  const errorLabel = root.querySelector("[data-comparison-error-label]");
+  const errorTitle = root.querySelector("[data-comparison-error-title]");
   const errorCopy = root.querySelector("[data-comparison-error-copy]");
+  const unmappedRegion = root.querySelector("[data-comparison-unmapped]");
+  const evidenceLibrary = root.querySelector("[data-comparison-evidence-library]");
+  const evidenceItems = root.querySelector("[data-comparison-evidence-items]");
   const count = root.querySelector("[data-role-count]");
   let drafts = [emptyRole(), emptyRole()];
   let hydrated = false;
   let latestState = controller.getState();
   let latestModel = buildComparisonViewModel(latestState, controller.getEvidenceItems?.() || []);
   const expandedCellIds = new Set();
+  const importLatestRoleFile = createLatestFileImport({
+    maxBytes: COMPARISON_CONTRACT.limits.maxBodyBytes * 5,
+    applySource: ({ file, source }) => {
+      batchInput.value = source;
+      applyImportedRoles(parseRoleBatch(source, { filename: file.name }));
+    },
+    reportError: (error) => {
+      batchStatus.textContent = error?.message || "The role file could not be imported.";
+    },
+    clearSelection: () => {
+      batchFile.value = "";
+    },
+  });
 
   form?.addEventListener("submit", submit);
   addButton?.addEventListener("click", addRole);
+  batchImportButton?.addEventListener("click", importRoleBatch);
+  batchFile?.addEventListener("change", importRoleFile);
+  batchInput?.addEventListener("input", () => { void importLatestRoleFile(); });
   clearButton?.addEventListener("click", clear);
   cancelButton?.addEventListener("click", () => controller.cancelComparison());
   retryButton?.addEventListener("click", submit);
   editorList?.addEventListener("input", handleEditorInput);
   editorList?.addEventListener("click", handleEditorClick);
   resultTable?.addEventListener("click", handleResultClick);
+  root.querySelectorAll("[data-export-comparison]").forEach((button) => {
+    button.addEventListener("click", () => downloadComparison(button.dataset.exportComparison));
+  });
   root.querySelectorAll("[data-comparison-back]").forEach((control) => {
     control.addEventListener("click", (event) => {
       event.preventDefault();
@@ -297,6 +363,47 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
     announce(`Role ${drafts.length} added.`);
   }
 
+  function importRoleBatch() {
+    void importLatestRoleFile();
+    try {
+      const roles = parseRoleBatch(batchInput?.value || "");
+      applyImportedRoles(roles);
+    } catch (error) {
+      batchStatus.textContent = error?.message || "The role batch could not be imported.";
+    }
+  }
+
+  async function importRoleFile() {
+    const file = batchFile?.files?.[0];
+    await importLatestRoleFile(file);
+  }
+
+  function applyImportedRoles(roles) {
+    drafts = roles.map((role) => ({ ...role }));
+    setControllerRoles(drafts);
+    renderEditors({ focusIndex: 0 });
+    batchStatus.textContent = `${roles.length} ${roles.length === 1 ? "role" : "roles"} imported. Review the briefs, then compare.`;
+    announce(`${roles.length} ${roles.length === 1 ? "role" : "roles"} imported.`);
+  }
+
+  function downloadComparison(format) {
+    if (!latestState.result) return;
+    try {
+      const content = serializeComparisonExport(latestState.result, format);
+      const extension = format === "markdown" ? "md" : "json";
+      const type = format === "markdown" ? "text/markdown;charset=utf-8" : "application/json;charset=utf-8";
+      const url = URL.createObjectURL(new Blob([content], { type }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `john-viklund-role-comparison.${extension}`;
+      link.click();
+      URL.revokeObjectURL(url);
+      announce(`Comparison exported as ${format === "markdown" ? "Markdown" : "JSON"}.`);
+    } catch {
+      announce("The comparison export could not be created.");
+    }
+  }
+
   async function submit(event) {
     event?.preventDefault?.();
     const validation = validateRoleDrafts(drafts);
@@ -335,7 +442,11 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
   }
 
   function clear() {
+    void importLatestRoleFile();
     controller.clearComparison();
+    if (batchInput) batchInput.value = "";
+    if (batchFile) batchFile.value = "";
+    if (batchStatus) batchStatus.textContent = "";
     drafts = [emptyRole(), emptyRole()];
     hydrated = true;
     renderEditors({ focusIndex: 0 });
@@ -344,6 +455,7 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
 
   function renderChrome() {
     const analyzing = latestModel.status === "analyzing";
+    const presentation = buildComparisonStatusPresentation(latestModel);
     submitButton.disabled = analyzing;
     submitButton.textContent = analyzing ? "Reading the briefs…" : "Compare the evidence";
     cancelButton.hidden = !analyzing;
@@ -352,6 +464,9 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
     errorBox.hidden = !latestModel.error;
     errorCopy.textContent = latestModel.error?.message || "";
     retryButton.hidden = analyzing;
+    if (stateIndicator) stateIndicator.textContent = presentation.indicator;
+    errorLabel.textContent = presentation.errorLabel;
+    errorTitle.textContent = presentation.errorTitle;
     status.textContent = analyzing ? "Comparing role requirements with John's published evidence." : "";
   }
 
@@ -359,12 +474,18 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
     resultRegion.hidden = !latestModel.hasResult;
     if (!latestModel.hasResult) {
       resultTable.replaceChildren();
+      unmappedRegion?.replaceChildren();
+      evidenceItems?.replaceChildren();
+      if (unmappedRegion) unmappedRegion.hidden = true;
+      if (evidenceLibrary) evidenceLibrary.hidden = true;
       return;
     }
     resultRegion.classList.toggle("is-stale", latestModel.isStale);
     resultNotice.textContent = latestModel.resultNotice;
     resultNotice.classList.toggle("stale-result-notice", latestModel.isStale);
     resultTable.replaceChildren(createTable(latestModel));
+    renderUnmappedRequirements(latestModel);
+    renderEvidenceLibrary(latestModel);
   }
 
   function createTable(model) {
@@ -468,10 +589,11 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
   function createOutcomeLedger(role) {
     const ledger = document.createElement("div");
     ledger.className = "role-outcome-ledger";
+    ledger.setAttribute("role", "group");
     ledger.setAttribute("aria-label", `Theme outcomes for ${role.title}`);
     const title = document.createElement("span");
     title.className = "role-outcome-title";
-    title.textContent = "Theme outcomes";
+    title.textContent = `${role.assessedCount} of ${role.requirementTotal} requirements assessed`;
     const list = document.createElement("dl");
     role.outcomeCounts.forEach((outcome) => {
       const item = document.createElement("div");
@@ -480,7 +602,7 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
       const label = document.createElement("dt");
       label.textContent = outcome.label;
       const count = document.createElement("dd");
-      count.textContent = String(outcome.count);
+      count.textContent = `${outcome.count} / ${role.requirementTotal}`;
       item.append(label, count);
       list.append(item);
     });
@@ -505,7 +627,7 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
       wording.textContent = cell.requirement;
       panel.append(title, wording);
     }
-    cell.evidence.forEach((evidence) => panel.append(createEvidence(evidence)));
+    cell.evidence.forEach((evidence) => panel.append(createEvidenceReference(evidence)));
     if (cell.questions.length) {
       const title = document.createElement("h4");
       title.textContent = "Questions to ask John";
@@ -532,18 +654,29 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
     return panel;
   }
 
+  function createEvidenceReference(evidence) {
+    const reference = document.createElement("p");
+    reference.className = "comparison-evidence-reference";
+    const reason = document.createElement("span");
+    reason.textContent = `${evidence.reasonLabel}: `;
+    const link = createLink(`${evidence.title} · ${evidence.id}`, `#${evidenceDomId(evidence.id)}`);
+    reference.append(reason, link);
+    return reference;
+  }
+
   function createEvidence(evidence) {
     const article = document.createElement("article");
     article.className = "comparison-evidence";
-    const eyebrow = document.createElement("p");
-    eyebrow.className = "evidence-reason";
-    eyebrow.textContent = evidence.reasonLabel;
+    article.id = evidenceDomId(evidence.id);
     const heading = document.createElement("h4");
     heading.textContent = evidence.title;
+    const evidenceId = document.createElement("p");
+    evidenceId.className = "evidence-id";
+    evidenceId.textContent = evidence.id;
     const contribution = document.createElement("p");
     contribution.className = "evidence-contribution";
     contribution.textContent = evidence.contribution;
-    article.append(eyebrow, heading);
+    article.append(heading, evidenceId);
     if (evidence.projectStatus) {
       const projectStatus = document.createElement("p");
       projectStatus.className = "evidence-status";
@@ -556,6 +689,37 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
       article.append(link);
     }
     return article;
+  }
+
+  function renderUnmappedRequirements(model) {
+    const roles = model.roles.filter(({ unmappedRequirements }) => unmappedRequirements.length);
+    unmappedRegion.replaceChildren();
+    unmappedRegion.hidden = !roles.length;
+    if (!roles.length) return;
+    const heading = document.createElement("h3");
+    heading.textContent = "Requirements not assessed";
+    const note = document.createElement("p");
+    note.textContent = "These extracted requirements are included in the denominator but were not assigned an evidence outcome. They need manual review or a new comparison.";
+    unmappedRegion.append(heading, note);
+    roles.forEach((role) => {
+      const section = document.createElement("section");
+      const title = document.createElement("h4");
+      title.textContent = role.title;
+      const list = document.createElement("ul");
+      role.unmappedRequirements.forEach((requirement) => {
+        const item = document.createElement("li");
+        item.textContent = requirement;
+        list.append(item);
+      });
+      section.append(title, list);
+      unmappedRegion.append(section);
+    });
+  }
+
+  function renderEvidenceLibrary(model) {
+    evidenceItems.replaceChildren();
+    evidenceLibrary.hidden = !model.evidenceLibrary.length;
+    model.evidenceLibrary.forEach((evidence) => evidenceItems.append(createEvidence(evidence)));
   }
 
   async function handleResultClick(event) {
@@ -674,4 +838,8 @@ function normalizedDraft(role) {
 function extractProjectStatus(text) {
   const match = String(text || "").match(/^\*\*Status:\*\*\s*([^\n]+)/i);
   return match?.[1]?.trim() || "";
+}
+
+function evidenceDomId(value) {
+  return `comparison-evidence-${String(value).replace(/[^a-z0-9_-]/gi, "-")}`;
 }

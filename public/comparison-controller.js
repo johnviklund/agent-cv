@@ -9,6 +9,7 @@ import {
   clearComparisonSnapshot,
   fingerprintComparisonRoles,
   persistComparisonSnapshot,
+  resolveSessionStorage,
   restoreComparisonSnapshot,
 } from "./comparison-state.js";
 
@@ -17,7 +18,7 @@ const EVIDENCE_ID_PATTERN = /^[a-z0-9]+(?:[.-][a-z0-9]+)*$/;
 const MAX_CATALOG_BYTES = 1_000_000;
 
 export function createComparisonController({
-  storage = globalThis.sessionStorage,
+  storage = resolveSessionStorage(),
   fetchImpl = globalThis.fetch?.bind(globalThis),
   loadCatalog = ({ signal } = {}) => loadPublicComparisonCatalog(fetchImpl, signal),
   endpoint = "/api/compare",

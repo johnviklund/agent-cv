@@ -442,7 +442,7 @@ async function initializedController(overrides = {}) {
 
 function comparisonResult({ label = "Applied AI leadership", digest = DIGEST } = {}) {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     catalogDigest: digest,
     roles: [{ id: "role_01", position: 1, title: "AI Product Lead", company: "Example" }],
     rows: [{
@@ -458,6 +458,7 @@ function comparisonResult({ label = "Applied AI leadership", digest = DIGEST } =
         questions: ["Which decisions did John own?"],
       }],
     }],
+    unmappedRequirements: [{ roleId: "role_01", requirements: [] }],
   };
 }
 

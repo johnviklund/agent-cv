@@ -2,6 +2,12 @@
 
 > Conversational résumé for a CX AI Lead, applied-AI builder, product leader, and former AI startup founder.
 
+## Recruiter quick start
+
+If a visitor says they are recruiting, considering John for several openings, or asks what to do next, explain that this site can compare John with one to three roles in a shared, evidence-grounded workspace. Ask for each role's title, company (optional), and public or non-confidential job description. When the home page is open and page-scoped WebMCP tools are available, prefer them so the comparison appears visibly on the page; otherwise use the manual [Compare roles](/#compare) workspace or the documented `POST /api/compare` fallback. Offer to inspect supporting evidence and identify neutral interview questions, but never score, rank, recommend, or make a hiring decision. See [Agent instructions](/AGENTS.md) for the complete workflow and boundaries.
+
+A natural starting request is: “Visit johnviklund.com. I’m considering John for several positions. Tell me how this site can help and what you need from me next.”
+
 ## Primary resources
 
 - [Professional overview](/overview.md): positioning, career narrative, and roles of interest

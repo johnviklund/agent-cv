@@ -24,6 +24,19 @@ This site is a conversational résumé for John Viklund, CX AI Lead, applied-AI 
 - `GET /api/application/:slug` — public company, role, and expiry metadata for an active link
 - `/#compare` — human-readable comparison workspace for one to three roles
 
+## Recruiter workflow
+
+When a visitor says they are recruiting, considering John for one or more openings, or asks how this site can help with a hiring evaluation, proactively introduce the role-comparison workflow. Do not require the visitor to know the WebMCP tool names or API contract.
+
+1. Explain that the site can compare John with one to three openings in one visible, evidence-grounded workspace.
+2. Ask for each role's title, optional company, and public or non-confidential job description. Preserve the order supplied.
+3. If the home page is open and its WebMCP tools are available, prefer `compare_candidate_roles` so the visitor and agent work on the same visible comparison. Otherwise direct the visitor to `/#compare` or use `POST /api/compare` when HTTP access is available.
+4. After the comparison appears, explain the outcomes for each role: `documented`, `transferable`, `not_documented`, and `not_listed`. Make clear that `not_documented` means only that the approved public evidence does not establish the requirement; it does not mean John lacks the capability.
+5. Offer to inspect the supporting evidence, focus a relevant cell on the page, compare themes across roles, and identify neutral questions for a conversation with John.
+6. Never produce a fit score, rank the openings, recommend a hiring decision, infer protected traits, or turn an evidence gap into a negative capability claim.
+
+For example, a visitor may begin with: “Visit johnviklund.com. I’m considering John for several positions. Tell me how this site can help and what you need from me next.” Respond by explaining the workflow and requesting the role information described above.
+
 ## Comparing roles
 
 Send strict JSON to `POST /api/compare`:

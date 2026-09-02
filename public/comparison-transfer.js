@@ -67,6 +67,10 @@ export function buildRoleRequirementPreview(description) {
   return {
     count: analysis.requirements.length,
     ignoredSections: analysis.ignoredSections,
+    ignoredStatements: analysis.ignoredStatements,
+    ignoredSummarySections: analysis.ignoredSummarySections,
+    plainLineCount: analysis.plainRequirementLineNumbers.length,
+    requirements: analysis.requirements,
     assessedLimit: COMPARISON_CONTRACT.limits.maxRequirementsPerRole,
     sourceLimit: COMPARISON_CONTRACT.limits.maxSourceRequirementsPerRole,
     notAssessedMinimum: Math.max(

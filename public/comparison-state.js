@@ -4,7 +4,9 @@ import {
 } from "./comparison-contract.js";
 
 export const COMPARISON_STORAGE_KEY = "agent-cv:role-comparison";
-export const COMPARISON_SNAPSHOT_VERSION = 1;
+// Extraction semantics changed: retain old drafts, but never restore a ledger
+// whose denominator was built before plain-line requirements were supported.
+export const COMPARISON_SNAPSHOT_VERSION = 2;
 export const MAX_COMPARISON_SNAPSHOT_BYTES = 320_000;
 
 const DIGEST_PATTERN = /^sha256:[a-f0-9]{64}$/;

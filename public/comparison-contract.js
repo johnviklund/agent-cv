@@ -76,7 +76,11 @@ const PROTECTED_TRAIT_QUESTION = /\b(age|race|racial|ethnicity|ethnic|religion|r
 
 export function analyzeComparisonRequirements(description) {
   const informationalHeading = /^(?:about (?!you\b|(?:the )?(?:role|position|job)\b).+|company overview|our (?:company|team|mission|values)|why (?:join|work (?:at|with)).+|working (?:at|with).+|what we offer|additional information|benefits(?: and perks)?|perks|compensation(?: and benefits)?|pay and benefits|salary|pay range|diversity(?: and inclusion)?|equal opportunity|equal employment opportunity|workplace|work location|location|application process|how to apply|interview process|privacy|legal|accommodations?|background checks?|employment eligibility)$/i;
-  const requirementHeading = /^(?:about (?:you|(?:the )?(?:role|position|job))|the (?:role|opportunity)|your (?:role|impact|responsibilities)|role overview|overview|(?:key |role )?responsibilities|essential duties|what you(?:'|’)ll (?:do|bring)|what you will (?:do|bring)|you will|requirements|required experience|qualifications|minimum qualifications|preferred qualifications|desired qualifications|must have|skills|experience|who you are|what we look for|nice to have|preferred|you might thrive in this role if)$/i;
+  const summaryHeading = /^(?:about (?:the )?(?:role|position|job)|the (?:role|opportunity)|your (?:role|impact)|role overview|overview)$/i;
+  const requirementHeading = /^(?:about you|your responsibilities|(?:key |role )?responsibilities|essential duties|in this role(?:,? you will)?|what you(?:'|’)ll (?:do|bring)|what you will (?:do|bring)|you will|requirements|required experience|qualifications|minimum qualifications|preferred qualifications|desired qualifications|must have|skills|experience|who you are|what we look for|nice to have|preferred|thrive|you(?: might|(?:'|’)ll| will)? thrive in this role if(?: you)?)$/i;
+  // Match employment boilerplate by its opening, not domain keywords such as
+  // "hybrid", "benefits", or "location" that can also describe real work.
+  const informationalStatement = /^(?:(?:this|the) (?:role|position|job) is (?:based|located) (?:in|at)\b|(?:we|our team) (?:use|follow|operate) (?:a |an )?(?:hybrid|remote|on-site) work (?:model|schedule|policy)\b|(?:this|the) (?:role|position|job) (?:offers?|uses?|follows?) (?:a |an )?(?:hybrid|remote|on-site) (?:work )?(?:model|schedule|policy)\b|(?:we (?:offer|provide)|(?:you|employees) (?:receive|get)) (?:relocation assistance|(?:health |medical |competitive |comprehensive |generous )?(?:benefits|compensation|salary|pay|leave))\b|(?:relocation assistance|(?:the |our )?(?:salary|compensation|pay)(?: range)?(?: for (?:this|the) (?:role|position))?) (?:is|includes?|ranges?|starts?|will be)\b|(?:we are|\S+ is) an equal[ -]opportunity employer\b|(?:all )?(?:qualified )?applicants (?:will )?receive consideration for employment\b)/i;
   const seen = new Set();
   const requirements = [];
   const blocks = [];
@@ -85,24 +89,29 @@ export function analyzeComparisonRequirements(description) {
   let block = null;
   let hasRequirementSection = false;
   let ignoredSections = 0;
-  const source = String(description || "")
-    .replace(/\r\n?/g, "\n")
-    .replace(/\[([^\]]+)\]\((?:[^()]|\([^)]*\))+\)/g, "$1")
-    .replace(/<[^>]*>/g, " ")
-    .replace(/(?:https?|mailto):\/\/\S+|www\.\S+/gi, " ");
+  let summarySections = 0;
+  let ignoredStatements = 0;
+  const plainRequirementLineNumbers = [];
+  const sourceLines = String(description || "").replace(/\r\n?/g, "\n").split("\n");
 
   const flush = () => {
     if (block?.text.trim()) blocks.push({ ...block, text: block.text.trim() });
     block = null;
   };
 
-  for (const rawLine of source.split("\n")) {
+  for (const [lineIndex, sourceLine] of sourceLines.entries()) {
+    const rawLine = sourceLine
+      .replace(/\[([^\]]+)\]\((?:[^()]|\([^)]*\))+\)/g, "$1")
+      .replace(/<[^>]*>/g, " ")
+      .replace(/(?:https?|mailto):\/\/\S+|www\.\S+/gi, " ");
     const heading = rawLine.match(/^\s*(#{1,6})\s+(.+?)\s*#*\s*$/);
-    if (heading) {
+    const label = cleanRequirementText(heading ? heading[2] : rawLine).replace(/:$/, "").trim();
+    const bareHeading = !/^\s*(?:[-*+]\s|\d{1,3}[.)]\s)/.test(rawLine)
+      && (informationalHeading.test(label) || summaryHeading.test(label) || requirementHeading.test(label));
+    if (heading || bareHeading) {
       flush();
-      const level = heading[1].length;
+      const level = heading ? heading[1].length : (headings.at(-1)?.level || 1);
       while (headings.length && headings.at(-1).level >= level) headings.pop();
-      const label = cleanRequirementText(heading[2]).replace(/:$/, "");
       const parentMode = headings.at(-1)?.mode || "neutral";
       if (informationalHeading.test(label)) {
         mode = "informational";
@@ -110,6 +119,9 @@ export function analyzeComparisonRequirements(description) {
       } else if (requirementHeading.test(label)) {
         mode = "requirement";
         hasRequirementSection = true;
+      } else if (summaryHeading.test(label)) {
+        mode = "summary";
+        summarySections += 1;
       } else {
         mode = parentMode;
       }
@@ -127,6 +139,20 @@ export function analyzeComparisonRequirements(description) {
       block = { kind: "list", mode, text: listItem[1] };
       continue;
     }
+    if (block?.kind === "list" && block.mode === mode && /^\s+\S/.test(rawLine)) {
+      block.text += ` ${rawLine.trim()}`;
+      continue;
+    }
+    if (mode === "requirement") {
+      flush();
+      blocks.push({ kind: "line", mode, text: rawLine.trim(), lineNumber: lineIndex + 1 });
+      continue;
+    }
+    if (informationalStatement.test(cleanRequirementText(rawLine))) {
+      flush();
+      blocks.push({ kind: "prose", mode, text: rawLine.trim() });
+      continue;
+    }
     if (block && block.mode === mode) block.text += ` ${rawLine.trim()}`;
     else {
       flush();
@@ -137,13 +163,19 @@ export function analyzeComparisonRequirements(description) {
 
   for (const entry of blocks) {
     if (entry.mode === "informational") continue;
-    if (hasRequirementSection && entry.mode !== "requirement" && entry.kind !== "list") continue;
-    const statements = entry.kind === "list"
+    if (hasRequirementSection && entry.mode === "summary") continue;
+    if (hasRequirementSection && entry.mode === "neutral" && entry.kind !== "list") continue;
+    const statements = entry.kind !== "prose"
       ? [entry.text]
       : entry.text.split(/(?:[.!?]+(?=\s|$)|[;•]+)/u);
     for (const statement of statements) {
       const clean = cleanRequirementText(statement);
       if (!/[\p{L}\p{N}]/u.test(clean) || clean.length < 2 || requirementHeading.test(clean) || informationalHeading.test(clean)) continue;
+      if (informationalStatement.test(clean)) {
+        ignoredStatements += 1;
+        continue;
+      }
+      if (entry.kind === "line") plainRequirementLineNumbers.push(entry.lineNumber);
       for (const chunk of chunkRequirementText(clean, COMPARISON_CONTRACT.limits.maxRequirementCharacters)) {
         const key = chunk.toLocaleLowerCase("en");
         if (seen.has(key)) continue;
@@ -153,7 +185,10 @@ export function analyzeComparisonRequirements(description) {
     }
   }
 
-  return { requirements, ignoredSections };
+  return {
+    requirements, ignoredSections, ignoredStatements, plainRequirementLineNumbers,
+    ignoredSummarySections: hasRequirementSection ? summarySections : 0,
+  };
 
   function cleanRequirementText(value) {
     return String(value || "")
@@ -185,6 +220,13 @@ export function analyzeComparisonRequirements(description) {
 
 export function extractComparisonRequirements(description) {
   return analyzeComparisonRequirements(description).requirements;
+}
+
+export function normalizeComparisonRequirementLines(description) {
+  const lines = new Set(analyzeComparisonRequirements(description).plainRequirementLineNumbers);
+  return String(description || "").replace(/\r\n?/g, "\n").split("\n")
+    .map((line, index) => lines.has(index + 1) ? `- ${line.trim()}` : line)
+    .join("\n");
 }
 
 export const COMPARISON_REQUEST_SCHEMA = Object.freeze({

@@ -1,5 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { parseRoleBatch, buildRoleRequirementPreview } from "../public/comparison-transfer.js";
+import { PLAIN_LINE_BATCH, PLAIN_LINE_REQUIREMENT_COUNTS } from "./fixtures/requirement-sections.mjs";
 import evidenceCatalog from "../src/data/comparison-evidence.js";
 import {
   buildComparisonRequirementInventory,
@@ -91,6 +94,74 @@ test("unfamiliar section headings cannot hide listed requirements", () => {
     "Recover supplier performance and restore service levels",
     "Experience leading complex operations",
   ]);
+});
+
+test("plain lines under In This Role and Thrive headings reach the inventory before any model call", () => {
+  assertPlainLineInventory(PLAIN_LINE_BATCH);
+});
+
+test("unchanged private audit input has the expected explicit requirement inventory", {
+  skip: !process.env.COMPARISON_PRIVATE_ROLES_PATH,
+}, () => {
+  assertPlainLineInventory(readFileSync(process.env.COMPARISON_PRIVATE_ROLES_PATH, "utf8"));
+});
+
+function assertPlainLineInventory(batch) {
+  const roles = parseRoleBatch(batch);
+  const input = validateComparisonPayload({ roles });
+  assert.deepEqual(input.requirementInventory.map(({ requirements }) => requirements.length), PLAIN_LINE_REQUIREMENT_COUNTS);
+  assert.deepEqual(roles.map(({ description }) => buildRoleRequirementPreview(description).count), PLAIN_LINE_REQUIREMENT_COUNTS);
+  const providerInput = buildComparisonProviderInput(input.roles, evidenceCatalog, input.requirementInventory);
+  assert.doesNotMatch(providerInput, /TEAM_CONTEXT_ONLY|SUMMARY_CONTEXT_ONLY|hybrid work model|relocation assistance|This role is based/i);
+}
+
+test("recognized plain-text and Markdown headings preserve one requirement per plain line", () => {
+  for (const heading of ["Responsibilities", "Qualifications", "Thrive", "In This Role", "In This Role, You Will", "You’ll Thrive In This Role If You"]) {
+    for (const prefix of ["", "### "]) {
+      const [inventory] = buildComparisonRequirementInventory([{
+        description: `${prefix}${heading}:\nOwn vendor performance, planning and reviews. Track recovery.\nBring operational experience; explain tradeoffs.`,
+      }]);
+      assert.deepEqual(inventory.requirements.map(({ text }) => text), [
+        "Own vendor performance, planning and reviews. Track recovery.",
+        "Bring operational experience; explain tradeoffs.",
+      ]);
+    }
+  }
+});
+
+test("summary-only descriptions exclude employment boilerplate without hiding relevant domain work", () => {
+  const [inventory] = buildComparisonRequirementInventory([{
+    description: [
+      "## About the role",
+      "Lead customer operations. Manage hybrid cloud deployments.",
+      "This role is based in Example City.",
+      "We use a hybrid work model of 3 days in the office per week and offer relocation assistance to new employees.",
+      "The salary range for this role is 100–150 units.",
+      "We offer health benefits and generous leave.",
+      "We are an equal opportunity employer and consider applicants regardless of age or religion.",
+      "Manage compensation and benefits systems. Lead location planning for service capacity.",
+    ].join("\n"),
+  }]);
+  assert.deepEqual(inventory.requirements.map(({ text }) => text), [
+    "Lead customer operations", "Manage hybrid cloud deployments",
+    "Manage compensation and benefits systems", "Lead location planning for service capacity",
+  ]);
+});
+
+test("indented Markdown bullet continuations stay intact beside plain-line requirements", () => {
+  const [inventory] = buildComparisonRequirementInventory([{
+    description: "## Responsibilities\n- Own delivery,\n  including reviews and recovery.\nBring operations experience.\n\n## Benefits\n- Paid leave",
+  }]);
+  assert.deepEqual(inventory.requirements.map(({ text }) => text), [
+    "Own delivery, including reviews and recovery.", "Bring operations experience.",
+  ]);
+});
+
+test("boilerplate lines without punctuation cannot swallow the next summary requirement", () => {
+  const [inventory] = buildComparisonRequirementInventory([{
+    description: "## About the role\nThis role is based in Example City\nLead operations.\nWe offer relocation assistance\nBuild reliable delivery processes.",
+  }]);
+  assert.deepEqual(inventory.requirements.map(({ text }) => text), ["Lead operations", "Build reliable delivery processes"]);
 });
 
 test("comparison request validation rejects count, bounds, and unexpected fields", () => {

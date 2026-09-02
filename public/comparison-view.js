@@ -1,4 +1,4 @@
-import { COMPARISON_CONTRACT } from "./comparison-contract.js";
+import { COMPARISON_CONTRACT, normalizeComparisonRequirementLines } from "./comparison-contract.js";
 import { createLink } from "./dom.js";
 import {
   buildRoleRequirementPreview,
@@ -339,8 +339,25 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
       preview.id = previewId;
       preview.className = "field-hint comparison-requirement-preview";
       preview.dataset.requirementPreview = String(index);
-      preview.textContent = describeRequirementPreview(value);
       wrap.append(preview);
+      const notice = document.createElement("p");
+      notice.className = "field-hint comparison-line-notice";
+      notice.dataset.plainLineNotice = "";
+      const normalize = document.createElement("button");
+      normalize.type = "button";
+      normalize.className = "secondary-action comparison-normalize";
+      normalize.dataset.normalizeRole = String(index);
+      normalize.textContent = "Convert plain lines to bullets";
+      normalize.setAttribute("aria-label", `Convert plain requirement lines to bullets for role ${index + 1}`);
+      const details = document.createElement("details");
+      details.className = "comparison-detected-requirements";
+      const summary = document.createElement("summary");
+      summary.id = `${id}-detected-summary`;
+      const list = document.createElement("ol");
+      list.setAttribute("aria-labelledby", summary.id);
+      details.append(summary, list);
+      wrap.append(notice, normalize, details);
+      updateRequirementPreview(wrap, value);
     }
     wrap.append(error);
     return wrap;
@@ -353,8 +370,7 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
     const name = control.dataset.roleField;
     drafts[index][name] = control.value;
     if (name === "description") {
-      const preview = editorList.querySelector(`[data-requirement-preview="${index}"]`);
-      if (preview) preview.textContent = describeRequirementPreview(control.value);
+      updateRequirementPreview(control.closest(".comparison-field"), control.value);
     }
     clearFieldError(index, name);
     formError.textContent = "";
@@ -366,6 +382,22 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
   }
 
   function handleEditorClick(event) {
+    const normalize = event.target.closest?.("[data-normalize-role]");
+    if (normalize) {
+      const index = Number(normalize.dataset.normalizeRole);
+      const control = editorList.querySelector(`[data-role-index="${index}"][data-role-field="description"]`);
+      const description = normalizeComparisonRequirementLines(control.value);
+      const validation = validateRoleDrafts(drafts.map((role, i) => i === index ? { ...role, description } : role));
+      if (validation.formError || description.length > COMPARISON_CONTRACT.limits.maxDescriptionCharacters) {
+        formError.textContent = "Adding bullets would exceed the text limit. Plain lines already work; no change was made.";
+        return;
+      }
+      control.value = description;
+      handleEditorInput({ target: control });
+      control.focus();
+      announce(`Role ${index + 1} plain requirement lines converted to bullets. Requirement wording and count are unchanged.`);
+      return;
+    }
     const remove = event.target.closest?.("[data-remove-role]");
     if (!remove || drafts.length <= 1) return;
     const index = Number(remove.dataset.removeRole);
@@ -373,6 +405,32 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
     setControllerRoles(drafts);
     renderEditors({ focusIndex: Math.max(0, index - 1) });
     announce(`Role ${index + 1} removed. ${drafts.length} ${drafts.length === 1 ? "role remains" : "roles remain"}.`);
+  }
+
+  function updateRequirementPreview(wrap, description) {
+    const hint = wrap.querySelector("[data-requirement-preview]");
+    const notice = wrap.querySelector("[data-plain-line-notice]");
+    const normalize = wrap.querySelector("[data-normalize-role]");
+    const details = wrap.querySelector(".comparison-detected-requirements");
+    try {
+      const preview = buildRoleRequirementPreview(description);
+      hint.textContent = describeRequirementPreview(description, preview);
+      notice.hidden = !preview.plainLineCount;
+      notice.textContent = preview.plainLineCount
+        ? `${preview.plainLineCount} plain ${preview.plainLineCount === 1 ? "line detected" : "lines detected"} in requirement sections. Each non-empty line counts as one requirement. Check line breaks before comparing; bullet conversion is optional.`
+        : "";
+      normalize.hidden = !preview.plainLineCount;
+      details.hidden = !preview.count;
+      details.querySelector("summary").textContent = `Review ${preview.count} detected ${preview.count === 1 ? "requirement" : "requirements"}`;
+      details.querySelector("ol").replaceChildren(...preview.requirements.map((text) => {
+        const item = document.createElement("li");
+        item.textContent = text;
+        return item;
+      }));
+    } catch {
+      hint.textContent = "Requirement count is unavailable until this description is shortened.";
+      notice.hidden = normalize.hidden = details.hidden = true;
+    }
   }
 
   function addRole() {
@@ -841,18 +899,24 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
   }
 }
 
-function describeRequirementPreview(description) {
+export function describeRequirementPreview(description, detectedPreview) {
   if (!description?.trim()) return "Requirement count appears here before analysis.";
   try {
-    const preview = buildRoleRequirementPreview(description);
+    const preview = detectedPreview || buildRoleRequirementPreview(description);
     const requirementCopy = `${preview.count} of ${preview.sourceLimit} source ${preview.count === 1 ? "requirement" : "requirements"} detected before analysis.`;
     const ignoredCopy = preview.ignoredSections
       ? ` ${preview.ignoredSections} informational ${preview.ignoredSections === 1 ? "section" : "sections"} ignored.`
       : "";
+    const summaryCopy = preview.ignoredSummarySections
+      ? ` Explicit requirement sections used; ${preview.ignoredSummarySections} role-summary ${preview.ignoredSummarySections === 1 ? "section" : "sections"} excluded. Move any additional summary requirement into Responsibilities to include it.`
+      : "";
+    const statementCopy = preview.ignoredStatements
+      ? ` ${preview.ignoredStatements} employment ${preview.ignoredStatements === 1 ? "statement" : "statements"} excluded.`
+      : "";
     const remainderCopy = preview.notAssessedMinimum
       ? ` Up to ${preview.assessedLimit} can be assessed; at least ${preview.notAssessedMinimum} will stay visible as not assessed.`
       : ` Up to ${preview.assessedLimit} can be assessed; any remainder stays visible as not assessed.`;
-    return `${requirementCopy}${ignoredCopy}${remainderCopy}`;
+    return `${requirementCopy}${ignoredCopy}${summaryCopy}${statementCopy}${remainderCopy}`;
   } catch {
     return "Requirement count is unavailable until this description is shortened.";
   }

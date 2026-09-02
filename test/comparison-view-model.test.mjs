@@ -4,7 +4,9 @@ import {
   buildComparisonStatusPresentation,
   buildComparisonViewModel,
   describeComparisonSelection,
+  describeRequirementPreview,
 } from "../public/comparison-view.js";
+import { normalizeComparisonRequirementLines } from "../public/comparison-contract.js";
 import {
   buildRoleRequirementPreview,
   createLatestFileImport,
@@ -271,10 +273,37 @@ test("preflights requirement counts with the same informational-section rules as
   assert.deepEqual(preview, {
     count: 2,
     ignoredSections: 1,
+    ignoredStatements: 0,
+    ignoredSummarySections: 0,
+    plainLineCount: 0,
+    requirements: ["Own vendor performance, commercials, and quarterly reviews", "Lead workforce planning and capacity forecasting"],
     assessedLimit: 16,
     sourceLimit: 96,
     notAssessedMinimum: 0,
   });
+});
+
+test("preflight explains plain lines and summary exclusions; bullet normalization preserves source context", () => {
+  const description = [
+    "## About the role", "Summary context stays in the editor.",
+    "## Responsibilities", "Own delivery. Explain tradeoffs.",
+    "Bring [operational experience](https://example.test).",
+    "- Keep existing bullets unchanged.",
+    "## Benefits", "Paid leave",
+  ].join("\n");
+  const preview = buildRoleRequirementPreview(description);
+  assert.equal(preview.count, 3);
+  assert.equal(preview.plainLineCount, 2);
+  assert.equal(preview.ignoredSummarySections, 1);
+  assert.match(describeRequirementPreview(description), /Explicit requirement sections used/);
+  assert.match(describeRequirementPreview(description), /1 role-summary section excluded/);
+  const normalized = normalizeComparisonRequirementLines(description);
+  assert.equal(normalized, description
+    .replace("\nOwn delivery.", "\n- Own delivery.")
+    .replace("\nBring [", "\n- Bring ["));
+  assert.deepEqual(buildRoleRequirementPreview(normalized).requirements, preview.requirements);
+  assert.equal(buildRoleRequirementPreview(normalized).plainLineCount, 0);
+  assert.equal(normalizeComparisonRequirementLines(normalized), normalized);
 });
 
 test("exports compact JSON and Markdown with denominators, evidence IDs, questions, and unmapped requirements", () => {

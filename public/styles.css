@@ -638,6 +638,24 @@ h1, h2, h3, p { margin-top: 0; }
   font-size: 12px;
   line-height: 1.45;
 }
+.comparison-line-notice {
+  margin: 12px 0 8px;
+  padding-left: 10px;
+  border-left: 2px solid var(--accent);
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.comparison-normalize { font-size: 12px; text-align: left; }
+.comparison-detected-requirements {
+  margin-top: 12px;
+  border-top: 1px solid var(--rule);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.comparison-detected-requirements summary { padding: 12px 0; cursor: pointer; }
+.comparison-detected-requirements ol { margin: 0; padding: 0 0 0 22px; overflow-wrap: anywhere; }
+.comparison-detected-requirements li { margin-bottom: 10px; padding-left: 3px; }
 .field-error {
   min-height: 18px;
   margin: 5px 0 0;

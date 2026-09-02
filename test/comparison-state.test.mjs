@@ -43,6 +43,7 @@ test("matching same-tab state restores through the snapshot whitelist", () => {
 
 test("stale schema or catalog state retains only bounded role inputs", () => {
   for (const stored of [
+    { ...storedSnapshot(), schemaVersion: 1 }, // Before plain-line extraction: old denominator.
     { ...storedSnapshot(), schemaVersion: COMPARISON_SNAPSHOT_VERSION + 1 },
     { ...storedSnapshot(), catalogDigest: OTHER_DIGEST },
   ]) {

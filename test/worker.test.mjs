@@ -2,6 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { BudgetCounter, handleRequest } from "../src/worker.js";
 import { readRecordsWithStatus } from "../src/archive.js";
+import { parseRoleBatch } from "../public/comparison-transfer.js";
+import { PLAIN_LINE_BATCH, PLAIN_LINE_REQUIREMENT_COUNTS } from "./fixtures/requirement-sections.mjs";
 
 const ASK_URL = "https://example.test/api/ask";
 const COMPARE_URL = "https://example.test/api/compare";
@@ -897,6 +899,73 @@ test("server agents without Origin can create a grounded comparison without pers
   assert.equal(result.rows[0].cells[0].requirement, "ROLETEXTPRIVACYSENTINEL Lead AI products");
   assert.deepEqual(result.unmappedRequirements[0].requirements, ["governance"]);
   assert.equal([...archive.values.values()].some((value) => String(value).includes("ROLETEXTPRIVACYSENTINEL")), false);
+});
+
+test("plain-line batch requirements reach the provider and every omission remains in the result", async () => {
+  let providerCalls = 0;
+  const response = await handleRequest(compareRequest(JSON.stringify({ roles: parseRoleBatch(PLAIN_LINE_BATCH) })),
+    comparisonEnv(), emptyContext(), {
+      fetchImpl: async (_url, init) => {
+        providerCalls += 1;
+        const input = JSON.stringify(JSON.parse(init.body).input);
+        for (const [index, count] of PLAIN_LINE_REQUIREMENT_COUNTS.entries()) {
+          assert.equal((input.match(new RegExp(`requirement_role_0${index + 1}_`, "g")) || []).length, count);
+        }
+        assert.doesNotMatch(input, /TEAM_CONTEXT_ONLY|SUMMARY_CONTEXT_ONLY|hybrid work model|relocation assistance/);
+        // Assess one per role; the server must retain all 45 omitted statements.
+        return Response.json(comparisonProviderResponse({ roleCount: 3 }));
+      },
+    });
+  assert.equal(response.status, 200);
+  assert.equal(providerCalls, 1);
+  const result = await response.json();
+  assert.deepEqual(result.unmappedRequirements.map(({ requirements }) => requirements.length), [11, 16, 18]);
+  assert.doesNotMatch(JSON.stringify(result), /TEAM_CONTEXT_ONLY|SUMMARY_CONTEXT_ONLY|hybrid work model|relocation assistance/);
+});
+
+test("invalid provider JSON and schema output retry once with safe diagnostics and service-specific errors", async () => {
+  const errors = [];
+  const originalError = console.error;
+  console.error = (...parts) => errors.push(parts);
+  try {
+    const debugIds = new Set();
+    for (const [invalidText, reason] of [
+      ["PRIVATE_OUTPUT_SENTINEL {invalid JSON", "provider_output_json"],
+      [JSON.stringify({ rows: [], unmappedRequirements: [], privateDiagnostic: "PRIVATE_OUTPUT_SENTINEL" }), "draft_shape"],
+    ]) {
+      for (const recover of [true, false]) {
+        let providerCalls = 0;
+        let budgetCalls = 0;
+        const response = await handleRequest(compareRequest(), comparisonEnv({
+          COMPARISON_BUDGET: budgetBinding(true, () => { budgetCalls += 1; }),
+        }), emptyContext(), {
+          fetchImpl: async () => {
+            providerCalls += 1;
+            const body = comparisonProviderResponse({ roleCount: 1 });
+            if (!recover || providerCalls === 1) body.output[0].content[0].text = invalidText;
+            return Response.json(body);
+          },
+        });
+        assert.equal(providerCalls, 2);
+        assert.equal(budgetCalls, 1);
+        assert.equal(response.status, recover ? 200 : 502);
+        const body = await response.json();
+        assert.doesNotMatch(JSON.stringify(body), /PRIVATE_OUTPUT_SENTINEL|privateDiagnostic/);
+        if (!recover) {
+          assert.equal(body.code, "comparison_service_invalid");
+          assert.match(body.debugId, /^cmp_[a-f0-9]{16}$/);
+          assert.match(body.error, /comparison service.*validate.*role briefs were preserved.*retry/i);
+          assert.ok(body.error.includes(body.debugId));
+          assert.deepEqual(errors.at(-1), ["Comparison provider returned an invalid structured result", reason, "failed", body.debugId]);
+          debugIds.add(body.debugId);
+        }
+      }
+    }
+    assert.equal(debugIds.size, 2);
+    assert.doesNotMatch(JSON.stringify(errors), /PRIVATE_OUTPUT_SENTINEL|privateDiagnostic/);
+  } finally {
+    console.error = originalError;
+  }
 });
 
 test("comparison retries one invalid structured draft within the same budget reservation", async () => {

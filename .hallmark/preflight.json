@@ -1,0 +1,14 @@
+{
+  "date": "2026-09-16",
+  "framework": "Static HTML, CSS and ES modules; Cloudflare Worker",
+  "fonts": "Iowan Old Style/Baskerville; Avenir Next",
+  "palette": "Warm paper #f4f0e8, ink #171613, terracotta #b34731",
+  "motion": "CSS only; no library",
+  "spacing": "No named scale",
+  "scope": "Ten shared-stylesheet pages; preserve routes, claims and controllers",
+  "sources": [
+    "package.json",
+    "public/styles.css",
+    "wrangler.jsonc"
+  ]
+}

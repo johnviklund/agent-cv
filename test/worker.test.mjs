@@ -618,7 +618,8 @@ test("admin creates and revokes expiring application links without exposing JD o
   assert.equal((await applications.json()).applications[0].views, 1);
 });
 
-test("application metadata remains available when view telemetry fails", async () => {
+test("application metadata remains available when view telemetry fails", async (t) => {
+  t.mock.timers.enable({ apis: ["Date"], now: Date.parse("2026-08-20T10:00:00.000Z") });
   const slug = "application_5678";
   const archive = memoryKv({
     [`application:${slug}`]: JSON.stringify({
@@ -670,7 +671,8 @@ test("expired application API and page routes return 410 without serving private
   assert.equal(assetFetches, 0);
 });
 
-test("application chat adds an untrusted JD to the prompt while excluding private notes", async () => {
+test("application chat adds an untrusted JD to the prompt while excluding private notes", async (t) => {
+  t.mock.timers.enable({ apis: ["Date"], now: Date.parse("2026-08-20T10:00:00.000Z") });
   const slug = "application_1234";
   const archive = memoryKv({
     [`application:${slug}`]: JSON.stringify({

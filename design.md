@@ -5,7 +5,7 @@ Locked design system for John Viklund's CV. `tokens.css` is canonical; `npm run 
 
 ## System
 - Genre: modern-minimal, with editorial content and a technical tone.
-- Theme: studied-DNA. Dark charcoal, lavender accents, heavy upright sans display.
+- Theme: Graphite & sea glass. Warm graphite surfaces, warm ivory text, muted sea-glass green accents, and heavy upright sans display.
 - Homepage: Workbench adapted to a working chat, with a large left-aligned introduction and a bordered interaction area. Stack in reading order on narrow screens.
 - Content pages: Long Document for CV, about and privacy; ruled lists for projects and experience. Preserve existing routes, copy and controllers.
 - Navigation: compact N1b with existing destinations and a CSS disclosure on mobile. Footer: Ft2 inline credits and links, wrapping between complete links.
@@ -14,13 +14,13 @@ Locked design system for John Viklund's CV. `tokens.css` is canonical; `npm run 
 ## Provenance
 Studied https://herdr.dev/ on 16 September 2026. John selected this public reference for his own CV brand by asking to lock its DNA and update the CV site. This is structural inspiration, not a reproduction of Herdr's identity, copy, logo or terminal demonstration.
 
-The source declares Archivo, Inter and JetBrains Mono. Source colours are converted from sRGB hex to OKLCH below. Its default background is #17171a, text #eae8ee and accent #cba6f7. Layout rhythm was not verified by the URL-only study. Agent CV's layout must be verified in a browser separately.
+The source declares Archivo, Inter and JetBrains Mono. The initial source palette used #17171a, #eae8ee and #cba6f7. On 16 September 2026, John requested a distinct colour identity. Agent CV now uses its own warm graphite (#20231f), ivory (#f0efe5) and sea glass (#9ccfbd) palette, converted to OKLCH below. The typography and layout remain locked. Layout rhythm was not verified by the URL-only study. Agent CV's layout must be verified in a browser separately.
 
 ## Typography and spacing
 Archivo 700–900 for upright headings; Inter 400–700 for prose and controls; JetBrains Mono 400–500 for utility labels and code. Self-host Latin fonts and retain their OFL licenses. Use system fallbacks for other scripts. Display tracking is -0.055em, with a 0.98 line height; prose is 1.7. Use the named four-point spacing scale below.
 
 ## CTA voice and states
-Lavender fill with dark text for the send action. Secondary links use an underline or a thin border. Corners are 2px. Use verb-first labels, at least 44px touch targets, and an immediate visible focus ring. Keep disabled/loading, error and feedback states distinguishable through text as well as colour. Preserve native form validation and existing live regions.
+Sea-glass green fill with graphite text for the send action. Secondary links use an underline or a thin border. Corners are 2px. Use verb-first labels, at least 44px touch targets, and an immediate visible focus ring. Keep disabled/loading, error and feedback states distinguishable through text as well as colour. Preserve native form validation and existing live regions.
 
 ## Motion stance
 No entrance, scroll, hover-scale or perpetual decorative animation. Streaming may retain its functional cursor. Reduced motion disables it. Success stays inline; no celebratory toast.
@@ -31,24 +31,24 @@ No fabricated metrics, terminal chrome, numbered non-sequential section labels, 
 ## Exports
 ### tokens.css
 ```css
-/* Hallmark · theme: studied-DNA · source: https://herdr.dev/ · canonical tokens */
+/* Hallmark · theme: graphite-sea-glass · structural reference: https://herdr.dev/ · canonical tokens */
 :root {
-  --color-paper: oklch(20.593% 0.00589 285.871);
-  --color-paper-2: oklch(23.672% 0.00759 285.806);
-  --color-paper-3: oklch(27.067% 0.00918 285.770);
-  --color-canvas: oklch(18.356% 0.00607 285.787);
-  --color-ink: oklch(93.427% 0.00829 301.350);
-  --color-ink-2: oklch(84.778% 0.00829 293.883);
-  --color-muted: oklch(75.696% 0.00994 292.732);
-  --color-rule: oklch(33.213% 0.01397 285.614);
-  --color-rule-2: oklch(56.786% 0.01688 294.200);
-  --color-accent: oklch(78.715% 0.11867 304.769);
-  --color-accent-hover: oklch(85.338% 0.08091 305.053);
-  --color-accent-ink: oklch(20.593% 0.00589 285.871);
-  --color-focus: oklch(78.715% 0.11867 304.769);
-  --color-success: oklch(84.988% 0.09995 158.098);
-  --color-warning: oklch(83.652% 0.09509 84.896);
-  --color-error: oklch(80.253% 0.09192 9.946);
+  --color-paper: oklch(25.154% 0.00861 137.822);
+  --color-paper-2: oklch(29.041% 0.01139 145.274);
+  --color-paper-3: oklch(33.162% 0.01540 145.217);
+  --color-canvas: oklch(22.107% 0.00833 153.220);
+  --color-ink: oklch(95.016% 0.01331 102.019);
+  --color-ink-2: oklch(87.244% 0.01810 120.722);
+  --color-muted: oklch(77.733% 0.02126 138.443);
+  --color-rule: oklch(40.118% 0.01850 151.293);
+  --color-rule-2: oklch(63.813% 0.02505 147.289);
+  --color-accent: oklch(81.367% 0.05893 171.080);
+  --color-accent-hover: oklch(88.151% 0.04896 170.020);
+  --color-accent-ink: oklch(25.154% 0.00861 137.822);
+  --color-focus: oklch(81.367% 0.05893 171.080);
+  --color-success: oklch(84.870% 0.09143 127.176);
+  --color-warning: oklch(83.148% 0.08220 81.564);
+  --color-error: oklch(78.234% 0.07787 23.942);
   --font-display: "Archivo", "Arial Black", system-ui, sans-serif;
   --font-body: "Inter", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
@@ -88,22 +88,22 @@ No fabricated metrics, terminal chrome, numbered non-sequential section labels, 
 ### Tailwind v4
 ```css
 @theme {
-  --color-paper: oklch(20.593% 0.00589 285.871);
-  --color-paper-2: oklch(23.672% 0.00759 285.806);
-  --color-paper-3: oklch(27.067% 0.00918 285.770);
-  --color-canvas: oklch(18.356% 0.00607 285.787);
-  --color-ink: oklch(93.427% 0.00829 301.350);
-  --color-ink-2: oklch(84.778% 0.00829 293.883);
-  --color-muted: oklch(75.696% 0.00994 292.732);
-  --color-rule: oklch(33.213% 0.01397 285.614);
-  --color-rule-2: oklch(56.786% 0.01688 294.200);
-  --color-accent: oklch(78.715% 0.11867 304.769);
-  --color-accent-hover: oklch(85.338% 0.08091 305.053);
-  --color-accent-ink: oklch(20.593% 0.00589 285.871);
-  --color-focus: oklch(78.715% 0.11867 304.769);
-  --color-success: oklch(84.988% 0.09995 158.098);
-  --color-warning: oklch(83.652% 0.09509 84.896);
-  --color-error: oklch(80.253% 0.09192 9.946);
+  --color-paper: oklch(25.154% 0.00861 137.822);
+  --color-paper-2: oklch(29.041% 0.01139 145.274);
+  --color-paper-3: oklch(33.162% 0.01540 145.217);
+  --color-canvas: oklch(22.107% 0.00833 153.220);
+  --color-ink: oklch(95.016% 0.01331 102.019);
+  --color-ink-2: oklch(87.244% 0.01810 120.722);
+  --color-muted: oklch(77.733% 0.02126 138.443);
+  --color-rule: oklch(40.118% 0.01850 151.293);
+  --color-rule-2: oklch(63.813% 0.02505 147.289);
+  --color-accent: oklch(81.367% 0.05893 171.080);
+  --color-accent-hover: oklch(88.151% 0.04896 170.020);
+  --color-accent-ink: oklch(25.154% 0.00861 137.822);
+  --color-focus: oklch(81.367% 0.05893 171.080);
+  --color-success: oklch(84.870% 0.09143 127.176);
+  --color-warning: oklch(83.148% 0.08220 81.564);
+  --color-error: oklch(78.234% 0.07787 23.942);
   --font-display: "Archivo", "Arial Black", system-ui, sans-serif;
   --font-body: "Inter", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
@@ -143,22 +143,22 @@ No fabricated metrics, terminal chrome, numbered non-sequential section labels, 
 ### DTCG tokens.json
 ```json
 {
-  "color-paper": {"$type": "color", "$value": {"colorSpace": "oklch", "components": [0.20593, 0.00589, 285.871], "alpha": 1}},
-  "color-paper-2": {"$type": "color", "$value": {"colorSpace": "oklch", "components": [0.23672, 0.00759, 285.806], "alpha": 1}},
-  "color-paper-3": {"$type": "color", "$value": {"colorSpace": "oklch", "components": [0.27067, 0.00918, 285.77], "alpha": 1}},
-  "color-canvas": {"$type": "color", "$value": {"colorSpace": "oklch", "components": [0.18356000000000003, 0.00607, 285.787], "alpha": 1}},
-  "color-ink": {"$type": "color", "$value": {"colorSpace": "oklch", "components": [0.93427, 0.00829, 301.35], "alpha": 1}},
-  "color-ink-2": {"$type": "color", "$value": {"colorSpace": "oklch", "components": [0.8477800000000001, 0.00829, 293.883], "alpha": 1}},
-  "color-muted": {"$type": "color", "$value": {"colorSpace": "oklch", "components": [0.75696, 0.00994, 292.732], "alpha": 1}},
-  "color-rule": {"$type": "color", "$value": {"colorSpace": "oklch", "components": [0.33213000000000004, 0.01397, 285.614], "alpha": 1}},
-  "color-rule-2": {"$type": "color", "$value": {"colorSpace": "oklch", "components": [0.56786, 0.01688, 294.2], "alpha": 1}},
-  "color-accent": {"$type": "color", "$value": {"colorSpace": "oklch", "components": [0.78715, 0.11867, 304.769], "alpha": 1}},
-  "color-accent-hover": {"$type": "color", "$value": {"colorSpace": "oklch", "components": [0.8533799999999999, 0.08091, 305.053], "alpha": 1}},
-  "color-accent-ink": {"$type": "color", "$value": {"colorSpace": "oklch", "components": [0.20593, 0.00589, 285.871], "alpha": 1}},
-  "color-focus": {"$type": "color", "$value": {"colorSpace": "oklch", "components": [0.78715, 0.11867, 304.769], "alpha": 1}},
-  "color-success": {"$type": "color", "$value": {"colorSpace": "oklch", "components": [0.84988, 0.09995, 158.098], "alpha": 1}},
-  "color-warning": {"$type": "color", "$value": {"colorSpace": "oklch", "components": [0.83652, 0.09509, 84.896], "alpha": 1}},
-  "color-error": {"$type": "color", "$value": {"colorSpace": "oklch", "components": [0.80253, 0.09192, 9.946], "alpha": 1}},
+  "color-paper": {"$type": "color", "$value": {"colorSpace": "oklch", "components": [0.25154, 0.00861, 137.822], "alpha": 1}},
+  "color-paper-2": {"$type": "color", "$value": {"colorSpace": "oklch", "components": [0.29041, 0.01139, 145.274], "alpha": 1}},
+  "color-paper-3": {"$type": "color", "$value": {"colorSpace": "oklch", "components": [0.33162, 0.0154, 145.217], "alpha": 1}},
+  "color-canvas": {"$type": "color", "$value": {"colorSpace": "oklch", "components": [0.22107, 0.00833, 153.22], "alpha": 1}},
+  "color-ink": {"$type": "color", "$value": {"colorSpace": "oklch", "components": [0.95016, 0.01331, 102.019], "alpha": 1}},
+  "color-ink-2": {"$type": "color", "$value": {"colorSpace": "oklch", "components": [0.87244, 0.0181, 120.722], "alpha": 1}},
+  "color-muted": {"$type": "color", "$value": {"colorSpace": "oklch", "components": [0.77733, 0.02126, 138.443], "alpha": 1}},
+  "color-rule": {"$type": "color", "$value": {"colorSpace": "oklch", "components": [0.40118, 0.0185, 151.293], "alpha": 1}},
+  "color-rule-2": {"$type": "color", "$value": {"colorSpace": "oklch", "components": [0.63813, 0.02505, 147.289], "alpha": 1}},
+  "color-accent": {"$type": "color", "$value": {"colorSpace": "oklch", "components": [0.81367, 0.05893, 171.08], "alpha": 1}},
+  "color-accent-hover": {"$type": "color", "$value": {"colorSpace": "oklch", "components": [0.88151, 0.04896, 170.02], "alpha": 1}},
+  "color-accent-ink": {"$type": "color", "$value": {"colorSpace": "oklch", "components": [0.25154, 0.00861, 137.822], "alpha": 1}},
+  "color-focus": {"$type": "color", "$value": {"colorSpace": "oklch", "components": [0.81367, 0.05893, 171.08], "alpha": 1}},
+  "color-success": {"$type": "color", "$value": {"colorSpace": "oklch", "components": [0.8487, 0.09143, 127.176], "alpha": 1}},
+  "color-warning": {"$type": "color", "$value": {"colorSpace": "oklch", "components": [0.83148, 0.0822, 81.564], "alpha": 1}},
+  "color-error": {"$type": "color", "$value": {"colorSpace": "oklch", "components": [0.78234, 0.07787, 23.942], "alpha": 1}},
   "font-display": {"$type": "fontFamily", "$value": ["Archivo", "Arial Black", "system-ui", "sans-serif"]},
   "font-body": {"$type": "fontFamily", "$value": ["Inter", "system-ui", "sans-serif"]},
   "font-mono": {"$type": "fontFamily", "$value": ["JetBrains Mono", "ui-monospace", "monospace"]},

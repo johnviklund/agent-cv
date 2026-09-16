@@ -1,21 +1,21 @@
-/* Hallmark · theme: studied-DNA · source: https://herdr.dev/ · canonical tokens */
+/* Hallmark · theme: graphite-sea-glass · structural reference: https://herdr.dev/ · canonical tokens */
 :root {
-  --color-paper: oklch(20.593% 0.00589 285.871);
-  --color-paper-2: oklch(23.672% 0.00759 285.806);
-  --color-paper-3: oklch(27.067% 0.00918 285.770);
-  --color-canvas: oklch(18.356% 0.00607 285.787);
-  --color-ink: oklch(93.427% 0.00829 301.350);
-  --color-ink-2: oklch(84.778% 0.00829 293.883);
-  --color-muted: oklch(75.696% 0.00994 292.732);
-  --color-rule: oklch(33.213% 0.01397 285.614);
-  --color-rule-2: oklch(56.786% 0.01688 294.200);
-  --color-accent: oklch(78.715% 0.11867 304.769);
-  --color-accent-hover: oklch(85.338% 0.08091 305.053);
-  --color-accent-ink: oklch(20.593% 0.00589 285.871);
-  --color-focus: oklch(78.715% 0.11867 304.769);
-  --color-success: oklch(84.988% 0.09995 158.098);
-  --color-warning: oklch(83.652% 0.09509 84.896);
-  --color-error: oklch(80.253% 0.09192 9.946);
+  --color-paper: oklch(25.154% 0.00861 137.822);
+  --color-paper-2: oklch(29.041% 0.01139 145.274);
+  --color-paper-3: oklch(33.162% 0.01540 145.217);
+  --color-canvas: oklch(22.107% 0.00833 153.220);
+  --color-ink: oklch(95.016% 0.01331 102.019);
+  --color-ink-2: oklch(87.244% 0.01810 120.722);
+  --color-muted: oklch(77.733% 0.02126 138.443);
+  --color-rule: oklch(40.118% 0.01850 151.293);
+  --color-rule-2: oklch(63.813% 0.02505 147.289);
+  --color-accent: oklch(81.367% 0.05893 171.080);
+  --color-accent-hover: oklch(88.151% 0.04896 170.020);
+  --color-accent-ink: oklch(25.154% 0.00861 137.822);
+  --color-focus: oklch(81.367% 0.05893 171.080);
+  --color-success: oklch(84.870% 0.09143 127.176);
+  --color-warning: oklch(83.148% 0.08220 81.564);
+  --color-error: oklch(78.234% 0.07787 23.942);
   --font-display: "Archivo", "Arial Black", system-ui, sans-serif;
   --font-body: "Inter", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;

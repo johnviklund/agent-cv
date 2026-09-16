@@ -9,5 +9,11 @@
     "footer": "Ft2",
     "enrichment": "none; working chat",
     "brief": "Agent CV with bold introduction and grounded conversation workspace"
+  },
+  {
+    "date": "2026-09-16",
+    "scope": "palette refinement",
+    "theme": "graphite-sea-glass",
+    "brief": "Own warm graphite, ivory and sea-glass palette; preserve locked layout and typography."
   }
 ]

@@ -156,3 +156,20 @@ test("evidence resource access uses the same content-free path telemetry", async
   assert.match(resourceRecord, /\bpath\b/);
   assert.doesNotMatch(resourceRecord, /request\.text|request\.json|cf-connecting-ip|x-forwarded-for/i);
 });
+
+test("the published design tokens and self-hosted font assets are deployable under the existing CSP", async () => {
+  const [canonical, published, styles, headers] = await Promise.all([
+    read("tokens.css"), read("public/tokens.css"), read("public/styles.css"), read("public/_headers"),
+  ]);
+  assert.equal(published, canonical, "sync:data must publish the canonical design tokens");
+  assert.match(styles, /@import url\("\/tokens\.css"\)/);
+  const fontPaths = [...styles.matchAll(/src:\s*url\("(\/fonts\/[^"/]+\.woff2)"\)/g)].map((match) => match[1]);
+  assert.equal(fontPaths.length, 3);
+  for (const path of fontPaths) {
+    const bytes = await readFile(new URL(`../public${path}`, import.meta.url));
+    assert.equal(bytes.subarray(0, 4).toString(), "wOF2", `${path} must be a real WOFF2 font`);
+    assert.match(await read(`public${path.replace("-latin.woff2", "-OFL.txt")}`), /SIL OPEN FONT LICENSE/);
+  }
+  assert.doesNotMatch(styles, /url\(["']?https?:\/\//);
+  assert.match(headers, /font-src 'self'/);
+});

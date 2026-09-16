@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>John Viklund — Agent CV</title>
   <meta name="description" content="Ask John Viklund's grounded AI agent about 25 years across applied AI, product, enterprise software, and Customer Experience.">
-  <meta name="theme-color" content="#f4f0e8">
+  <meta name="theme-color" content="#17171a">
   <meta property="og:title" content="John Viklund — Agent CV">
   <meta property="og:description" content="A conversational résumé for an applied-AI builder and product leader.">
   <meta property="og:type" content="profile">
@@ -69,36 +69,42 @@
     <div class="home-stage">
       <section class="hero" data-workspace-home aria-labelledby="home-title">
         <div class="hero-intro">
-          <p class="eyebrow">CX AI LEAD · APPLIED-AI BUILDER</p>
-          <h1 id="home-title">Ask about my work.</h1>
-          <p class="hero-deck">25 years across AI, product, enterprise software and Customer Experience.</p>
+          <div class="hero-copy">
+            <p class="eyebrow">CX AI Lead · Applied-AI builder</p>
+            <h1 id="home-title">Ask about<br>my <span>work.</span></h1>
+            <p class="hero-deck">25 years across AI, product, enterprise software and Customer Experience.</p>
 
-          <form class="chat-form" data-home-form>
-            <label class="sr-only" for="home-question">Ask about John's experience</label>
-            <div class="composer">
-              <input id="home-question" data-initial-input data-chat-control name="question" maxlength="1200" autocomplete="off" placeholder="Ask me anything about John's experience…" required>
-              <button class="send-button" data-chat-control type="submit" aria-label="Send question">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </button>
-            </div>
-          </form>
+          </div>
+          <div class="home-interaction">
+            <h2 class="interaction-title">Start a conversation.</h2>
+            <p class="interaction-note">Grounded in my CV and project record.</p>
+            <form class="chat-form" data-home-form>
+              <label class="sr-only" for="home-question">Ask about John's experience</label>
+              <div class="composer">
+                <input id="home-question" data-initial-input data-chat-control name="question" maxlength="1200" autocomplete="off" placeholder="Ask a question…" required>
+                <button class="send-button" data-chat-control type="submit" aria-label="Send question">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+              </div>
+            </form>
 
-          <ol class="starter-list" aria-label="Suggested questions">
-            <li><a href="/experience/" data-prompt="Summarize John's experience in three sentences."><span><span class="starter-number">01</span>Summarize John's experience</span><span aria-hidden="true">→</span></a></li>
-            <li><a href="/projects/" data-prompt="What AI and automation projects has John built?"><span><span class="starter-number">02</span>Explore AI projects</span><span aria-hidden="true">→</span></a></li>
-            <li><a href="/about/" data-prompt="What kind of roles and working environments is John looking for?"><span><span class="starter-number">03</span>Roles and working style</span><span aria-hidden="true">→</span></a></li>
-            <li><a href="/#compare" data-workspace-mode="compare" data-compare-entry><span><span class="starter-number">04</span>Compare up to three roles</span><span aria-hidden="true">→</span></a></li>
-            <li><a href="/cv/"><span><span class="starter-number">05</span>Show the full CV</span><span aria-hidden="true">→</span></a></li>
-          </ol>
-          <p class="workspace-message" data-workspace-message role="status" hidden></p>
+            <ol class="starter-list" aria-label="Suggested questions">
+              <li><a href="/experience/" data-prompt="Summarize John's experience in three sentences."><span>Summarize my experience</span><span aria-hidden="true">→</span></a></li>
+              <li><a href="/projects/" data-prompt="What AI and automation projects has John built?"><span>Explore AI projects</span><span aria-hidden="true">→</span></a></li>
+              <li><a href="/about/" data-prompt="What kind of roles and working environments is John looking for?"><span>Roles and working style</span><span aria-hidden="true">→</span></a></li>
+              <li><a href="/#compare" data-workspace-mode="compare" data-compare-entry><span>Compare up to three roles</span><span aria-hidden="true">→</span></a></li>
+              <li><a href="/cv/"><span>Show the full CV</span><span aria-hidden="true">→</span></a></li>
+            </ol>
+            <p class="workspace-message" data-workspace-message role="status" hidden></p>
 
-          <noscript>
-            <section class="noscript-summary">
-              <h2>John Viklund</h2>
-              <p>CX AI Lead at Volvo Cars. Applied-AI builder and product leader. Former AI startup founder. Enterprise scale, founder mindset, hands-on agent engineering.</p>
-              <a href="/cv/">Read the full CV →</a>
-            </section>
-          </noscript>
+            <noscript>
+              <section class="noscript-summary">
+                <h2>John Viklund</h2>
+                <p>CX AI Lead at Volvo Cars. Applied-AI builder and product leader. Former AI startup founder. Enterprise scale, founder mindset, hands-on agent engineering.</p>
+                <a href="/cv/">Read the full CV →</a>
+              </section>
+            </noscript>
+          </div>
         </div>
 
         <section class="conversation-shell" data-conversation aria-label="Conversation" hidden>
@@ -117,8 +123,8 @@
             </div>
           </form>
           <div class="followups" data-followups hidden aria-label="Suggested follow-up questions">
-            <button type="button" data-followup="How was Product Studio designed?">How was Product Studio designed?</button>
-            <button type="button" data-followup="What scale has John worked at?">What scale has John worked at?</button>
+            <button type="button" data-followup="How was Product Studio designed?">Product Studio design</button>
+            <button type="button" data-followup="What scale has John worked at?">Scale of experience</button>
             <button type="button" data-followup="Show me the technical details of John's recent AI work.">Show technical details</button>
           </div>
         </section>
@@ -143,7 +149,7 @@
             <span data-role-count>2 of 3 roles</span>
           </div>
           <details class="comparison-batch">
-            <summary id="comparison-batch-summary">Paste or upload multiple roles</summary>
+            <summary id="comparison-batch-summary">Import multiple roles</summary>
             <div class="comparison-batch-panel" role="region" aria-labelledby="comparison-batch-summary">
               <p>Import one to three roles as JSON (<code>{ "roles": [...] }</code>) or Markdown with an explicit <code>## Role:</code> or <code>## Role title:</code> marker per role and optional <code>Company:</code> and <code>Description:</code> labels. Other headings stay inside the role description. <a href="/positions-template.md" download>Download Markdown template</a>.</p>
               <label for="comparison-role-batch">Role batch</label>

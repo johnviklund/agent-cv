@@ -1,0 +1,13 @@
+[
+  {
+    "date": "2026-09-16",
+    "scope": "app",
+    "macrostructure": "Workbench",
+    "theme": "studied-DNA",
+    "source": "https://herdr.dev/",
+    "nav": "N1b",
+    "footer": "Ft2",
+    "enrichment": "none; working chat",
+    "brief": "Agent CV with bold introduction and grounded conversation workspace"
+  }
+]

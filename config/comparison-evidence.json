@@ -14,6 +14,22 @@
       "source": { "path": "data/cv.md", "headingPath": ["Experience", "Volvo Cars — Digital, Customer Care, CRM, and AI leadership"] }
     },
     {
+      "id": "experience.volvo-americas-crm-transformation",
+      "source": { "path": "data/cv.md", "headingPath": ["Experience", "Volvo Cars — Digital, Customer Care, CRM, and AI leadership", "Americas CRM transformation"] }
+    },
+    {
+      "id": "experience.volvo-customer-care-platforms-processes",
+      "source": { "path": "data/cv.md", "headingPath": ["Experience", "Volvo Cars — Digital, Customer Care, CRM, and AI leadership", "Global Customer Care platforms and processes"] }
+    },
+    {
+      "id": "experience.volvo-care-by-volvo-fleet-services",
+      "source": { "path": "data/cv.md", "headingPath": ["Experience", "Volvo Cars — Digital, Customer Care, CRM, and AI leadership", "Care by Volvo — Head of Fleet Services"] }
+    },
+    {
+      "id": "experience.volvo-organizer-business-owner",
+      "source": { "path": "data/cv.md", "headingPath": ["Experience", "Volvo Cars — Digital, Customer Care, CRM, and AI leadership", "Organizer — Business Owner"] }
+    },
+    {
       "id": "experience.tajitsu-founder",
       "source": { "path": "data/cv.md", "headingPath": ["Experience", "Tajitsu Industries — Co-founder, CEO, and Head of Product"] }
     },
@@ -28,6 +44,14 @@
     {
       "id": "experience.streamserve-opentext",
       "source": { "path": "data/cv.md", "headingPath": ["Experience", "StreamServe / OpenText — Product and technical roles"] }
+    },
+    {
+      "id": "experience.streamserve-product-management",
+      "source": { "path": "data/cv.md", "headingPath": ["Experience", "StreamServe / OpenText — Product and technical roles", "Product Manager to Senior Product Manager"] }
+    },
+    {
+      "id": "experience.streamserve-professional-services",
+      "source": { "path": "data/cv.md", "headingPath": ["Experience", "StreamServe / OpenText — Product and technical roles", "Professional services and technical specialist"] }
     },
     {
       "id": "cv.capabilities",

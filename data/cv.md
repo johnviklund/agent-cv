@@ -22,23 +22,39 @@ CX AI Lead at Volvo Cars and applied-AI product leader with roughly 25 years acr
 
 **November 2017–March 2026 · Sweden and United States**
 
-- Led work spanning global digital retail, fleet services, Customer Care platforms and processes, Salesforce, Five9, CRM transformation, and applied AI.
-- Served in Americas regional process leadership across the United States, Canada, and Mexico during a New York-region assignment.
-- Worked on global operational platforms and workflows in an environment handling approximately three million Customer Care interactions annually.
+#### Americas CRM transformation
+
+- Bridged Volvo Cars USA with global program and process owners in Gothenburg for the Americas move from Oracle CRM to Salesforce.
+- Worked hands-on through implementation, agent enablement, go-live, and hypercare to establish a globally aligned Customer Care platform in the United States.
+
+#### Global Customer Care platforms and processes
+
+- Defined Salesforce-enabled service processes and helped build a retailer case-management portal connecting central Customer Care with hundreds of retailers across roughly ten European markets.
+- Supported APAC operating-model alignment and enablement for a new Kuala Lumpur Customer Care hub through shared tools, process standards, and agent training material.
+
+#### Care by Volvo — Head of Fleet Services
+
+- Led more than ten process owners defining the subscription-vehicle lifecycle across ordering, service, roadside assistance, damage repair, and return.
+- Helped launch Care by Volvo across European markets, coordinating process, software, market operations, and retailer adoption.
+
+#### Organizer — Business Owner
+
+- Packaged Volvo's in-house workshop-planning system for broader use across the global retail network, coordinating service demand with technicians, specialist tools, lifts, and workshop capacity.
 
 ### Tajitsu Industries — Co-founder, CEO, and Head of Product
 
 **August 2014–October 2017 · Gothenburg, Sweden**
 
-- Co-founded and led a Chalmers Ventures-backed AI and predictive-analytics company.
-- Owned product strategy, definition, customer discovery, commercialization, partnerships, and company development.
-- Technology was applied to responsible-gambling signals at Svenska Spel and later hotel demand and price optimization.
+- Helped turn a Chalmers Ventures-backed neural-network project into predictive-analytics products for responsible-gambling signals and land-based casino operations.
+- Led product strategy, customer discovery, commercialization, partnerships, and international customer work across Europe, Las Vegas, Macau, and South Africa.
+- Became CEO to lead a market pivot, then negotiated the sale of the company's IP and the transition of team members to a hotel demand and price-optimization company.
 
 ### Axient — Customer Experience Manager
 
 **September 2012–May 2014 · Sydney, Australia**
 
-Architecture, delivery, and management of enterprise Customer Experience and transformation projects.
+- Helped an OpenText and StreamServe partner expand from technical delivery into Customer Experience consulting across utilities, banking, and government.
+- Served as enterprise architect for an SAP and StreamServe communications platform for the Australian Department of Human Services.
 
 ### Saltside Technologies — Lead Product Manager
 
@@ -50,7 +66,17 @@ Product leadership in a Kinnevik-backed online-marketplace startup.
 
 **March 2001–December 2011 · Gothenburg and Boston**
 
-Progressed from Product Specialist to Product Manager and Senior Product Manager. Combined enterprise software strategy, lifecycle management, solution architecture, commercialization, pre-sales, and international customer work.
+#### Product Manager to Senior Product Manager
+
+- Led a strategic customer-communications product that gave business users web-based control of reusable content and personalization rules for high-volume letters and invoices.
+- Owned the product lifecycle across engineering, legal, sales enablement, analyst relations, customer presentations, and client roundtables.
+- Continued as senior product manager after OpenText's acquisition, helping customers and internal teams adopt the acquired StreamServe platform.
+
+#### Professional services and technical specialist
+
+- Delivered enterprise implementations across Europe and during a two-year Boston assignment, combining solution architecture, pre-sales, and hands-on development in Java, C++, and early web technologies.
+- Built a Java routing application for IKEA's multilingual product-label system, deployed across more than 50 countries.
+- Contributed StreamServe integrations to major IBM and Coca-Cola programs, including distributed print workflows and ERP-driven route-document generation.
 
 ## Selected applied-AI projects
 
@@ -94,4 +120,4 @@ Native Swedish and fluent professional English. Based near Gothenburg, Sweden. O
 
 ---
 
-Data last updated: 15 August 2026. Ask the conversational CV at the site root or fetch machine-readable resources from `/AGENTS.md` and `/llms.txt`.
+Data last updated: 17 September 2026. Ask the conversational CV at the site root or fetch machine-readable resources from `/AGENTS.md` and `/llms.txt`.

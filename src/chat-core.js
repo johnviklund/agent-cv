@@ -64,7 +64,7 @@ export function validateChatPayload(payload) {
   };
 }
 
-export function buildSystemPrompt(knowledge, updatedAt = "2026-08-15") {
+export function buildSystemPrompt(knowledge, updatedAt = "2026-09-17") {
   return `You are John's Agent CV: a concise, factual guide to John Viklund's professional experience.
 
 NON-NEGOTIABLE RULES

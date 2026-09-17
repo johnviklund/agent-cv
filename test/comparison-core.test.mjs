@@ -202,6 +202,59 @@ test("provider input treats role text as delimited untrusted data", () => {
   assert.doesNotMatch(providerInput, /"description"/);
 });
 
+test("new career subroles are available as bounded comparison evidence", () => {
+  const roles = [{
+    title: "Transformation Product Lead",
+    description: "- Lead an Oracle-to-Salesforce transformation\n- Own a customer communications product lifecycle",
+  }];
+  const input = validateComparisonPayload({ roles });
+  const evidenceIds = new Set(evidenceCatalog.items.map(({ id }) => id));
+  assert.equal(evidenceIds.has("experience.volvo-americas-crm-transformation"), true);
+  assert.equal(evidenceIds.has("experience.streamserve-product-management"), true);
+
+  const providerInput = buildComparisonProviderInput(input.roles, evidenceCatalog, input.requirementInventory);
+  assert.match(providerInput, /experience\.volvo-americas-crm-transformation/);
+  assert.match(providerInput, /experience\.streamserve-product-management/);
+
+  const [first, second] = input.requirementInventory[0].requirements;
+  const result = canonicalizeComparisonDraft({
+    rows: [
+      {
+        label: "CRM transformation",
+        cells: [{
+          roleIndex: 0,
+          requirementId: first.id,
+          coverage: "documented",
+          evidence: [{
+            evidenceId: "experience.volvo-americas-crm-transformation",
+            reasonCode: "directly_relevant_delivery",
+          }],
+          questionKinds: [],
+        }],
+      },
+      {
+        label: "Product lifecycle",
+        cells: [{
+          roleIndex: 0,
+          requirementId: second.id,
+          coverage: "documented",
+          evidence: [{
+            evidenceId: "experience.streamserve-product-management",
+            reasonCode: "direct_responsibility",
+          }],
+          questionKinds: [],
+        }],
+      },
+    ],
+    unmappedRequirements: [{ roleIndex: 0, requirementIds: [] }],
+  }, input.roles, evidenceCatalog, input.requirementInventory);
+
+  assert.deepEqual(result.rows.map(({ cells }) => cells[0].evidence[0].evidenceId), [
+    "experience.volvo-americas-crm-transformation",
+    "experience.streamserve-product-management",
+  ]);
+});
+
 test("a valid provider draft becomes a deterministic canonical comparison", () => {
   const draft = validDraft();
   const result = canonicalizeComparisonDraft(draft, validateComparisonPayload({ roles: ROLES }).roles, evidenceCatalog);

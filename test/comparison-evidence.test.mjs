@@ -62,6 +62,34 @@ test("keeps IDs stable across unrelated Markdown movement and changes the digest
   assert.notEqual(changed.digest, first.digest);
 });
 
+test("selects nested public career evidence without reading private experience data", async (context) => {
+  const root = await createFixture(context);
+  const manifest = {
+    schemaVersion: 1,
+    items: [{
+      id: "experience.volvo-americas-crm-transformation",
+      source: {
+        path: "data/cv.md",
+        headingPath: ["Experience", "Volvo Cars", "Americas CRM transformation"],
+      },
+    }],
+  };
+  await writeFile(
+    resolve(root, "data/cv.md"),
+    "# CV\n\n## Experience\n\n### Volvo Cars\n\n#### Americas CRM transformation\n\nBridged global and local CRM teams.\n\n#### Other role\n\nUnselected.\n",
+  );
+  await writeFile(
+    resolve(root, "data/experience.md"),
+    "# Private experience\n\nThis must not enter public comparison evidence.\n",
+  );
+
+  const catalog = await buildComparisonEvidenceCatalog({ root, manifest });
+
+  assert.deepEqual(catalog.items.map(({ id }) => id), ["experience.volvo-americas-crm-transformation"]);
+  assert.equal(catalog.items[0].text, "Bridged global and local CRM teams.");
+  assert.doesNotMatch(JSON.stringify(catalog), /must not enter public comparison evidence/i);
+});
+
 test("fails closed for invalid selectors, duplicate IDs, and non-public primary sources", async (context) => {
   const root = await createFixture(context);
   const cases = [

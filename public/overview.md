@@ -8,7 +8,7 @@ His strongest profile is builder-leader or player-coach: senior enough to set di
 
 ## Career narrative
 
-Software and product builder → international product leader → AI startup founder → enterprise digital and platform leader → applied enterprise AI leader → CX AI Lead.
+Hands-on enterprise software consultant and developer → international solution and pre-sales specialist → senior customer-communications product leader → startup product leader and CEO → Customer Experience consultant and enterprise architect → global subscription, Customer Care, CRM, and regional-transformation leader → CX AI Lead.
 
 ## Roles of interest
 

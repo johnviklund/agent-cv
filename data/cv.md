@@ -29,7 +29,7 @@ CX AI Lead at Volvo Cars and applied-AI product leader with roughly 25 years acr
 
 #### Global Customer Care platforms and processes
 
-- Defined Salesforce-enabled service processes and helped build a retailer case-management portal connecting central Customer Care with hundreds of retailers across roughly ten European markets.
+- Defined service processes in Salesforce Service Cloud and helped build custom customer-care workflows and a retailer case-management portal connecting central Customer Care with hundreds of retailers across roughly ten European markets.
 - Supported APAC operating-model alignment and enablement for a new Kuala Lumpur Customer Care hub through shared tools, process standards, and agent training material.
 
 #### Care by Volvo — Head of Fleet Services

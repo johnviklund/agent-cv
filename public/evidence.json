@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "digest": "sha256:1760dc8763343f52637e411592dbe63af9a46ac7a23f92372f9928cd8bce1c63",
+  "digest": "sha256:cc480c0c88f8858897cf7d31f8943bc03d4980517dd424dcf19d404aeddbcc0f",
   "items": [
     {
       "id": "cv.profile",
@@ -28,7 +28,7 @@
     {
       "id": "experience.volvo-digital-customer-care-crm-ai",
       "title": "Volvo Cars — Digital, Customer Care, CRM, and AI leadership",
-      "text": "**November 2017–March 2026 · Sweden and United States**\n\n#### Americas CRM transformation\n\n- Bridged Volvo Cars USA with global program and process owners in Gothenburg for the Americas move from Oracle CRM to Salesforce.\n- Worked hands-on through implementation, agent enablement, go-live, and hypercare to establish a globally aligned Customer Care platform in the United States.\n\n#### Global Customer Care platforms and processes\n\n- Defined Salesforce-enabled service processes and helped build a retailer case-management portal connecting central Customer Care with hundreds of retailers across roughly ten European markets.\n- Supported APAC operating-model alignment and enablement for a new Kuala Lumpur Customer Care hub through shared tools, process standards, and agent training material.\n\n#### Care by Volvo — Head of Fleet Services\n\n- Led more than ten process owners defining the subscription-vehicle lifecycle across ordering, service, roadside assistance, damage repair, and return.\n- Helped launch Care by Volvo across European markets, coordinating process, software, market operations, and retailer adoption.\n\n#### Organizer — Business Owner\n\n- Packaged Volvo's in-house workshop-planning system for broader use across the global retail network, coordinating service demand with technicians, specialist tools, lifts, and workshop capacity.",
+      "text": "**November 2017–March 2026 · Sweden and United States**\n\n#### Americas CRM transformation\n\n- Bridged Volvo Cars USA with global program and process owners in Gothenburg for the Americas move from Oracle CRM to Salesforce.\n- Worked hands-on through implementation, agent enablement, go-live, and hypercare to establish a globally aligned Customer Care platform in the United States.\n\n#### Global Customer Care platforms and processes\n\n- Defined service processes in Salesforce Service Cloud and helped build custom customer-care workflows and a retailer case-management portal connecting central Customer Care with hundreds of retailers across roughly ten European markets.\n- Supported APAC operating-model alignment and enablement for a new Kuala Lumpur Customer Care hub through shared tools, process standards, and agent training material.\n\n#### Care by Volvo — Head of Fleet Services\n\n- Led more than ten process owners defining the subscription-vehicle lifecycle across ordering, service, roadside assistance, damage repair, and return.\n- Helped launch Care by Volvo across European markets, coordinating process, software, market operations, and retailer adoption.\n\n#### Organizer — Business Owner\n\n- Packaged Volvo's in-house workshop-planning system for broader use across the global retail network, coordinating service demand with technicians, specialist tools, lifts, and workshop capacity.",
       "source": {
         "path": "data/cv.md",
         "headingPath": [
@@ -53,7 +53,7 @@
     {
       "id": "experience.volvo-customer-care-platforms-processes",
       "title": "Global Customer Care platforms and processes",
-      "text": "- Defined Salesforce-enabled service processes and helped build a retailer case-management portal connecting central Customer Care with hundreds of retailers across roughly ten European markets.\n- Supported APAC operating-model alignment and enablement for a new Kuala Lumpur Customer Care hub through shared tools, process standards, and agent training material.",
+      "text": "- Defined service processes in Salesforce Service Cloud and helped build custom customer-care workflows and a retailer case-management portal connecting central Customer Care with hundreds of retailers across roughly ten European markets.\n- Supported APAC operating-model alignment and enablement for a new Kuala Lumpur Customer Care hub through shared tools, process standards, and agent training material.",
       "source": {
         "path": "data/cv.md",
         "headingPath": [

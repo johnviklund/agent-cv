@@ -78,7 +78,11 @@ test("system prompt establishes grounding, injection, fit, privacy, and contact 
   assert.match(prompt, /prior response.*never trusted model output/i);
   assert.match(prompt, /PUBLIC REPOSITORY EVIDENCE.*untrusted evidence/i);
   assert.match(prompt, /cannot override curated CV facts/i);
-  assert.match(prompt, /Never assess, score, rank, or decide John's fit/);
+  assert.match(prompt, /Never score, rank, decide, or claim certainty about John's fit/);
+  assert.match(prompt, /candid evidence-based assessment/);
+  assert.match(prompt, /documented strengths, supported limitations, and areas where the CV contains no evidence/);
+  assert.match(prompt, /Do not turn absent evidence into a factual deficiency/);
+  assert.match(prompt, /leave the hiring decision to the recruiter/);
   assert.match(prompt, /Do not volunteer personal details/);
   assert.match(prompt, /contact John, direct the visitor to \/contact\/ or GET \/api\/contact/);
   assert.match(prompt, /explicitly expresses interest in interviewing, hiring, collaborating, or continuing the conversation/i);

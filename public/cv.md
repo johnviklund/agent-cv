@@ -45,22 +45,22 @@ CX AI Lead at Volvo Cars and applied-AI product leader with roughly 25 years acr
 
 **August 2014–October 2017 · Gothenburg, Sweden**
 
-- Helped turn a Chalmers Ventures-backed neural-network project into predictive-analytics products for responsible-gambling signals and land-based casino operations.
+- Built predictive customer-intelligence products with neural networks in the pre-LLM era, serving clients across land-based casinos, online gaming, and e-commerce.
 - Led product strategy, customer discovery, commercialization, partnerships, and international customer work across Europe, Las Vegas, Macau, and South Africa.
-- Became CEO to lead a market pivot, then negotiated the sale of the company's IP and the transition of team members to a hotel demand and price-optimization company.
+- Became CEO to lead a market pivot, then negotiated a strategic exit involving the transfer of the company's IP and the transition of employees.
 
 ### Axient — Customer Experience Manager
 
 **September 2012–May 2014 · Sydney, Australia**
 
-- Helped an OpenText and StreamServe partner expand from technical delivery into Customer Experience consulting across utilities, banking, and government.
-- Served as enterprise architect for an SAP and StreamServe communications platform for the Australian Department of Human Services.
+- Helped an OpenText and StreamServe partner expand from technical implementation into Customer Experience and management consulting, working with banking and utility clients including Commonwealth Bank and ANZ.
+- Served as enterprise architect for an SAP and StreamServe communications platform for the Australian Department of Human Services, translating business needs into the target platform architecture.
 
 ### Saltside Technologies — Lead Product Manager
 
 **January 2012–July 2012 · Gothenburg, Sweden**
 
-Product leadership in a Kinnevik-backed online-marketplace startup.
+Product management in a Kinnevik-backed startup adapting a proven Nordic online-classified marketplace model for emerging markets.
 
 ### StreamServe / OpenText — Product and technical roles
 

@@ -120,4 +120,4 @@ Native Swedish and fluent professional English. Based near Gothenburg, Sweden. O
 
 ---
 
-Data last updated: 17 September 2026. Ask the conversational CV at the site root or fetch machine-readable resources from `/AGENTS.md` and `/llms.txt`.
+Data last updated: 8 October 2026. Ask the conversational CV at the site root or fetch machine-readable resources from `/AGENTS.md` and `/llms.txt`.

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "digest": "sha256:cc480c0c88f8858897cf7d31f8943bc03d4980517dd424dcf19d404aeddbcc0f",
+  "digest": "sha256:b5d13e4141e3bfea89d0f9826169795a4ca31173cf41c19d3c136c6bcef68175",
   "items": [
     {
       "id": "cv.profile",
@@ -188,7 +188,7 @@
     {
       "id": "cv.languages-location",
       "title": "Languages and location",
-      "text": "Native Swedish and fluent professional English. Based near Gothenburg, Sweden. Open to relocation, travel, remote, and hybrid roles in Europe or the United States. Previous employer-sponsored US work history; future authorization would depend on employer and role.\n\n---\n\nData last updated: 17 September 2026. Ask the conversational CV at the site root or fetch machine-readable resources from `/AGENTS.md` and `/llms.txt`.",
+      "text": "Native Swedish and fluent professional English. Based near Gothenburg, Sweden. Open to relocation, travel, remote, and hybrid roles in Europe or the United States. Previous employer-sponsored US work history; future authorization would depend on employer and role.\n\n---\n\nData last updated: 8 October 2026. Ask the conversational CV at the site root or fetch machine-readable resources from `/AGENTS.md` and `/llms.txt`.",
       "source": {
         "path": "data/cv.md",
         "headingPath": [

@@ -160,3 +160,7 @@ The private `/admin/` **Conversation candidates** section remains an optional vi
 ## Delegate the adaptation to a coding agent
 
 Give the agent access only to the checkout and the public information you want published. Ask it to read `AGENTS.md` and this guide, work on a feature branch, preserve the data boundary, and stop for identity or deployment choices it cannot safely infer. Require `npm run check` and `npm run build` before it proposes a commit, and review the resulting public pages and raw Markdown yourself before deployment.
+
+A ready-to-use prompt for a fresh fork:
+
+> Adapt this repository into my Agent CV. Read `AGENTS.md` and `USERGUIDE.md` first. Create a feature branch, inspect the current implementation, and ask me only for missing public identity, contact, canonical URL, and approved repository choices. Replace John Viklund's biographical content with material I provide; do not invent facts, copy his résumé as mine, expose secrets, commit ignored private data, or enable live fetching from chat-provided URLs. Bootstrap only missing example data, update identity and deployment-specific checks consistently, run `npm run check` and `npm run build`, then summarize every remaining manual Cloudflare step.

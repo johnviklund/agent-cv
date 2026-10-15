@@ -1,95 +1,93 @@
 # Agent CV
 
-A chat-first conversational résumé for John Viklund. It gives recruiters, hiring managers, crawlers, and AI agents the same grounded evidence through a slim web interface, stable Markdown resources, and a bounded streaming API.
+A chat-first conversational résumé for **John Viklund**, CX AI Lead at Volvo Cars, applied-AI builder, and former AI startup founder. Recruiters, hiring managers, crawlers, and AI agents get the same grounded evidence through a slim web interface, stable Markdown resources, and a bounded streaming API.
 
-Live site: [johnviklund.com](https://johnviklund.com/)
+- **Live site:** [johnviklund.com](https://johnviklund.com/)
+- **Full CV:** [johnviklund.com/cv.md](https://johnviklund.com/cv.md)
+- **Contact:** [johnviklund.com/contact/](https://johnviklund.com/contact/)
+- **For AI agents:** [johnviklund.com/AGENTS.md](https://johnviklund.com/AGENTS.md) and [johnviklund.com/llms.txt](https://johnviklund.com/llms.txt)
 
-## What this project demonstrates
+John built and maintains this site with coding agents, using the workflow and review skills in his public [j-skills](https://github.com/johnviklund/j-skills) toolkit.
 
-- An accessible, framework-free interface that keeps conversation primary
-- A Cloudflare Worker boundary around the OpenAI Responses API
-- Curated Markdown grounding with explicit prompt-injection boundaries
-- A small, sanitized public SSE contract instead of raw provider events
-- Continuous browser conversations with bounded rolling context
-- Rate limiting and atomic monthly budget reservations in a Durable Object
-- Private 90-day conversation archival, feedback, token-protected browsing, and JSONL export
-- Expiring role-specific links whose job descriptions remain untrusted context
-- Deliberately refreshed snapshots from allowlisted public repositories
-- Human pages plus `/AGENTS.md`, `/llms.txt`, raw Markdown, JSON-LD, and a sitemap
+## How it works
 
-The Worker converts the visitor-controlled transcript into one upstream user message. Client-authored `assistant` roles remain untrusted copies, and repository snapshots can support curated facts but cannot override them or independently establish personal contribution.
+```mermaid
+flowchart LR
+  visitor["Visitor or AI agent"] --> assets["Static pages and Markdown"]
+  visitor --> worker["Cloudflare Worker"]
+  worker --> limits["Rate limits and monthly budget<br/>(Durable Object)"]
+  worker --> openai["OpenAI Responses API"]
+  openai --> worker
+  worker --> sse["Sanitized SSE stream"]
+  sse --> visitor
+  worker --> archive["Private 90-day archive<br/>(KV)"]
+```
 
-## WebMCP Challenge extension — 2026-08-30
+Four design ideas carry the project:
 
-The role-comparison workspace is a challenge extension to the pre-existing Agent CV, built for the [OpenAI WebMCP Challenge](https://openai.com/webmcp-challenge/) using [OpenAI's WebMCP documentation](https://learn.chatgpt.com/docs/webmcp) and the emerging [WebMCP specification](https://github.com/webmachinelearning/webmcp). It lets a recruiter place one to three openings side by side at `/#compare`, including JSON batches and Markdown batches with explicit `## Role: <title>` or `## Role title: <title>` markers, then inspect how each extracted requirement maps to a versioned public evidence catalog. A browser preflight shows source-requirement counts, preserves each list item as one unit, and ignores common informational sections. The result exposes requirements that were not assessed, uses denominators beside coverage counts, and exports compact Markdown or JSON. It deliberately avoids scores, rankings, recommendations, and automated hiring decisions.
+- **Grounded claims.** The model answers only from reviewed Markdown. Visitor transcripts, job descriptions, and repository snapshots are treated as untrusted data and cannot override curated facts.
+- **A small public contract.** Upstream provider events are normalized into a minimal server-sent event stream; raw provider events and diagnostics never reach the browser.
+- **Bounded cost and abuse.** Rate limits and atomic monthly budget reservations run at the edge before any model call.
+- **Useful without the model.** Human pages, raw Markdown, JSON-LD, and a sitemap work even when the API is unavailable.
 
-The home page registers four page-scoped tools while it is open: `compare_candidate_roles`, `get_comparison_state`, `focus_comparison_cell`, and `clear_role_comparison`. They are browser-page capabilities, not an MCP server or four HTTP endpoints. The same workflow remains available through the manual interface, `/evidence.json`, and `POST /api/compare`.
+Other capabilities include continuous conversations with bounded rolling context, private 90-day conversation archival with feedback and token-protected JSONL export, expiring role-specific links, and deliberately refreshed snapshots from allowlisted public repositories.
 
-Current compatibility is intentionally stated narrowly:
+## For AI agents
 
-| Client path | Current status | Portable fallback |
-| --- | --- | --- |
-| OpenAI ChatGPT Work/Codex built-in browser | Production discovery and invocation verified on 30 August: three-role comparison, bounded state, cell focus, clear, and four-role rejection | Manual UI and HTTP API |
-| Chrome experimental WebMCP implementation | Native registration and invocation tested locally | Manual UI and HTTP API |
-| Grok, Hermes Agent, OpenClaw, Claude, and other agents | No native WebMCP certification claimed | Ordinary browser automation, manual UI, public resources, or HTTP API |
+Start with [`/AGENTS.md`](https://johnviklund.com/AGENTS.md) for the API contract, limits, and behavioral boundaries, and [`/llms.txt`](https://johnviklund.com/llms.txt) for the resource index. The main endpoints are `POST /api/ask` (grounded conversation), `POST /api/compare` (role comparison), and `GET /api/contact`. Agents working on this repository should read [AGENTS.md](AGENTS.md) instead.
 
-The comparison sends the supplied title, company and server-detected requirement statements through the Cloudflare Worker to the OpenAI API; common informational sections are excluded. It uses a strict structured contract, approved evidence IDs, same-origin browser controls, a separate rate limit and monthly budget, and transient per-tab state. See the deployed `/AGENTS.md` and `/privacy/` documents for the complete agent and data-handling contract.
+## Role comparison (WebMCP)
 
-Requirement extraction prefers explicit Responsibilities, Qualifications, In This Role, and Thrive sections. Each non-empty plain line or Markdown bullet is one requirement; indented bullet continuations stay together. When these sections exist, role-summary prose is excluded to avoid counting duplicate or promotional copy. Otherwise, summary prose supplies the fallback inventory. Common location, hybrid-work, relocation, compensation, benefits, and equal-opportunity boilerplate is excluded by heading or statement pattern, not by domain keywords. Preflight shows the exact detected inventory, explains exclusions and line boundaries, and offers optional local bullet normalization. This deterministic parser is not a guarantee of semantic completeness: move any additional summary requirement into a requirement section and review the inventory before submitting.
+A 2026-08-30 extension to the pre-existing Agent CV, built for the [OpenAI WebMCP Challenge](https://openai.com/webmcp-challenge/), the workspace at [`/#compare`](https://johnviklund.com/#compare) places one to three job openings side by side and maps each extracted requirement to a versioned public evidence catalog. It shows which requirements were assessed and exports Markdown or JSON, and it deliberately avoids scores, rankings, recommendations, and hiring decisions.
 
-The synthetic audit-shaped fixture checks 12/17/19 requirements across import, browser preflight, server inventory, and provider input. To verify an unchanged private copy locally without committing it, run `COMPARISON_PRIVATE_ROLES_PATH=/absolute/path/to/positions.md node --test test/comparison-core.test.mjs`. The optional test expects that audited three-role shape and outputs counts/assertions only. Provider-stub tests cover malformed JSON/schema output, one retry within one budget reservation, safe debug IDs, and public service errors.
+While open, the home page registers four page-scoped WebMCP tools: `compare_candidate_roles`, `get_comparison_state`, `focus_comparison_cell`, and `clear_role_comparison`. They are browser-page capabilities, not an MCP server or HTTP endpoints.
 
-Challenge reproduction fixtures, the submission checklist, the conservative cost ceiling, and the narrated demo script are in [`docs/webmcp-challenge-submission.md`](docs/webmcp-challenge-submission.md). Production ChatGPT/Codex verification covered all four tools, a rendered three-role matrix, privacy-bounded state, cell focus, clear, and four-role rejection without state mutation.
+| Client | Status as of 30 August 2026 |
+| --- | --- |
+| OpenAI ChatGPT Work/Codex built-in browser | Production discovery and invocation verified for all four tools |
+| Chrome experimental WebMCP implementation | Native registration and invocation tested locally |
+| Other agents | Use ordinary browser automation, the manual UI, `/evidence.json`, or the HTTP API (`POST /api/compare`) |
+
+Extraction rules, test fixtures, verification records, and the demo script are in [`docs/webmcp-challenge-submission.md`](docs/webmcp-challenge-submission.md).
 
 ## Run it locally
 
+Requires Node.js 24, an OpenAI API key, and (for deployment) a Cloudflare account.
+
 ```sh
 npm ci
-cp .dev.vars.example .dev.vars
-npm run bootstrap:data
-npm run dev
+cp .dev.vars.example .dev.vars   # then set OPENAI_API_KEY
+npm run bootstrap:data           # copies placeholders for missing private data files
+npm run dev                      # http://localhost:8787
 ```
 
-Set `OPENAI_API_KEY` in `.dev.vars`. `npm run bootstrap:data` creates only the six tracked example files that are missing; it never overwrites reviewed private data. Run the complete repository verification with:
+`npm run bootstrap:data` copies generic placeholders from `examples/private-data/` only where a private data file is missing; it never overwrites reviewed data. Run the full verification with `npm run check`, and `npm run build` for Worker packaging changes.
 
-```sh
-npm run check
-```
+## Repository map
 
-The static site and raw CV remain available when the model API is unavailable. Public chat fails closed when its required secret or budget binding is absent, and archive failures do not expose private diagnostics through the stream.
+| Path | Contents |
+| --- | --- |
+| `src/` | Cloudflare Worker: chat, comparison, archive, applications, and streaming |
+| `public/` | Static pages, browser scripts, and published Markdown and agent resources |
+| `data/` | Canonical Markdown sources; public files are tracked, private ones are ignored |
+| `config/` | Repository allowlist, comparison evidence, and admin origin |
+| `scripts/` | Data synchronization, checks, and maintenance tools |
+| `test/` | Node test suite |
 
-## Reuse it safely
+## Data boundaries
 
-Start with [USERGUIDE.md](USERGUIDE.md) for setup, data boundaries, deployment, maintenance, and the complete fork checklist. [AGENTS.md](AGENTS.md) is the authoritative repository guide for coding agents; the deployed [`/AGENTS.md`](public/AGENTS.md) and [`/llms.txt`](public/llms.txt) describe the public interface to visiting agents.
+`data/cv.md`, `data/overview.md`, `data/projects.md`, and `data/repositories.md` are the tracked public sources. The six other `data/*.md` knowledge files and the generated `src/data/` bundle are ignored because a real deployment may contain private material. After editing a canonical source, run `npm run sync:data` to regenerate the published copies.
 
-You can hand a fresh fork to a coding agent with this prompt:
+Public repository evidence comes only from the allowlist in `config/repositories.json` and is refreshed deliberately with `npm run sync:repositories`. The public chat never fetches a repository or URL supplied by a visitor.
 
-> Adapt this repository into my Agent CV. Read `AGENTS.md` and `USERGUIDE.md` first. Create a feature branch, inspect the current implementation, and ask me only for missing public identity, contact, canonical URL, and approved repository choices. Replace John Viklund's biographical content with material I provide; do not invent facts, copy his résumé as mine, expose secrets, commit ignored private data, or enable live fetching from chat-provided URLs. Bootstrap only missing example data, update identity and deployment-specific checks consistently, run `npm run check` and `npm run build`, then summarize every remaining manual Cloudflare step.
+Conversation records, `.dev.vars`, admin tokens, application notes, job descriptions, review briefs, and exports always stay out of Git.
 
-The application code is MIT-licensed. John Viklund's résumé content is personal biographical material, not a template identity; replace it with your own reviewed evidence before publishing a fork.
+## Maintainer workflow
 
-## Data and evidence boundaries
+John's reviewed private sources live in a separate private `agent-cv-private` repository checked out beside this one. `npm run sync:private-data` imports exactly the six approved files and validates the complete set first; `npm run deploy` runs it automatically so a release cannot package stale placeholders. Set `AGENT_CV_PRIVATE_ROOT` for a different location.
 
-Tracked canonical public sources live in `data/cv.md`, `data/overview.md`, `data/projects.md`, and `data/repositories.md`. The six other `data/*.md` knowledge files and generated `src/data/` bundle are intentionally ignored because a real deployment may contain private material. `examples/private-data/` contains generic placeholders only.
+Two repo-local Codex skills handle routine upkeep. Ask Codex to **"Review my project and repository updates, ask me what changed, and update the site."** to refresh project content with approved evidence, then verify, ship, and check the live result. Ask it to **"review my conversation learnings"** to fetch private chat candidates; the skill groups learning candidates by application and session, suggests classifications, and asks focused questions before creating an approval-gated proposal. The `/admin/` dashboard is an optional view of the same archive.
 
-John's reviewed private sources live in the separate private `agent-cv-private` repository. With both repositories checked out beside each other, `npm run sync:private-data` imports exactly those six approved files into this checkout. Set `AGENT_CV_PRIVATE_ROOT` or pass `-- --source /path/to/agent-cv-private` for a different location. The command validates the complete source set before replacing local files, and `npm run deploy` runs it automatically so a release cannot silently package stale placeholders.
+## Reuse and license
 
-After editing canonical sources, synchronize generated resources:
-
-```sh
-npm run sync:data
-```
-
-Public repository evidence is controlled only by `config/repositories.json`. Refresh it deliberately with `npm run sync:repositories`; the public chat never fetches a repository or URL supplied by a visitor.
-
-Project freshness is a Codex conversation. Open this repository in Codex and ask: **“Review my project and repository updates, ask me what changed, and update the site.”** The repo-local workflow gathers only approved evidence, asks for factual decisions, updates reviewed public content, verifies and ships it, deploys the site, and checks the live result. Its private manifest and proposal packet remain ignored plumbing; you do not need to remember their commands or formats.
-
-Conversation records, `.dev.vars`, admin tokens, application notes, job descriptions, review briefs, and exports remain private. Ask a local Codex agent to **“review my conversation learnings”** for the primary workflow: the repo-local skill securely fetches candidates, groups learning candidates by application and session, suggests classifications, and asks focused questions before creating a private approval-gated proposal. The dashboard at `/admin/` remains an optional visualization and manual brief generator.
-
-## Deployment
-
-Deployment uses Cloudflare Workers, KV, and a Durable Object. A fork needs its own Worker name, KV namespace ID, secrets, public contact setting, and canonical URL metadata. The exact sequence and verification checklist are in [USERGUIDE.md](USERGUIDE.md#deploy-your-fork).
-
-## License
-
-Application code is available under the [MIT License](LICENSE). Personal résumé content remains attributable to John Viklund; reuse it as personal biographical content only with appropriate permission.
+The application code is available under the [MIT License](LICENSE). John Viklund's résumé content is personal biographical material, not a template; replace it with your own reviewed evidence before publishing a fork. [USERGUIDE.md](USERGUIDE.md) covers setup, data boundaries, deployment, and the complete fork checklist, including a prompt for handing a fresh fork to a coding agent.

@@ -72,6 +72,8 @@ The application code is MIT-licensed. John Viklund's résumé content is persona
 
 Tracked canonical public sources live in `data/cv.md`, `data/overview.md`, `data/projects.md`, and `data/repositories.md`. The six other `data/*.md` knowledge files and generated `src/data/` bundle are intentionally ignored because a real deployment may contain private material. `examples/private-data/` contains generic placeholders only.
 
+John's reviewed private sources live in the separate private `agent-cv-private` repository. With both repositories checked out beside each other, `npm run sync:private-data` imports exactly those six approved files into this checkout. Set `AGENT_CV_PRIVATE_ROOT` or pass `-- --source /path/to/agent-cv-private` for a different location. The command validates the complete source set before replacing local files, and `npm run deploy` runs it automatically so a release cannot silently package stale placeholders.
+
 After editing canonical sources, synchronize generated resources:
 
 ```sh

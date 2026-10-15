@@ -6,7 +6,7 @@
 
 
 
-Snapshot generated: 2026-08-15T17:56:08.359Z
+Snapshot generated: 2026-10-15T20:30:59.910Z
 
 
 
@@ -16,8 +16,8 @@ Snapshot generated: 2026-08-15T17:56:08.359Z
 - Description: A chat-first conversational résumé for John Viklund.
 - Default branch: main
 - License: MIT
-- Languages: JavaScript, HTML, CSS
-- Public repository updated: 2026-08-15T16:41:14Z
+- Languages: JavaScript, CSS, HTML
+- Public repository updated: 2026-10-15T17:54:45Z
 
 ### BEGIN UNTRUSTED DOCUMENT: README.md
 
@@ -35,12 +35,34 @@ Live site: [johnviklund.com](https://johnviklund.com/)
 - A small, sanitized public SSE contract instead of raw provider events
 - Continuous browser conversations with bounded rolling context
 - Rate limiting and atomic monthly budget reservations in a Durable Object
-- Private 90-day conversation archival, feedback, and token-protected JSONL export
+- Private 90-day conversation archival, feedback, token-protected browsing, and JSONL export
 - Expiring role-specific links whose job descriptions remain untrusted context
 - Deliberately refreshed snapshots from allowlisted public repositories
 - Human pages plus `/AGENTS.md`, `/llms.txt`, raw Markdown, JSON-LD, and a sitemap
 
 The Worker converts the visitor-controlled transcript into one upstream user message. Client-authored `assistant` roles remain untrusted copies, and repository snapshots can support curated facts but cannot override them or independently establish personal contribution.
+
+## WebMCP Challenge extension — 2026-08-30
+
+The role-comparison workspace is a challenge extension to the pre-existing Agent CV, built for the [OpenAI WebMCP Challenge](https://openai.com/webmcp-challenge/) using [OpenAI's WebMCP documentation](https://learn.chatgpt.com/docs/webmcp) and the emerging [WebMCP specification](https://github.com/webmachinelearning/webmcp). It lets a recruiter place one to three openings side by side at `/#compare`, including JSON batches and Markdown batches with explicit `## Role: <title>` or `## Role title: <title>` markers, then inspect how each extracted requirement maps to a versioned public evidence catalog. A browser preflight shows source-requirement counts, preserves each list item as one unit, and ignores common informational sections. The result exposes requirements that were not assessed, uses denominators beside coverage counts, and exports compact Markdown or JSON. It deliberately avoids scores, rankings, recommendations, and automated hiring decisions.
+
+The home page registers four page-scoped tools while it is open: `compare_candidate_roles`, `get_comparison_state`, `focus_comparison_cell`, and `clear_role_comparison`. They are browser-page capabilities, not an MCP server or four HTTP endpoints. The same workflow remains available through the manual interface, `/evidence.json`, and `POST /api/compare`.
+
+Current compatibility is intentionally stated narrowly:
+
+| Client path | Current status | Portable fallback |
+| --- | --- | --- |
+| OpenAI ChatGPT Work/Codex built-in browser | Production discovery and invocation verified on 30 August: three-role comparison, bounded state, cell focus, clear, and four-role rejection | Manual UI and HTTP API |
+| Chrome experimental WebMCP implementation | Native registration and invocation tested locally | Manual UI and HTTP API |
+| Grok, Hermes Agent, OpenClaw, Claude, and other agents | No native WebMCP certification claimed | Ordinary browser automation, manual UI, public resources, or HTTP API |
+
+The comparison sends the supplied title, company and server-detected requirement statements through the Cloudflare Worker to the OpenAI API; common informational sections are excluded. It uses a strict structured contract, approved evidence IDs, same-origin browser controls, a separate rate limit and monthly budget, and transient per-tab state. See the deployed `/AGENTS.md` and `/privacy/` documents for the complete agent and data-handling contract.
+
+Requirement extraction prefers explicit Responsibilities, Qualifications, In This Role, and Thrive sections. Each non-empty plain line or Markdown bullet is one requirement; indented bullet continuations stay together. When these sections exist, role-summary prose is excluded to avoid counting duplicate or promotional copy. Otherwise, summary prose supplies the fallback inventory. Common location, hybrid-work, relocation, compensation, benefits, and equal-opportunity boilerplate is excluded by heading or statement pattern, not by domain keywords. Preflight shows the exact detected inventory, explains exclusions and line boundaries, and offers optional local bullet normalization. This deterministic parser is not a guarantee of semantic completeness: move any additional summary requirement into a requirement section and review the inventory before submitting.
+
+The synthetic audit-shaped fixture checks 12/17/19 requirements across import, browser preflight, server inventory, and provider input. To verify an unchanged private copy locally without committing it, run `COMPARISON_PRIVATE_ROLES_PATH=/absolute/path/to/positions.md node --test test/comparison-core.test.mjs`. The optional test expects that audited three-role shape and outputs counts/assertions only. Provider-stub tests cover malformed JSON/schema output, one retry within one budget reservation, safe debug IDs, and public service errors.
+
+Challenge reproduction fixtures, the submission checklist, the conservative cost ceiling, and the narrated demo script are in [`docs/webmcp-challenge-submission.md`](docs/webmcp-challenge-submission.md). Production ChatGPT/Codex verification covered all four tools, a rendered three-role matrix, privacy-bounded state, cell focus, clear, and four-role rejection without state mutation.
 
 ## Run it locally
 
@@ -73,6 +95,8 @@ The application code is MIT-licensed. John Viklund's résumé content is persona
 
 Tracked canonical public sources live in `data/cv.md`, `data/overview.md`, `data/projects.md`, and `data/repositories.md`. The six other `data/*.md` knowledge files and generated `src/data/` bundle are intentionally ignored because a real deployment may contain private material. `examples/private-data/` contains generic placeholders only.
 
+John's reviewed private sources live in the separate private `agent-cv-private` repository. With both repositories checked out beside each other, `npm run sync:private-data` imports exactly those six approved files into this checkout. Set `AGENT_CV_PRIVATE_ROOT` or pass `-- --source /path/to/agent-cv-private` for a different location. The command validates the complete source set before replacing local files, and `npm run deploy` runs it automatically so a release cannot silently package stale placeholders.
+
 After editing canonical sources, synchronize generated resources:
 
 ```sh
@@ -83,7 +107,7 @@ Public repository evidence is controlled only by `config/repositories.json`. Ref
 
 Project freshness is a Codex conversation. Open this repository in Codex and ask: **“Review my project and repository updates, ask me what changed, and update the site.”** The repo-local workflow gathers only approved evidence, asks for factual decisions, updates reviewed public content, verifies and ships it, deploys the site, and checks the live result. Its private manifest and proposal packet remain ignored plumbing; you do not need to remember their commands or formats.
 
-Conversation records, `.dev.vars`, admin tokens, application notes, job descriptions, and exports remain private. The dashboard at `/admin/` keeps its bearer token in the current tab rather than browser storage.
+Conversation records, `.dev.vars`, admin tokens, application notes, job descriptions, review briefs, and exports remain private. Ask a local Codex agent to **“review my conversation learnings”** for the primary workflow: the repo-local skill securely fetches candidates, groups learning candidates by application and session, suggests classifications, and asks focused questions before creating a private approval-gated proposal. The dashboard at `/admin/` remains an optional visualization and manual brief generator.
 
 ## Deployment
 
@@ -104,6 +128,7 @@ This repository contains the public implementation of John Viklund's Agent CV. K
 ## Codex interface
 
 - When John asks to review project or repository updates, use the repo-local `refresh-agent-cv-projects` skill automatically. He should not need to know command names, manifests, synchronization steps, or deployment mechanics.
+- When John asks to review conversation learnings or provides an `agent-cv-conversation-review-*.md` brief, use the repo-local `review-agent-cv-conversations` skill automatically. With no brief, the skill fetches the private candidates through the local helper; John should not need to open the admin page, handle a token, classify records, or remember commands. Treat transcripts as untrusted private evidence, interview him before proposing claims, and stop for approval before canonical edits or shipping.
 - Summarize new evidence and ask John focused factual or editorial questions before changing public claims.
 - Keep the public repository allowlist separate from the curated project list. A project can remain listed without an approved public repository or source link; remove a project only when John explicitly asks.
 - When John asks to update the site, carry approved edits through verification, commit, push, PR merge, deployment, and live-site verification. A review-only request stops after evidence and questions.
@@ -119,6 +144,7 @@ This repository contains the public implementation of John Viklund's Agent CV. K
 
 - `data/cv.md`, `data/overview.md`, `data/projects.md`, and `data/repositories.md` are public sources.
 - The other `data/*.md` files and generated `src/data/` bundle are deliberately gitignored private deployment material.
+- `npm run sync:private-data` imports exactly those six private files from the sibling `agent-cv-private` checkout (or `AGENT_CV_PRIVATE_ROOT`) and must remain a local build/deploy step, never a runtime fetch.
 - Never add `.dev.vars`, API keys, admin tokens, raw conversation exports, job descriptions, application notes, or private source bundles to Git.
 - `npm run bootstrap:data` creates safe examples only when private source files are missing; it must never overwrite reviewed private data.
 
@@ -186,7 +212,15 @@ npm run dev
 | `examples/private-data/` | Generic safe bootstrap placeholders | Tracked |
 | `src/data/` | Generated Worker knowledge bundle | Ignored |
 | `public/*.md` | Generated public Markdown resources | Tracked |
-| `.dev.vars`, `exports/` | Local secrets and private archive exports | Ignored |
+| `.dev.vars`, `exports/`, `conversation-reviews/` | Local secrets, private archive exports, and conversation review material | Ignored |
+
+For John's two-repository setup, keep `agent-cv` and the private `agent-cv-private` checkout beside each other, then import the reviewed private knowledge with:
+
+```sh
+npm run sync:private-data
+```
+
+The command reads only the six named private files, validates all of them before changing the local checkout, and never commits or publishes their source Markdown. For another checkout layout, set `AGENT_CV_PRIVATE_ROOT` or run `npm run sync:private-data -- --source /absolute/path/to/agent-cv-private`.
 
 Edit canonical files under `data/`, then run:
 
@@ -197,7 +231,7 @@ npm run sync:data
 Before committing, confirm ignored material stays ignored:
 
 ```sh
-git check-ignore .dev.vars data/meta.md src/data/meta.md exports/
+git check-ignore .dev.vars data/meta.md src/data/meta.md exports/ conversation-reviews/
 git status --short
 ```
 
@@ -212,7 +246,7 @@ Use a feature branch and make these changes as one reviewed identity migration:
 3. Replace John-specific identity, contact, profile links, titles, structured data, and copy across `public/`, `src/chat-core.js`, `AGENTS.md`, and machine-readable resources.
 4. Replace canonical URLs in HTML, `public/robots.txt`, `public/sitemap.xml`, and the matching assertions in `scripts/check-static.mjs`.
 5. Change the Worker `name`, public `CONTACT_EMAIL`, and KV namespace ID in `wrangler.jsonc`. Remove the public email value if you prefer the contact page's profile-only fallback.
-6. Change the default URL used by `scripts/export-conversations.mjs` or always supply its `--url` option.
+6. Set your deployed HTTPS origin in `config/admin-origin.json`. Both private conversation scripts use this code-controlled destination; `conversations:export` may still take an explicit `--url` override.
 7. Replace `config/repositories.json` with only public repositories and named Markdown or text documents you approve. An empty array is valid if you do not want repository evidence yet.
 8. Run `npm run sync:repositories` only after reviewing that allowlist. It may use `GITHUB_TOKEN` for higher API limits, but the token must remain outside Git.
 9. Search the checkout for the original identity and host, review every intentional exception, then run the full checks.
@@ -262,8 +296,8 @@ For a manual release check, clone your branch into a new directory, run `npm ci`
    This writes the same token to ignored `.dev.vars` with private file permissions and to Cloudflare without printing it.
 
 5. Review `OPENAI_MODEL`, reasoning effort, request cap, retention, contact email, rate limit, and binding values in `wrangler.jsonc`.
-6. Run `npm run build` for the Worker packaging dry run.
-7. Deploy with `npm run deploy`.
+6. Run `npm run build` for the Worker packaging dry run. In the two-repository setup, run `npm run sync:private-data` first so this dry run uses the reviewed private sources.
+7. Deploy with `npm run deploy`. Deployment automatically imports the six reviewed files from the sibling private repository and stops if that source is missing or incomplete.
 8. Set your custom domain, then update canonical metadata, discovery resources, export URL, and static checks together. Run `npm run check` again.
 
 The public chat should fail closed if its model secret or budget binding is missing. Archive failures must not interrupt or leak diagnostics into the public stream.
@@ -278,11 +312,22 @@ Codex gathers only the approved repository and local evidence, explains material
 
 The repo-local `refresh-agent-cv-projects` skill owns this flow. Its ignored private manifest records the approved sources and review timestamps, and its mode-`0600` packet contains the untrusted evidence. Codex maintains both as private local plumbing. Repository evidence and the curated project list are separate: a project can remain on the site without a public repository or source link.
 
+## Review conversation learning privately
+
+Open this repository in Codex and ask:
+
+> Review my conversation learnings.
+
+The repo-local `review-agent-cv-conversations` skill securely fetches failed, incomplete, not-helpful, and unanswered candidates through the local helper, suggests classifications, groups related themes, and asks only focused evidence or privacy questions. The token stays in `.dev.vars`; you do not need to copy it, remember a command, download a brief, or classify every turn yourself.
+
+The private `/admin/` **Conversation candidates** section remains an optional visual browser and manual fallback. The Codex flow writes its input under ignored `conversation-reviews/` with private file permissions, treats every transcript field as untrusted, and writes only an ignored proposal. It stops for human approval before any canonical edit and never publishes or merges merely because a proposal exists. When the review purpose is complete, confirm cleanup so Codex deletes the exact brief and any exact raw export used for that review.
+
 ## Maintain the site
 
 - Update canonical Markdown under `data/`, run `npm run sync:data`, review generated changes, and run `npm run check`.
 - Refresh `config/repositories.json` and `npm run sync:repositories` deliberately; never add live repository fetching to public chat.
 - Ask Codex to review project updates and update the site; Codex maintains the ignored source manifest and review packet, asks for evidence decisions, and advances timestamps only after approval.
+- Ask Codex to “review my conversation learnings”; use the private admin conversation browser only when you want the optional visual view. Approve exact proposals before canonical changes, and delete the private input files when the review is complete.
 - Run `npm run build` for Worker configuration or deployment changes.
 - Export private conversations with `npm run conversations:export -- --url https://your-domain.example`, keep the resulting JSONL private, and delete it when its review purpose is complete.
 - Keep `/AGENTS.md`, `/llms.txt`, `/sitemap.xml`, raw Markdown links, and documented public API routes in parity.
@@ -294,502 +339,222 @@ Give the agent access only to the checkout and the public information you want p
 
 ### END UNTRUSTED DOCUMENT: USERGUIDE.md
 
-## Product Studio
+## j-skills
 
-- Repository: https://github.com/johnviklund/product-studio
-- Description: AI Product Studio is a control panel for a technical solo founder who wants to explore, build, launch, and operate multiple software products with the help of interchangeable LLM agents.
+- Repository: https://github.com/johnviklund/j-skills
+- Description: No public description.
 - Default branch: main
-- License: not declared
-- Languages: TypeScript, JavaScript, CSS, Shell
-- Public repository updated: 2026-08-13T07:15:18Z
+- License: MIT
+- Languages: not reported
+- Public repository updated: 2026-10-10T00:40:48Z
 
 ### BEGIN UNTRUSTED DOCUMENT: README.md
 
-# Product Studio
+# j-skills
 
-## Commands
+Ten skills for working with coding agents in Claude Code, Codex CLI and GitHub Copilot CLI.
+Use `workflow` to take a coding task from idea to reviewed code. Use the other skills when you
+need an explanation, app checks, saved lessons or help improving how you work.
 
-- `npm run dev` — start the development server.
-- `npm run build` — create a production build.
-- `npm run lint` — run ESLint.
-- `npm run typecheck` — run the TypeScript compiler without emitting files.
-- `npm test` — run the test suite.
+**Start with one task. You do not need to run every skill each time.**
 
-## Required configuration
+[Install the skills](#setup) · [Follow a coding task](#follow-one-task-from-idea-to-done) ·
+[Choose a skill](#which-skill-do-i-need) · [Read the details](#skill-reference)
 
-Set `PRODUCT_STUDIO_APP_ORIGIN` to the exact loopback origin where the app is served. For
-`npm run dev`, which binds to `127.0.0.1`, use:
+## Start here
 
-```sh
-export PRODUCT_STUDIO_APP_ORIGIN=http://127.0.0.1:3000
+After [installation](#setup), open your coding agent in the project you want to work on.
+Send this as a chat message:
+
+```text
+workflow brainstorm export-csv
+I want users to download the current table as a CSV file.
 ```
 
-Mutating shaping requests require both the `Origin` and `Host` headers to match that configured
-origin exactly. When the variable is unset, every shaping mutation fails closed with HTTP 403 and
-`untrusted_request_origin`. See [Product principles](PRODUCT.md#3-settled-product-principles) for
-the guarantee and trust boundary.
+`export-csv` is the **run name**, also called a slug. Choose a short name for your own task.
+The agent asks questions, saves a brief, and gives you the next command.
 
-Only a literal loopback address is accepted — `localhost` is rejected. Browse the app at
-`http://127.0.0.1:3000`, not `http://localhost:3000`, or the `Host` header will not match and
-every mutation fails closed.
+Commands in the workflow and skill tables are **messages to your agent**.
+The shell blocks under setup and configuration go in a terminal or the named configuration file.
+When installed as a plugin, a skill may appear with a prefix such as `j-skills:workflow`.
+Use the exact command on the agent's closing card when it includes a prefix.
 
-## Optional configuration: connected runtime
+## How the skills fit together
 
-Connected shaping, Execute, and Review runs require `PRODUCT_STUDIO_COPILOT_RUNTIME_PROFILE_JSON`,
-a JSON runtime profile validated when the portfolio service is first constructed
-(`src/application/portfolio-service.ts`). When it is unset, the app still runs, but every seat
-reports `runtime_unavailable` and only manual (non-connected) mode is available.
+Follow the character through the five coding steps. The toolkit below shows the skills you can use along the way.
 
-```sh
-export PRODUCT_STUDIO_COPILOT_RUNTIME_PROFILE_JSON='{
-  "preflight": {
-    "executable": "/absolute/path/to/copilot",
-    "version": "1.0.78",
-    "authentication": "noninteractive_authenticated",
-    "available_model_ids": ["claude-opus-4.5", "claude-sonnet-4.5", "gpt-5.4"]
-  },
-  "default_model": "claude-sonnet-4.5",
-  "reasoning_effort": "medium",
-  "available_tools": ["view", "apply_patch", "edit", "create", "bash", "glob", "grep"],
-  "excluded_tools": ["ask_user", "web_fetch", "task"],
-  "environment": { "PATH": "...", "HOME": "...", "TMPDIR": "/tmp", "LANG": "en_US.UTF-8" }
-}'
-```
+![A coding companion brainstorms, plans, builds, reviews and wraps a task. Below it, nine helper skills explain, check, remember and improve the work.](docs/assets/workflow-character.png)
 
-Constraints the schema enforces, each of which fails the run rather than degrading it:
+[Open the full-size illustration](docs/assets/workflow-character.png). The command tables below explain when to use each skill.
 
-- The executable's basename must be `copilot`. `preflight.version` and
-  `preflight.authentication` are **self-declared and not verified** against the installed CLI —
-  `preflightCopilotExecutable()` exists but no application path calls it — so a wrong version here
-  silently becomes the recorded `adapter_version` provenance. Keep it in sync with
-  `copilot --version` by hand.
-- `available_tools` must include `bash` (required by the Execute seat) and `view` + `apply_patch`
-  (required by the shaping seats). The shaping and Review runtimes narrow this set to their own
-  artifact-only write policies before launch, so granting `bash` here does not expose a shell to
-  them; the Execute seat keeps it, bounded by its capability envelope.
-- `available_tools` and `excluded_tools` must not overlap, and neither may be empty.
-- `environment` is an allowlist: only `COPILOT_HOME`, `HOME`, `LANG`, `LC_ALL`, `PATH`, and
-  `TMPDIR` are passed through, `PATH` is required, and credential values are never forwarded.
+`workflow` manages all five numbered steps. Ask for `plain` whenever an answer is hard to follow.
+For upkeep, use `checkup`, `memory.compact` and `evals` as needed.
+`agent-docs` helps when writing instructions that agents will read.
 
-Next.js loads this from a gitignored `.env.local` in development, where the value must be on a
-single line (wrap the JSON in single quotes). Changes require a dev-server restart.
+## Follow one task from idea to done
+
+Send **one command at a time**. Wait for the result before continuing.
+Keep the same run name throughout.
+
+| Step | Message to send | What you get | Your part |
+|---|---|---|---|
+| 1. Define the task | `workflow brainstorm export-csv` | A brief describing the problem and expected behaviour | Answer questions and confirm what to build |
+| 2. Agree on the work | `workflow plan export-csv` | Usually 2–5 tickets, at most eight, with a check for each | Approve the tickets |
+| 3. Build it | `workflow execute export-csv` | Tested changes, one ticket at a time | Try UI changes before their commits; complete any steps assigned to you |
+| 4. Check it | `workflow review export-csv` | Findings from a reviewer, normally using a different model vendor | Choose which lower-priority findings to fix |
+| 5. Finish it | `workflow wrap export-csv` | Final checks, commits and push, updated docs, saved lessons and a closed run | Follow any remaining requests on the closing card |
+
+Execute handles up to three tickets per session. Repeat it when the closing card says more work remains.
+If review finds problems, follow the card through fixes and another review before wrap.
+Live or irreversible actions become **operator tickets**, with prepared steps and a record of their result.
+
+Every step ends with a **closing card**. It tells you which model to select, whether to start a
+fresh session, and exactly what to send next. Follow it when switching agents or models.
+Progress lives in `.workflow/export-csv/`, so a fresh session can resume from the saved files.
+
+| If you need to… | Send |
+|---|---|
+| Find where you left off | `workflow status` |
+| See the next command and model again | `workflow next` |
+| Pause the task | `workflow park export-csv` |
+| Save an idea for later | `workflow todo Add a PDF export` |
+| Improve something that already exists | `workflow improve export-csv - goal: make large exports faster` |
+
+For a new project, `workflow bootstrap` sets up the repo instructions and planning files.
+Once the app runs, use `verify.create` to give the agent a repeatable way to drive and check it.
+See the [full workflow guide](.github/skills/workflow/README.md) for all commands and
+[model routing](.github/skills/workflow/ROUTING.md) for the models used at each step.
+
+## Which skill do I need?
+
+Choose the row that matches your situation. These skills also work outside a workflow run.
+
+| When you need… | Skill | Example message | Result |
+|---|---|---|---|
+| A coding task planned, built and reviewed | [workflow](#workflow) | `workflow brainstorm export-csv` | A saved run with tickets, checks and review |
+| A simpler explanation right now | [plain](#plain) | `plain Why did this test fail?` | A short answer in chat |
+| A visual explanation to keep or share | [understand](#understand) | `understand export-csv` | An HTML page with diagrams and source links |
+| A repeatable way to check a runnable app | [verify](#verify) | `verify.create` | An app-checking skill and a map of features and how to test them |
+| To save a lesson for future sessions | [memory.remember](#memoryremember) | `Remember this: run the API tests with the local test database.` | A memory page linked from `MEMORY.md` |
+| To understand why a session was slow | [retro](#retro) | `retro export-csv` | Suggested fixes for the way you work, for you to approve |
+| To find problems in the repo or skill setup | [checkup](#checkup) | `checkup` | A read-only health report and suggested actions |
+| To tidy repeated or stale memory | [memory.compact](#memorycompact) | `memory.compact` | Proposed memory changes for you to accept |
+| To test a new reviewer model | [evals](#evals) | `evals.run reviewer` | Bug-detection and false-alarm results; asks which model to test |
+| To write instructions agents can follow | [agent-docs](#agent-docs) | `Use agent-docs to improve this repo's AGENTS.md.` | Guidance for writing and testing the instructions |
+
+### What happens automatically, and what do I ask for?
+
+| Timing | What to use |
+|---|---|
+| Once the repo has a runnable app | Ask for `verify.create`. Existing verification skill? Use `verify.maintain` instead. |
+| During a workflow run | The agent uses `plain` writing rules and the repo's verification skill when available. |
+| At wrap | `workflow` calls `memory.remember` to save lessons and updates the verification feature map for changed features. |
+| After a run, when useful | Ask for `understand <run-name>` to explain the result, or `retro <run-name>` to improve the process. |
+| Whenever upkeep is needed | Ask for `checkup`. Use `memory.compact` for memory cleanup or `verify.maintain` to recheck the feature map. |
+| Before changing the reviewer | Run `evals.run reviewer`. It needs the private exam repository described in [setup](#setup). |
+| When skills or agent instructions change | `retro` and `memory.remember` load `agent-docs` when needed. You can also request it directly. |
+
+For example, finish `export-csv`, then send `understand export-csv --no-video` to get a visual
+explanation. If repeated setup failures slowed the run, send `retro export-csv` too.
+
+## Skill reference
+
+Read the sections below when you need a skill's options, output locations or setup requirements.
+
+### plain
+
+Use it when you switch into a project and need something explained without the jargon.
+
+- **Explain mode** answers a question or re-explains the last message. It starts with one line
+  on where you are, then gives the short answer, then more detail only if needed.
+- **Rewrite mode** rewrites text or a file so it has no AI patterns. Every fact stays.
+- It holds the writing rules that every other skill uses for text you read: short sentences,
+  plain words, no em dashes and no parentheses.
+
+### understand
+
+Use it after a finished run, or when you want to learn one part of a codebase.
+
+- It writes one self-contained HTML page with diagrams, decisions and open questions.
+- When a run changed what users see, the page shows before and after screenshots. Changes nobody
+  asked for come first, marked in red.
+- Every claim links to a line of code or a commit, and a checker confirms each link.
+- To explain why code looks the way it does, it also reads the review comments on the pull
+  requests that shaped it.
+- The page goes to `.workflow/<slug>/understand/` for a run, or `docs/understand/<topic>/` for
+  an area.
+- When the story moves, such as a UI change or a larger feature, it asks whether you also want a
+  short animated video: shapes that move one idea at a time, as in 3Blue1Brown, drawn in the
+  page's own colours and diagram style, each picture landing on the word that names it. It
+  tells one of two stories: what a run built, or why, what and how of a feature. The video
+  plays at the top of the page. Add `--video` or `--no-video` to the command to answer in
+  advance.
+- To share a page as one file, for example in Teams, ask for a standalone copy: the build
+  writes `explainer-standalone.html` with a 720p video inside it, about 4 MB for two minutes.
+- The video is narrated with ElevenLabs when `ELEVENLABS_API_KEY` is set. Without a key, the
+  narration shows as captions on screen. Set `ELEVENLABS_VOICE_ID` to pick another voice.
+- To set the key, keep it in its own file and load it near the top of `~/.bashrc`, above any
+  line that stops for non-interactive shells. Agents run commands in non-interactive shells,
+  so a key loaded below that line never reaches them:
+
+  ```bash
+  read -rs KEY && umask 077 && echo "export ELEVENLABS_API_KEY=$KEY" > ~/.config/elevenlabs.env
+  unset KEY
+  # near the top of ~/.bashrc:
+  [[ -f ~/.config/elevenlabs.env ]] && . ~/.config/elevenlabs.env
+  ```
+
+  Then restart your agent so it picks up the key.
+- Videos need `ffmpeg` and the cairo and pango libraries. Manim, the animation library, installs
+  itself on first use into `~/.cache/j-skills/manim-venv`, after you agree.
+
+### workflow
+
+Use it for any coding task bigger than a quick fix.
+
+| Step | What happens |
+|---|---|
+| Brainstorm | The agent asks questions until the task is clear, then writes a short brief. It builds quick throwaway sketches when trying beats asking |
+| Plan | Up to eight small tickets, each with lines that say when it is done |
+| Execute | One ticket at a time, test first. Steps only you can take become operator tickets |
+| Review | Checks the result where users see it. A model from another vendor reviews the code |
+| Wrap | Updates docs and memory, then closes the run |
+
+Each step ends with a card that names the next command and the model to use. Before a step marks
+its file complete, `workflow/scripts/check-run.py` checks the run folder's format, so mistakes
+in headers, tickets or review notes are caught by a script.
+[`ROUTING.md`](.github/skills/workflow/ROUTING.md) sets the models, and the
+[workflow guide](.github/skills/workflow/README.md) explains every command.
+
+### retro
+
+Use it after a session that felt slow.
+
+- It finds where the agent lost time: failed commands, long searches, corrections from you.
+- It suggests fixes, ranked by how much time they would save.
+- Each fix you approve goes to the skill or file that owns it.
+- Run `retro` for the current session, `retro <slug>` for a workflow run, or `retro <session id>`.
+
+### memory.remember
+
+Use it at the end of a session, or whenever you say "remember this".
+
+- Each lesson gets its own page in the repo's `memory/` folder, listed in `MEMORY.md`.
+- When a lesson comes up again, its page counts it. At three times, the lesson moves into a skill.
+- It also updates related docs, such as `DESIGN.md` when the repo has one.
+
+### memory.compact
+
+Use it now and then, when memory feels bloated.
+
+- It merges pages that say the same thing and flags pages that are stale.
+- It writes proposals for you to accept. It never changes the memory pages itself.
+
+### checkup
+
+Use it when something feels off, or before a cleanup.
+
+- It checks skills, memory, docs, the workspace, config and how each model performs.
+- It only rea
 
 ### END UNTRUSTED DOCUMENT: README.md
-
-### BEGIN UNTRUSTED DOCUMENT: PRODUCT.md
-
-# Product Studio
-
-## 1. Mission and MVP promise
-
-Product Studio is a local-first control plane for a technical solo founder to capture,
-progress, review, and approve AI-assisted product work across several repositories. It
-productizes the workflow skill's deliberate work loop into durable product behavior. Its MVP
-makes the daily portfolio workflow calmer and more trustworthy: a focused Kanban,
-one-sentence capture, portable agent missions, connected execution using different LLM models,
-deterministic verification, independent review, and a clear human decision when attention is
-required.
-
-## 2. User, positioning, and non-goals
-
-The first user is the product owner: a technical solo founder actively building and
-operating multiple products with interchangeable AI tools. Product Studio is a
-portfolio-level operating system for governed product outcomes, not an IDE, terminal
-multiplexer, generic project-management suite, model chat application, or wrapper for
-one vendor. It is not initially a multi-user hosted product, a full autonomous delivery
-system, or a replacement for Git, pull requests, CI, or hosting.
-
-MCP is unsupported in the target organizational environment and is not a Product Studio
-integration option. Local agent connections must operate without configuring, starting,
-connecting to, proxying, or exposing MCP servers or tools.
-
-## 3. Settled product principles
-
-- Durable files, rather than conversations or a local database, own product and workflow
-  truth.
-- A deterministic controller owns transitions, limits, policy checks, and completion
-  decisions; agents only make bounded execution or review attempts.
-- Autonomy is bounded, earned with evidence, and constrained by permanent risk floors.
-- Writers and reviewers are independent where configured; reviewers are read-only.
-- Human authority is preserved: an LLM cannot set a work item to `completed`.
-- Product concepts are provider-neutral. GitHub, model vendors, CLIs, and runtimes are
-  adapters, not workflow phases.
-- Execution is external and replaceable. The product owns intent, evidence, and the next
-  action; capable agent applications perform individual attempts.
-
-The loopback bind is the local runtime perimeter: Product Studio is served on `127.0.0.1`,
-and non-loopback deployment is unsupported. Every shaping mutation fails closed unless
-`PRODUCT_STUDIO_APP_ORIGIN` is exactly one configured loopback origin and the request's `Origin`
-and `Host` headers both match it; forwarded headers are ignored. These checks, exact hash binding,
-and structural freshness provide browser-CSRF protection and freshness, not identity or
-human-presence proof. They do not defend against a malicious same-user local process, including an
-agent launched by Product Studio. The principles above therefore remain workflow guarantees, not
-OS-enforced containment.
-
-Product Studio gives a producing shaping agent no approval action, approval endpoint capability,
-or approval credential:
-`PRODUCT_STUDIO_APP_ORIGIN` is excluded by name from the spawned environment allowlist; no origin,
-route path, or binding hash is included in its prompt, `TASK.md`, mission, launch instruction, or run
-record; and every ACP-mediated command or URL attempt is denied. The controller never advances from
-agent output automatically; each phase move is a separate founder-initiated leased decision. At
-the controller/workflow layer, an agent cannot approve its own result. This describes what the
-product supplies and what the controller does, not a technical inability of a
-same-user process to call the loopback decision routes. Closing that gap would require a distinct
-user account, an OS sandbox, or real authentication and is outside this slice.
-
-## 4. MVP scope
-
-Milestones 1–3 form the MVP:
-
-1. A focused, cross-project Kanban with Todo, Spec, Plan, Execute, Review, Ship, and
-   Done; project filtering; context-preserving side panels; and fast, unassigned capture.
-2. Provider-neutral portable missions, durable controller state, result import, and
-   deterministic verification, with manual bring-your-own-agent handoff retained as a recovery
-   path.
-3. An independent, read-only cross-agent review and patch loop with bounded retries, attention
-   handling, and one transport-neutral connected adapter that can drive the agent-assisted
-   workflow from shaping through approved implementation using different founder-selected LLM
-   models for different steps.
-
-The intended application stack is one deployable Next.js App Router application using
-TypeScript, Tailwind CSS, shadcn/ui, and better-sqlite3 for its rebuildable local cache.
-`DESIGN.md` remains the visual-system authority.
-
-## 5. Post-MVP boundaries
-
-Semantic Activity, live Updates, the web-first Run Console, a headless local service boundary,
-additional execution adapters, deployment and operational adapters, governed learning proposals,
-model evaluation/routing expansion, multi-user collaboration, and a hosted control plane are
-post-MVP. A native macOS client is a long-term presentation objective after the web interaction
-and local service contracts are proven. These capabilities require dogfooding evidence and the
-adoption gates in `ARCHITECTURE.md`; Product Studio does not add them merely to remove every manual
-action.
-
-## 6. Lifecycle and gates
-
-The lifecycle is Idea → Brainstorm → Spec → Plan → Execute → Review → Test → Ship → Learn,
-with Operate as a continuous lane. Each active item has one bounded next action.
-
-The controller validates preconditions, runs or records required deterministic checks,
-then evaluates whether an item can advance, iterate, escalate, or ask for human approval.
-Spec, plan, risky-change, patch/escalation, and ship/revert gates preserve human control.
-Passing checks can make a result `review_ready`; only an authorized human or policy gate
-may set it to `completed`.
-
-Forward shaping transitions are reserved to their dedicated decision operations:
-`idea → brainstorm`, `brainstorm → spec`, and `spec → plan`; the `plan → execute` workflow
-decision is likewise reserved to its dedicated Plan-approval operation. `Start Brainstorm`, in
-connected or manual-recovery mode, is the only route from Idea into Brainstorm, so entry always
-publishes a mission. The generic phase-update route and controller reject direct requests for those
-reserved transitions, while `idea → spec`, `spec → brainstorm`, and `plan → spec` remain closed.
-Spec requires a real Brainstorm selection, backward movement uses phase-local `Request changes`,
-and `Approve & run Execute` validates the exact Plan result and current governed contract before
-creating the governed Execute handoff.
-
-Review import drift recovery deliberately uses disclosure-only subject integrity. Recovery still
-requires a clean descendant HEAD and shows the founder both the complete drift path list and the
-`subject_changed_files` overlap, but a non-empty overlap is advisory and does not block the exact
-founder decision; the controller reassesses the retained result and preserves both the original
-rejected receipt and the decision-bound applied receipt.
-
-## 7. Durable-state rule
-
-Markdown holds semantic artifacts such as product direction, briefs, specifications,
-plans, and review findings. JSON or YAML holds machine-readable state and contracts.
-SQLite is a disposable local cache/index that can be rebuilt from durable files; it is
-never the only copy of product or workflow state.
-
-Product workspaces use `.founder/` as the initial metadata directory. Its version-2 product
-manifest, version-2 goal contract, and version-2 state contract are implemented in
-[`src/domain/work-item.ts`](src/domain/work-item.ts) and demonstrated by the checked-in
-[`fixtures/sample-workspace`](fixtures/sample-workspace).
-
-The version-2 work-item goal schema is additive: lightweight captures omit `goal_contract` and
-controller fields, while governed items carry a complete nested version-1 goal contract with a
-purpose, acceptance criteria, non-goals, allowed scope, and review readiness. Its `goal_version`
-must match state `goal_version`, `input_revision`, and `attempt`. Controller runs use exclusive
-per-item leases and strict durable manifests; incompatible or partial combinations fail closed.
-Before Plan can authorize Execute, every allowed-scope entry must be a concrete
-workspace-relative path prefix without prose-like whitespace; semantic descriptions cannot stand
-in for paths that Git proof will match exactly.
-SQLite schema v6 is a rebuildable projection of those files, including purpose, non-goals,
-patch-cycle state, and attention, not
-a migration authority. A further immutable artifact family exists at
-`.founder/shaping/<work_item_id>/<phase>-<input_sha256>/` for Brainstorm, Spec, and Plan at
-`shaping_schema_version: 2`. Its missions form immutable, feedback-bearing revision chains. Each
-revision carries at most one applied result, atomically published under `applied/` with
-`result.json`, `import.json`, one `production.json`, and the `applied.json` commit marker, plus one
-immutable decision receipt when that revision is decided. A separate
-`.founder/shaping-runs/<work_item_id>/<run_id>/` family holds artifact-only run records and their
-hash-bound launch instruction with a single writable `ingress/` path. Deterministic manual ingress
-lives separately under `.founder/shaping-ingress/<work_item_id>/<phase>-<input_sha256>/`, whose
-root is gitignored. These shaping families are deliberately unprojected — no SQLite table indexes
-them.
-
-An applied shaping result is recognized only as a complete, commit-marked bundle: readers accept
-`applied/` only after `applied.json` validates every component. Publication and terminal run
-success are crash-coupled in one order — validate, publish the bundle, then mark the run ready — so
-reconciliation can finish a crash between those operations without accepting a partial result or
-creating a duplicate run.
-
-Founder seat-model preferences persist in the versioned, gitignored application-root document
-`.portfolio/model-preferences.json`. They are reusable preferences, not product or workflow truth,
-which is why they live outside `.founder/` and outside SQLite.
-
-Shaping artifacts are versioned durable files with no backward-compatible reader. A schema cut
-therefore requires an explicit founder decision about both the existing artifacts and the durable
-state that depends on them. On 2026-08-01 that decision archived and reset the disposable workspace
-because two active work items had governed goal contracts derived from the retired v1 results.
-
-A retained per-work-item `.controller.lock` fails closed. The controller neither identifies its
-owner nor claims or takes over another process's lock; it reports an actionable `repair_required`
-with the lock, recorded run, and repair action. Explicit founder-invoked repair verifies that the
-lock payload and `state.active_run` describe the same acknowledged run, clears both durable
-representations in a crash-safe order, and is idempotent. Automatic owner identification, claiming,
-takeover, and orphan signalling remain a later controller-reliability slice. Shaping-run
-reconciliation retains its separate non-destructive signal-0 liveness probe, with PID reuse failing
-closed by treating a responding PID as live. Each shaping decision intent also records the exact
-pre- and post-operation `goal.yaml` and `state.json` bytes and hashes, so recovery is decided from
-durable files alone.
-
-## 8. Core documents
-
-- [Target architecture](ARCHITECTURE.md)
-- [Design system](DESIGN.md)
-- [Delivery roadmap](ROADMAP.md)
-- [Repository working rules](AGENTS.md)
-- [Promoted repository learning](MEMORY.md)
-- [Intake scratchpad](TODO.md)
-- [Archived PRD](docs/archive/PRD.md) — historical detail and rationale
-
-## 9. Open product decisions
-
-The following remain unresolved and must be decided with implementation evidence:
-
-- Final product name.
-- The first two proof repositories for provider-neutral manual handoff.
-- Canonical mission a
-
-### END UNTRUSTED DOCUMENT: PRODUCT.md
-
-### BEGIN UNTRUSTED DOCUMENT: ARCHITECTURE.md
-
-# Product Studio target architecture
-
-## Status and intent
-
-This document defines the post-MVP architecture direction as of 2026-08-09. It is a target and
-sequencing contract, not a claim that every component described here is implemented. The current
-Next.js application, file-backed controller, connected ACP runtime, and rebuildable SQLite index
-remain the working baseline.
-
-The near-term product is web-first. The long-term objective is a native macOS client backed by the
-same local service, commands, semantic events, and durable evidence. Product Studio must not move
-workflow authority into a browser component, a desktop client, an orchestration vendor, a policy
-engine, a telemetry backend, or a terminal multiplexer.
-
-## Architectural invariants
-
-1. `.founder/` files and other versioned workspace artifacts are the durable workflow truth.
-   SQLite, UI state, telemetry, and external runtime state are rebuildable projections.
-2. The Product Studio controller alone validates expected phase, status, input revision, schema
-   version, lease ownership, policy result, and completion evidence before changing state.
-3. Every state-changing command is idempotent, bound to an explicit expected version or digest,
-   and produces durable evidence before the mutation it authorizes.
-4. Human-only gates remain human-only. An agent may request a decision or propose a command, but
-   it cannot approve its own result or set a work item to `completed`.
-5. Provider, model, protocol, process host, and orchestration identities stay behind adapters.
-   They are provenance, never workflow phases or authority.
-6. Reviewers remain source-read-only. Parallelism never weakens writer/reviewer independence,
-   capability envelopes, deterministic verification, or evidence requirements.
-7. MCP remains unsupported. None of the architecture below requires configuring, exposing, or
-   proxying an MCP server.
-
-## Planes and ownership
-
-```mermaid
-flowchart TB
-  subgraph Clients["Presentation clients"]
-    Web["Next.js web UI - first"]
-    Mac["Native macOS client - later"]
-  end
-
-  API["Versioned local command, query, and event service"]
-  Controller["Product Studio controller"]
-  Policy["Policy decision port\nTypeScript first, OPA later if justified"]
-  Orchestrator["Orchestration port\nIn-process first, Temporal later if justified"]
-  Broker["Execution broker"]
-  ACP["Direct ACP runtime - default"]
-  PTY["Herdr PTY execution host - optional"]
-  Files["Durable workspace and evidence\n.founder plus governed artifacts"]
-  Index["Rebuildable SQLite read models"]
-  Events["Durable semantic event ledger"]
-  OTel["OpenTelemetry diagnostics"]
-
-  Web --> API
-  Mac -. same contracts .-> API
-  API --> Controller
-  Controller --> Policy
-  Controller --> Orchestrator
-  Orchestrator --> Broker
-  Broker --> ACP
-  Broker -. terminal-only runs .-> PTY
-  Controller --> Files
-  Controller --> Events
-  Files --> Index
-  Events --> Index
-  API --> Index
-  API -. live semantic stream .-> Web
-  API -. live semantic stream .-> Mac
-  API -. traces, metrics, logs .-> OTel
-  Controller -. traces, metrics, logs .-> OTel
-  Orchestrator -. traces, metrics, logs .-> OTel
-  Broker -. traces, metrics, logs .-> OTel
-```
-
-### Durable authority plane
-
-The existing workspace repository and controller remain the system of record. Missions, run
-records, evidence, results, decisions, approvals, and state transitions are published as durable,
-hash-bound artifacts. The controller does not infer completion from process exit, a Temporal
-status, an OPA response without its binding receipt, a Herdr agent state, or an OpenTelemetry span.
-
-### Local application-service plane
-
-Introduce one versioned, provider-neutral service contract with three surfaces:
-
-- **Commands:** typed intents such as start, cancel, answer, request changes, acknowledge update,
-  or approve an exact result. Commands carry an idempotency key and the expected governed tuple.
-- **Queries:** rebuildable portfolio, work-item, run, attention, capability, and evidence views.
-- **Events:** resumable, ordered semantic events with a stable event ID and cursor.
-
-The current Next.js application may host these surfaces in-process first. Before a native client
-is built, extract them behind a headless local service boundary so closing the web or desktop UI
-does not stop owned execution. A loopback HTTP API plus Server-Sent Events is the first web
-transport; a later macOS client may use the same loopback transport or a thin Unix-socket/XPC
-bridge without changing schemas or controller behavior.
-
-Clients never read or write `.founder/` directly. They issue commands and render queries/events.
-That keeps browser and future native behavior identical and prevents a second state machine from
-appearing in the client.
-
-### Policy plane
-
-Define a `PolicyDecisionPoint` port around the existing typed, pure TypeScript evaluators. Its
-input contains the canonical operation, actor/principal, governed tuple, capability envelope,
-resource facts, and policy version. Its structured result contains allow/deny, obligations,
-reason codes, and a policy digest.
-
-The embedded TypeScript implementation remains authoritative while Product Studio is a local,
-single-process product. [Open Policy Agent](https://www.openpolicyagent.org/docs) becomes useful
-only when the same policy must be evaluated consistently across multiple processes, the web and
-native clients, remote workers, or multiple user roles. OPA makes policy decisions; the controller
-and execution broker enforce them. A future OPA integration must:
-
-- have one selected authority for each decision, never shadow TypeScript and OPA as competing
-  enforcers;
-- pin and hash the [policy bundle](https://www.openpolicyagent.org/docs/management-bundles) and
-  version used for the decision;
-- persist a Product Studio decision receipt before the authorized mutation;
-- fail closed when a required decision is unavailable or undefined; and
-- preserve the existing dedicated authorization shapes for shaping, Execute/Patch, and Review.
-
-OPA is therefore an adoption option, not a current dependency.
-
-### Orchestration plane
-
-Keep the current controller-driven, in-process orchestration until real use demonstrates
-long-lived waits, retry recovery, timers, fan-out/fan-in, or execution that must survive an
-application restart. At that point, implement the orchestration port with
-[Temporal Workflows](https://docs.temporal.io/workflows).
-
-Temporal owns durable scheduling and resumption, not Product Studio truth or authority:
-
-- A Temporal Workflow coordinates a bounded attempt graph.
-- Activities perform external effects by invoking idempotent Product Studio application commands
-  and execution-broker operations.
-- Product Studio records the authoritative mission, evidence, result, and transition before an
-  orchestration node is considered accepted.
-- Workflow IDs derive from stable Product Studio attempt/run IDs. Temporal run IDs are retained as
-  correlation provenance.
-- Signals/updates may deliver input or cancellation intent, but the controller revalidates the
-  exact governed tuple before applying it.
-- Temporal visibility and event history are operational records, not a replacement for `.founder/`.
-
-#### Graph-based and parallel workflows
-
-Product Studio owns a versioned `ExecutionGraph` contract: typed nodes, dependencies, role,
-capability profile, input/output artifact references, retry ceiling, timeout, and join rule.
-Temporal is an execution backend for that graph, not the graph editor or graph source of truth.
-The Temporal adapter schedules nodes whose dependencies are satisfied, runs independent nodes in
-parallel, and joins their durable Product Studio results before unlocking a dependent node.
-
-Use Activities for ordinary bounded nodes. Use
-[Child Workflows](https://docs.temporal.io/child-workflows) only when a branch needs its own durable
-lifecycle, worker boundary, or event-history partition. Start with one Workflow because Temporal
-itself recommends that simpler shape until child workflows have a concrete need.
-
-The safe first parallel use cases are read-only research, independent review perspectives,
-verification, and evaluation. Parallel writers may not share a working tree. If concurrent write
-branches are later justified, each receives an isolated Git worktree and capability envelope, and
-an explicit merge/review node reconciles them. No fan-in node treats process success as accepted
-work; every branch must satisfy its own result and evidence contract.
-
-### Execution plane
-
-An `ExecutionBroker` selects a connected runtime from declared capabilities, not vendor names.
-Direct ACP remains the reference path because it already exposes structured operations and lets
-Product Studio apply its capability and authorization evaluators.
-
-[Herdr](https://herdr.dev/docs/concepts/) may later implement an optional `PtyExecutionHost` for
-agents or tools that genuinely require a terminal, durable panes, human attach/detach, or remote
-process supervision. Herdr stays behind the broker:
-
-- Product Studio creates and maps a pane to one stable attempt/run identity.
-- The UI never receives unrestricted access to Herdr's socket or input methods.
-- User input is validated as a Product Studio command before the broker sends it to a pane.
-- Herdr `working`, `blocked`, `done`, `idle`, and `unknown` states are hints for presentation and
-  diagnostics only; they never complete or advance a Product Studio attempt.
-- Pane output is sensitive and untrusted. Screen-history persistence stays off by default, raw
-  output is bounded and redacted, and only typed semantic outcomes enter the event ledger.
-- Detach/reattach is useful liveness, not durable workflow recovery. Herdr's
-  [session-state contract](https://herdr.dev/docs/session-state/) says a server restart loses
-  arbitrary processes, so Product Studio reconciliation and evidence remain necessary.
-- Direct ACP remains available as the parity and recovery path. Herdr cannot become a mandatory
-  dependency for the core workflow.
-
-Product Studio remains a workflow control plane, not a terminal multiplexer. Herdr provides a
-replaceable process host; it does not define the product's information architecture.
-
-### Observability plane
-
-[OpenTelemetry](https://opentelemetry.io/docs/concepts/observability-primer/) is the first external
-backbone to adopt because it can expose latency, retries, failures, and cross-boundary causality
-without changing workflow semantics. Instrument the local service, controller, policy port,
-orchestration adapter, and execution broker with traces, metrics, and structured logs.
-
-Propagate correlation fields such as work-item ID, attempt/run ID, mission/result digest,
-orchestrator workflow/run ID, adapter ID, and optional Herdr workspace/pane ID. Use low-cardinality
-attributes for metrics and keep high-cardinality identifiers on spans/logs where appropriate.
-
-Telemetry is best-effort diagnostics:
-
-- exporter or collector failure never blocks a workflow transition;
-- sampling never changes durable evidence;
-- prompts, credentials, raw terminal output, source content, customer data, and hidden model
-  reasoning are excluded;
-- user-facing Activity is never reconstructed from sampled telemetry; and
-- retention/export is off or local by default until the founder explicitly configures it.
-
-### Presentation plane: web first, macOS later
-
-The web application proves the interaction and event contracts first. The default information
-architecture remains Kanban-centric, with Updates as the cross-project temporal view and a Run
-Console as the selected update/run detail.
-
-The long-term native macOS client is another presentation adapter. It may add native notifications,
-menu-bar status, windowing, keyboard shortcuts, and secure local credential integration, but it
-must use the same command/query/event schemas and must not reimplement controller transitions,
-policy rules, evidence validation, or orchestration logic in Swift. The na
-
-### END UNTRUSTED DOCUMENT: ARCHITECTURE.md

@@ -6,8 +6,8 @@
     "localDocuments": ["README.md", "AGENTS.md", "USERGUIDE.md"]
   },
   {
-    "project": "Product Studio",
-    "repository": "johnviklund/product-studio",
-    "documents": ["README.md", "PRODUCT.md", "ARCHITECTURE.md"]
+    "project": "j-skills",
+    "repository": "johnviklund/j-skills",
+    "documents": ["README.md"]
   }
 ]

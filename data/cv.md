@@ -13,9 +13,10 @@ CX AI Lead at Volvo Cars and applied-AI product leader with roughly 25 years acr
 
 **April 2026–present · Gothenburg, Sweden**
 
-- Owns CX Intelligence end to end, spanning product vision, data and solution architecture, proof-of-concept development, stakeholder alignment, legal considerations, and market enablement.
+- Leads AI strategy across Volvo Cars Customer Experience, from opportunity discovery and roadmaps to responsible-AI governance and build-versus-buy decisions.
+- Owns CX Intelligence, the principal initiative, end to end, spanning product vision, data and solution architecture, proof-of-concept development, stakeholder alignment, legal considerations, and market enablement.
 - Builds a shared customer-data foundation and AI-enriched topic taxonomy so markets, Commercial, Quality, and R&D can understand customer pain points through a common language and connect insight to action.
-- The working proof of concept has clustered hundreds of thousands of Customer Care interactions; Microsoft Foundry agents analyze sentiment, self-service coverage, and related social conversations, then synthesize findings and recommend actions. It is currently in user testing, not production.
+- The working proof of concept classifies Customer Care interactions into a governed topic catalog and scores customer friction; Microsoft Foundry agents analyze sentiment, self-service coverage, and related social conversations, then synthesize findings and recommend actions. It is moving into beta, not production.
 - Co-initiated and facilitates a cross-functional AI learning community that helps commercial teams share work, document learning, identify overlaps, and avoid building in silos.
 
 ### Volvo Cars — Digital, Customer Care, CRM, and AI leadership
@@ -30,7 +31,7 @@ CX AI Lead at Volvo Cars and applied-AI product leader with roughly 25 years acr
 
 #### Global Customer Care platforms and processes
 
-- As part of Volvo Cars' central global process team, helped improve Customer Care processes, procedures, and Salesforce Service Cloud capabilities used by more than 500 agents across over 20 markets.
+- As part of Volvo Cars' central global process team, helped improve Customer Care processes, procedures, and Salesforce Service Cloud capabilities used by more than 500 agents across over 20 markets, with some hands-on experience of Five9 contact-center telephony in support operations.
 - Partnered with regional hubs responsible for local QA, training, and onboarding while driving global consistency across an ecosystem handling approximately three million customer interactions annually.
 - Contributed to the broader Customer Care transformation during a period when global five-out-of-five top-box CSAT improved from approximately 78% to 85%; this was a shared organizational outcome.
 - Helped build a retailer case-management portal connecting central Customer Care and National Sales Companies with hundreds of retailers across roughly ten European markets.
@@ -49,6 +50,7 @@ CX AI Lead at Volvo Cars and applied-AI product leader with roughly 25 years acr
 
 **August 2014–October 2017 · Gothenburg, Sweden**
 
+- Co-founded the company around earlier work showing how neural networks could identify responsible-gambling signals, then broadened it into predictive customer intelligence.
 - Built predictive customer-intelligence products with neural networks in the pre-LLM era, serving clients across land-based casinos, online gaming, and e-commerce.
 - Led product strategy, customer discovery, commercialization, partnerships, and international customer work across Europe, Las Vegas, Macau, and South Africa.
 - Became CEO to lead a market pivot, then negotiated a strategic exit involving the transfer of the company's IP and the transition of employees.
@@ -94,17 +96,13 @@ Care by Volvo required new capabilities for owning and operating a vehicle fleet
 
 ### Building an AI foundation for customer insight and action
 
-John owns a proof of concept that combines a shared customer-data foundation, a unified AI-enriched customer-topic taxonomy, and market enablement that connects customer issues to improvement activities and reusable best practices. The working system has clustered hundreds of thousands of Customer Care interactions. Microsoft Foundry agents analyze sentiment, self-service coverage, and related social conversations, then synthesize findings and recommend actions. The proof of concept is currently in user testing; production adoption and business impact have not yet been measured.
+John owns a proof of concept that combines a shared customer-data foundation, a unified AI-enriched customer-topic taxonomy, and market enablement that connects customer issues to improvement activities and reusable best practices. The working system classifies Customer Care interactions into a governed topic catalog and scores customer friction. Microsoft Foundry worker agents propose, independent reviewer agents challenge, and deterministic policy decides; agents also analyze sentiment, self-service coverage, and related social conversations, then synthesize findings and recommend actions. The proof of concept is moving into beta; production adoption and business impact have not yet been measured.
 
 ## Selected applied-AI projects
 
-### Product Studio
-
-Active local-first personal system with a public repository: a governed multi-agent execution loop with durable file truth, deterministic state and evidence checks, cross-vendor review, bounded autonomy, permission controls, a connected ACP runtime, and a rebuildable SQLite projection. The complete public Git tree contained 1,127 tracked files and 44 test files on 15 August 2026.
-
 ### CX Intelligence
 
-Working Volvo Cars proof of concept in user testing: a governed Snowflake and Microsoft Foundry system that has clustered hundreds of thousands of Customer Care interactions into a unified customer-topic taxonomy. Agents analyze sentiment, self-service coverage, and related social conversations, then synthesize findings and recommend actions. Production adoption and business impact have not yet been measured.
+Working Volvo Cars proof of concept moving into beta: a governed Snowflake and Microsoft Foundry system that classifies Customer Care interactions into a versioned customer-topic catalog and scores customer friction. Worker agents propose, independent reviewer agents challenge, and deterministic policy decides. Agents also analyze sentiment, self-service coverage, and related social conversations, then synthesize findings and recommend actions. Production adoption and business impact have not yet been measured.
 
 ### CX Newsletter
 
@@ -113,6 +111,10 @@ Production-use research pipeline at Volvo Cars: AI-scored content curation acros
 ### Volvo Evidence CLI
 
 Shipped internal Go CLI for deterministic, market-scoped evidence retrieval with citations, SQLite/FTS5, GraphQL, retries, and coverage diagnostics.
+
+### j-skills
+
+Active public set of ten skills for Claude Code, Codex CLI, and GitHub Copilot CLI: a five-step coding workflow with cross-vendor review and model routing, plus evals that grade candidate reviewer models on bug detection and false alarms.
 
 ### Agentoria
 
@@ -124,11 +126,11 @@ Active personal MVP that turns multi-agent work into a legible Three.js/WebGPU h
 - Agent harnesses, tool integration, retrieval, structured outputs, evaluations, and human-in-the-loop systems
 - AI product strategy, enterprise adoption, governance, responsible AI, and build-versus-buy decisions
 - Product strategy and management, Customer Experience, CRM, service design, and global transformation
-- Hands-on project exposure across Python, Go, TypeScript, JavaScript, SQL, Snowflake, Microsoft Foundry, React, Next.js, Hono, SQLite, GraphQL, and Three.js
+- Hands-on project work across Python, Go, TypeScript, JavaScript, SQL, Snowflake, Microsoft Foundry, React, Next.js, Hono, SQLite, GraphQL, and Three.js
 
 ## Education
 
-**Gothenburg Institute of Technology, 1999–2001** — two-year associate-level computer science education; exact diploma wording pending verification.
+**Gothenburg Technical Institute (Göteborgs Tekniska Institut), 1999–2000** — two-year Engineering Diploma (ingenjörsexamen) in Computer Technology and IT Electronics.
 
 **Strativity Group, New York, 2013** — Customer Experience Management certification program.
 

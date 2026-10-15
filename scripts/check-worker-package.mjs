@@ -23,7 +23,7 @@ if (config.assets?.run_worker_first !== true) {
 
 const moduleRules = config.rules ?? [];
 assertNarrowRule("ESModule", ["**/*.js"]);
-assertNarrowRule("Text", ["data/meta.md", "data/overview.md", "data/experience.md", "data/projects.md", "data/repositories.md", "data/skills.md", "data/personal.md", "data/interests.md", "data/faq.md"]);
+assertNarrowRule("Text", ["data/meta.md", "data/cv.md", "data/overview.md", "data/experience.md", "data/projects.md", "data/repositories.md", "data/skills.md", "data/personal.md", "data/interests.md", "data/faq.md"]);
 assertNarrowRule("CompiledWasm", ["**/*.wasm"]);
 
 const budgetBinding = config.durable_objects?.bindings?.find((binding) => binding.name === "CHAT_BUDGET");

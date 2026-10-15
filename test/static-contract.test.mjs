@@ -173,3 +173,18 @@ test("the published design tokens and self-hosted font assets are deployable und
   assert.doesNotMatch(styles, /url\(["']?https?:\/\//);
   assert.match(headers, /font-src 'self'/);
 });
+
+test("chat knowledge includes the canonical public CV", async () => {
+  const [knowledge, sync, wrangler, packageCheck] = await Promise.all([
+    read("src/knowledge.js"),
+    read("scripts/sync-public-data.mjs"),
+    read("wrangler.jsonc"),
+    read("scripts/check-worker-package.mjs"),
+  ]);
+
+  assert.match(knowledge, /import cv from "\.\/data\/cv\.md";/);
+  assert.match(knowledge, /\[meta, cv, /);
+  assert.match(sync, /const workerFiles = \[[^\]]*"cv\.md"/);
+  assert.match(wrangler, /"data\/cv\.md"/);
+  assert.match(packageCheck, /"data\/cv\.md"/);
+});

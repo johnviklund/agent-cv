@@ -38,6 +38,14 @@ npm run dev
 | `public/*.md` | Generated public Markdown resources | Tracked |
 | `.dev.vars`, `exports/`, `conversation-reviews/` | Local secrets, private archive exports, and conversation review material | Ignored |
 
+For John's two-repository setup, keep `agent-cv` and the private `agent-cv-private` checkout beside each other, then import the reviewed private knowledge with:
+
+```sh
+npm run sync:private-data
+```
+
+The command reads only the six named private files, validates all of them before changing the local checkout, and never commits or publishes their source Markdown. For another checkout layout, set `AGENT_CV_PRIVATE_ROOT` or run `npm run sync:private-data -- --source /absolute/path/to/agent-cv-private`.
+
 Edit canonical files under `data/`, then run:
 
 ```sh
@@ -112,8 +120,8 @@ For a manual release check, clone your branch into a new directory, run `npm ci`
    This writes the same token to ignored `.dev.vars` with private file permissions and to Cloudflare without printing it.
 
 5. Review `OPENAI_MODEL`, reasoning effort, request cap, retention, contact email, rate limit, and binding values in `wrangler.jsonc`.
-6. Run `npm run build` for the Worker packaging dry run.
-7. Deploy with `npm run deploy`.
+6. Run `npm run build` for the Worker packaging dry run. In the two-repository setup, run `npm run sync:private-data` first so this dry run uses the reviewed private sources.
+7. Deploy with `npm run deploy`. Deployment automatically imports the six reviewed files from the sibling private repository and stops if that source is missing or incomplete.
 8. Set your custom domain, then update canonical metadata, discovery resources, export URL, and static checks together. Run `npm run check` again.
 
 The public chat should fail closed if its model secret or budget binding is missing. Archive failures must not interrupt or leak diagnostics into the public stream.

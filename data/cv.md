@@ -13,10 +13,10 @@ CX AI Lead at Volvo Cars and applied-AI product leader with roughly 25 years acr
 
 **April 2026–present · Gothenburg, Sweden**
 
-- Owns the end-to-end AI strategy for Customer Experience.
-- Leads opportunity discovery and execution across conversational AI, agents, knowledge, automation, personalization, analytics, and insights.
-- Establishes roadmaps, metrics, responsible-AI governance, guardrails, security, quality controls, and build-versus-buy decisions.
-- Bridges business, technology, product, and operations.
+- Owns CX Intelligence end to end, spanning product vision, data and solution architecture, proof-of-concept development, stakeholder alignment, legal considerations, and market enablement.
+- Builds a shared customer-data foundation and AI-enriched topic taxonomy so markets, Commercial, Quality, and R&D can understand customer pain points through a common language and connect insight to action.
+- The working proof of concept has clustered hundreds of thousands of Customer Care interactions; Microsoft Foundry agents analyze sentiment, self-service coverage, and related social conversations, then synthesize findings and recommend actions. It is currently in user testing, not production.
+- Co-initiated and facilitates a cross-functional AI learning community that helps commercial teams share work, document learning, identify overlaps, and avoid building in silos.
 
 ### Volvo Cars — Digital, Customer Care, CRM, and AI leadership
 
@@ -24,18 +24,22 @@ CX AI Lead at Volvo Cars and applied-AI product leader with roughly 25 years acr
 
 #### Americas CRM transformation
 
-- Bridged Volvo Cars USA with global program and process owners in Gothenburg for the Americas move from Oracle CRM to Salesforce.
-- Worked hands-on through implementation, agent enablement, go-live, and hypercare to establish a globally aligned Customer Care platform in the United States.
+- Led the cross-functional bridge between Volvo Cars' U.S. and Swedish digital and process organizations for the move from a long-standing bespoke Oracle CRM to Salesforce.
+- Mapped current and future processes, represented global process owners in day-to-day decisions, transferred knowledge of Volvo's Salesforce customizations, shaped training content, and supported go-live and hypercare.
+- Delivered an on-schedule launch without major operational disruption, onboarding approximately 40–50 agents in an operation handling roughly 300,000–500,000 cases annually; smaller launch issues were resolved during the first two weeks.
 
 #### Global Customer Care platforms and processes
 
-- Defined service processes in Salesforce Service Cloud and helped build custom customer-care workflows and a retailer case-management portal connecting central Customer Care with hundreds of retailers across roughly ten European markets.
-- Supported APAC operating-model alignment and enablement for a new Kuala Lumpur Customer Care hub through shared tools, process standards, and agent training material.
+- As part of Volvo Cars' central global process team, helped improve Customer Care processes, procedures, and Salesforce Service Cloud capabilities used by more than 500 agents across over 20 markets.
+- Partnered with regional hubs responsible for local QA, training, and onboarding while driving global consistency across an ecosystem handling approximately three million customer interactions annually.
+- Contributed to the broader Customer Care transformation during a period when global five-out-of-five top-box CSAT improved from approximately 78% to 85%; this was a shared organizational outcome.
+- Helped build a retailer case-management portal connecting central Customer Care and National Sales Companies with hundreds of retailers across roughly ten European markets.
 
 #### Care by Volvo — Head of Fleet Services
 
-- Led more than ten process owners defining the subscription-vehicle lifecycle across ordering, service, roadside assistance, damage repair, and return.
-- Helped launch Care by Volvo across European markets, coordinating process, software, market operations, and retailer adoption.
+- Initially managed more than ten process owners defining the subscription-vehicle lifecycle across ordering, delivery, service, roadside assistance, damage repair, and return.
+- Continued supporting Care by Volvo across successive roles, contributing to every EMEA market launch—approximately 15 markets—through process development and enablement for National Sales Companies and retailers.
+- Led a secure Salesforce-based retailer collaboration capability that began with Care by Volvo and expanded into a standard tool for broader Customer Care and National Sales Company operations.
 
 #### Organizer — Business Owner
 
@@ -78,6 +82,20 @@ Product management in a Kinnevik-backed startup adapting a proven Nordic online-
 - Built a Java routing application for IKEA's multilingual product-label system, deployed across more than 50 countries.
 - Contributed StreamServe integrations to major IBM and Coca-Cola programs, including distributed print workflows and ERP-driven route-document generation.
 
+## Selected transformation case studies
+
+### Unifying U.S. Customer Care on Salesforce
+
+Volvo Cars' U.S. Customer Care organization was the company's last major operation using a long-standing, highly customized Oracle CRM. Based in the United States, John acted as the cross-functional transformation lead between the American and Swedish digital and process organizations. He mapped current and future processes, represented global process owners, shaped enablement, and supported go-live and hypercare. The replacement Salesforce platform launched on schedule without major disruption, onboarding approximately 40–50 agents in an operation handling roughly 300,000–500,000 cases annually.
+
+### Building and scaling the Care by Volvo operating model
+
+Care by Volvo required new capabilities for owning and operating a vehicle fleet, supporting a flexible subscription offer, and collaborating with retailers under an aggressive launch schedule. John initially managed more than ten process owners across the subscription lifecycle, then led a Salesforce-based retailer case-management capability that grew from a Care by Volvo requirement into a standard collaboration tool. He supported every EMEA launch—approximately 15 markets—while the retailer capability reached roughly ten European markets and hundreds of retailers.
+
+### Building an AI foundation for customer insight and action
+
+John owns a proof of concept that combines a shared customer-data foundation, a unified AI-enriched customer-topic taxonomy, and market enablement that connects customer issues to improvement activities and reusable best practices. The working system has clustered hundreds of thousands of Customer Care interactions. Microsoft Foundry agents analyze sentiment, self-service coverage, and related social conversations, then synthesize findings and recommend actions. The proof of concept is currently in user testing; production adoption and business impact have not yet been measured.
+
 ## Selected applied-AI projects
 
 ### Product Studio
@@ -86,7 +104,7 @@ Active local-first personal system with a public repository: a governed multi-ag
 
 ### CX Intelligence
 
-Ongoing Volvo Cars proof of concept: a GPT-5, Snowflake, and Microsoft Foundry human-in-the-loop system for evidence-backed Customer Experience topic classification. A frozen validation reviewed 15 candidate topics with explicit agree/disagree, pass/escalate, cost, and no-mutation controls.
+Working Volvo Cars proof of concept in user testing: a governed Snowflake and Microsoft Foundry system that has clustered hundreds of thousands of Customer Care interactions into a unified customer-topic taxonomy. Agents analyze sentiment, self-service coverage, and related social conversations, then synthesize findings and recommend actions. Production adoption and business impact have not yet been measured.
 
 ### CX Newsletter
 
@@ -120,4 +138,4 @@ Native Swedish and fluent professional English. Based near Gothenburg, Sweden. O
 
 ---
 
-Data last updated: 8 October 2026. Ask the conversational CV at the site root or fetch machine-readable resources from `/AGENTS.md` and `/llms.txt`.
+Data last updated: 15 October 2026. Ask the conversational CV at the site root or fetch machine-readable resources from `/AGENTS.md` and `/llms.txt`.

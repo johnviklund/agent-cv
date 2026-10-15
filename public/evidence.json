@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "digest": "sha256:b5d13e4141e3bfea89d0f9826169795a4ca31173cf41c19d3c136c6bcef68175",
+  "digest": "sha256:8563c3014a703839c13975a9b8d41a47f4250deb91f6b67f7b5961c1c47f325b",
   "items": [
     {
       "id": "cv.profile",
@@ -16,7 +16,7 @@
     {
       "id": "experience.volvo-cx-ai-lead",
       "title": "Volvo Cars — CX AI Lead",
-      "text": "**April 2026–present · Gothenburg, Sweden**\n\n- Owns the end-to-end AI strategy for Customer Experience.\n- Leads opportunity discovery and execution across conversational AI, agents, knowledge, automation, personalization, analytics, and insights.\n- Establishes roadmaps, metrics, responsible-AI governance, guardrails, security, quality controls, and build-versus-buy decisions.\n- Bridges business, technology, product, and operations.",
+      "text": "**April 2026–present · Gothenburg, Sweden**\n\n- Owns CX Intelligence end to end, spanning product vision, data and solution architecture, proof-of-concept development, stakeholder alignment, legal considerations, and market enablement.\n- Builds a shared customer-data foundation and AI-enriched topic taxonomy so markets, Commercial, Quality, and R&D can understand customer pain points through a common language and connect insight to action.\n- The working proof of concept has clustered hundreds of thousands of Customer Care interactions; Microsoft Foundry agents analyze sentiment, self-service coverage, and related social conversations, then synthesize findings and recommend actions. It is currently in user testing, not production.\n- Co-initiated and facilitates a cross-functional AI learning community that helps commercial teams share work, document learning, identify overlaps, and avoid building in silos.",
       "source": {
         "path": "data/cv.md",
         "headingPath": [
@@ -28,7 +28,7 @@
     {
       "id": "experience.volvo-digital-customer-care-crm-ai",
       "title": "Volvo Cars — Digital, Customer Care, CRM, and AI leadership",
-      "text": "**November 2017–March 2026 · Sweden and United States**\n\n#### Americas CRM transformation\n\n- Bridged Volvo Cars USA with global program and process owners in Gothenburg for the Americas move from Oracle CRM to Salesforce.\n- Worked hands-on through implementation, agent enablement, go-live, and hypercare to establish a globally aligned Customer Care platform in the United States.\n\n#### Global Customer Care platforms and processes\n\n- Defined service processes in Salesforce Service Cloud and helped build custom customer-care workflows and a retailer case-management portal connecting central Customer Care with hundreds of retailers across roughly ten European markets.\n- Supported APAC operating-model alignment and enablement for a new Kuala Lumpur Customer Care hub through shared tools, process standards, and agent training material.\n\n#### Care by Volvo — Head of Fleet Services\n\n- Led more than ten process owners defining the subscription-vehicle lifecycle across ordering, service, roadside assistance, damage repair, and return.\n- Helped launch Care by Volvo across European markets, coordinating process, software, market operations, and retailer adoption.\n\n#### Organizer — Business Owner\n\n- Packaged Volvo's in-house workshop-planning system for broader use across the global retail network, coordinating service demand with technicians, specialist tools, lifts, and workshop capacity.",
+      "text": "**November 2017–March 2026 · Sweden and United States**\n\n#### Americas CRM transformation\n\n- Led the cross-functional bridge between Volvo Cars' U.S. and Swedish digital and process organizations for the move from a long-standing bespoke Oracle CRM to Salesforce.\n- Mapped current and future processes, represented global process owners in day-to-day decisions, transferred knowledge of Volvo's Salesforce customizations, shaped training content, and supported go-live and hypercare.\n- Delivered an on-schedule launch without major operational disruption, onboarding approximately 40–50 agents in an operation handling roughly 300,000–500,000 cases annually; smaller launch issues were resolved during the first two weeks.\n\n#### Global Customer Care platforms and processes\n\n- As part of Volvo Cars' central global process team, helped improve Customer Care processes, procedures, and Salesforce Service Cloud capabilities used by more than 500 agents across over 20 markets.\n- Partnered with regional hubs responsible for local QA, training, and onboarding while driving global consistency across an ecosystem handling approximately three million customer interactions annually.\n- Contributed to the broader Customer Care transformation during a period when global five-out-of-five top-box CSAT improved from approximately 78% to 85%; this was a shared organizational outcome.\n- Helped build a retailer case-management portal connecting central Customer Care and National Sales Companies with hundreds of retailers across roughly ten European markets.\n\n#### Care by Volvo — Head of Fleet Services\n\n- Initially managed more than ten process owners defining the subscription-vehicle lifecycle across ordering, delivery, service, roadside assistance, damage repair, and return.\n- Continued supporting Care by Volvo across successive roles, contributing to every EMEA market launch—approximately 15 markets—through process development and enablement for National Sales Companies and retailers.\n- Led a secure Salesforce-based retailer collaboration capability that began with Care by Volvo and expanded into a standard tool for broader Customer Care and National Sales Company operations.\n\n#### Organizer — Business Owner\n\n- Packaged Volvo's in-house workshop-planning system for broader use across the global retail network, coordinating service demand with technicians, specialist tools, lifts, and workshop capacity.",
       "source": {
         "path": "data/cv.md",
         "headingPath": [
@@ -40,7 +40,7 @@
     {
       "id": "experience.volvo-americas-crm-transformation",
       "title": "Americas CRM transformation",
-      "text": "- Bridged Volvo Cars USA with global program and process owners in Gothenburg for the Americas move from Oracle CRM to Salesforce.\n- Worked hands-on through implementation, agent enablement, go-live, and hypercare to establish a globally aligned Customer Care platform in the United States.",
+      "text": "- Led the cross-functional bridge between Volvo Cars' U.S. and Swedish digital and process organizations for the move from a long-standing bespoke Oracle CRM to Salesforce.\n- Mapped current and future processes, represented global process owners in day-to-day decisions, transferred knowledge of Volvo's Salesforce customizations, shaped training content, and supported go-live and hypercare.\n- Delivered an on-schedule launch without major operational disruption, onboarding approximately 40–50 agents in an operation handling roughly 300,000–500,000 cases annually; smaller launch issues were resolved during the first two weeks.",
       "source": {
         "path": "data/cv.md",
         "headingPath": [
@@ -53,7 +53,7 @@
     {
       "id": "experience.volvo-customer-care-platforms-processes",
       "title": "Global Customer Care platforms and processes",
-      "text": "- Defined service processes in Salesforce Service Cloud and helped build custom customer-care workflows and a retailer case-management portal connecting central Customer Care with hundreds of retailers across roughly ten European markets.\n- Supported APAC operating-model alignment and enablement for a new Kuala Lumpur Customer Care hub through shared tools, process standards, and agent training material.",
+      "text": "- As part of Volvo Cars' central global process team, helped improve Customer Care processes, procedures, and Salesforce Service Cloud capabilities used by more than 500 agents across over 20 markets.\n- Partnered with regional hubs responsible for local QA, training, and onboarding while driving global consistency across an ecosystem handling approximately three million customer interactions annually.\n- Contributed to the broader Customer Care transformation during a period when global five-out-of-five top-box CSAT improved from approximately 78% to 85%; this was a shared organizational outcome.\n- Helped build a retailer case-management portal connecting central Customer Care and National Sales Companies with hundreds of retailers across roughly ten European markets.",
       "source": {
         "path": "data/cv.md",
         "headingPath": [
@@ -66,7 +66,7 @@
     {
       "id": "experience.volvo-care-by-volvo-fleet-services",
       "title": "Care by Volvo — Head of Fleet Services",
-      "text": "- Led more than ten process owners defining the subscription-vehicle lifecycle across ordering, service, roadside assistance, damage repair, and return.\n- Helped launch Care by Volvo across European markets, coordinating process, software, market operations, and retailer adoption.",
+      "text": "- Initially managed more than ten process owners defining the subscription-vehicle lifecycle across ordering, delivery, service, roadside assistance, damage repair, and return.\n- Continued supporting Care by Volvo across successive roles, contributing to every EMEA market launch—approximately 15 markets—through process development and enablement for National Sales Companies and retailers.\n- Led a secure Salesforce-based retailer collaboration capability that began with Care by Volvo and expanded into a standard tool for broader Customer Care and National Sales Company operations.",
       "source": {
         "path": "data/cv.md",
         "headingPath": [
@@ -188,7 +188,7 @@
     {
       "id": "cv.languages-location",
       "title": "Languages and location",
-      "text": "Native Swedish and fluent professional English. Based near Gothenburg, Sweden. Open to relocation, travel, remote, and hybrid roles in Europe or the United States. Previous employer-sponsored US work history; future authorization would depend on employer and role.\n\n---\n\nData last updated: 8 October 2026. Ask the conversational CV at the site root or fetch machine-readable resources from `/AGENTS.md` and `/llms.txt`.",
+      "text": "Native Swedish and fluent professional English. Based near Gothenburg, Sweden. Open to relocation, travel, remote, and hybrid roles in Europe or the United States. Previous employer-sponsored US work history; future authorization would depend on employer and role.\n\n---\n\nData last updated: 15 October 2026. Ask the conversational CV at the site root or fetch machine-readable resources from `/AGENTS.md` and `/llms.txt`.",
       "source": {
         "path": "data/cv.md",
         "headingPath": [
@@ -244,7 +244,7 @@
     {
       "id": "project.cx-intelligence",
       "title": "CX Intelligence — governed AI topic classification",
-      "text": "**Status:** Ongoing proof of concept with selected Volvo Cars markets; not production.\n\nConverts fragmented support contacts and survey signals into evidence-backed Customer Experience Intelligence. The current architecture uses two-stage GPT-5 topic induction and classification, governed Snowflake procedures, a human review queue, first-class coverage and confidence signals, Microsoft Foundry guidance agents, and a React/Vite validation interface.\n\nThe design separates what probabilistic AI may suggest from what governed data procedures are allowed to promote.\n\n**Verified validation milestone:** 15 candidate topics reviewed; 74 agree and 26 disagree; eight pass and six escalate; zero promotion mutations; approximately $11 of AI-service cost; usefulness verdict closed Yes on 11 August 2026; specificity, coverage, and distinctness each scored 3/3.",
+      "text": "**Status:** Working proof of concept in user testing; not production.\n\nBuilds a shared customer-data foundation and uses AI enrichment to organize Customer Care, survey, and related signals into a unified customer-topic taxonomy. The working proof of concept has clustered hundreds of thousands of Customer Care interactions. Microsoft Foundry agents assess sentiment, market self-service coverage, and related social conversations, then synthesize the evidence into summaries and recommended actions.\n\nThe intended operating model connects customer topics to improvement activities across markets and central teams so outcomes can become visible, reusable best practice. The architecture retains two-stage GPT-5 topic induction and classification, governed Snowflake procedures, explicit human review, first-class coverage and confidence signals, and a React/Vite validation interface. User testing is ongoing; production adoption and business impact have not yet been measured.\n\nThe design separates what probabilistic AI may suggest from what governed data procedures are allowed to promote.\n\n**Verified validation milestone:** 15 candidate topics reviewed; 74 agree and 26 disagree; eight pass and six escalate; zero promotion mutations; approximately $11 of AI-service cost; usefulness verdict closed Yes on 11 August 2026; specificity, coverage, and distinctness each scored 3/3.",
       "source": {
         "path": "data/projects.md",
         "headingPath": [

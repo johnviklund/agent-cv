@@ -24,6 +24,24 @@ The result is intentionally not a fit score, ranking, recommendation, or hiring 
 
 Before this extension, the site could answer one grounded question at a time. A recruiter and their agent could not jointly create, navigate, and clear a multi-role evidence matrix on the live page. WebMCP makes that shared human-agent interaction possible while the same page remains an accessible human interface.
 
+## Comparison behavior and extraction details
+
+The comparison sends the supplied title, company and server-detected requirement statements through the Cloudflare Worker to the OpenAI API; common informational sections are excluded. It uses a strict structured contract, approved evidence IDs, same-origin browser controls, a separate rate limit and monthly budget, and transient per-tab state. See the deployed `/AGENTS.md` and `/privacy/` documents for the complete agent and data-handling contract.
+
+Markdown batches mark each role with an explicit `## Role: <title>` or `## Role title: <title>` heading; JSON batches use `{ "roles": [...] }`. A browser preflight shows source-requirement counts, preserves each list item as one unit, and ignores common informational sections. The result exposes requirements that were not assessed and uses denominators beside coverage counts.
+
+Requirement extraction prefers explicit Responsibilities, Qualifications, In This Role, and Thrive sections. Each non-empty plain line or Markdown bullet is one requirement; indented bullet continuations stay together. When these sections exist, role-summary prose is excluded to avoid counting duplicate or promotional copy. Otherwise, summary prose supplies the fallback inventory. Common location, hybrid-work, relocation, compensation, benefits, and equal-opportunity boilerplate is excluded by heading or statement pattern, not by domain keywords. Preflight shows the exact detected inventory, explains exclusions and line boundaries, and offers optional local bullet normalization. This deterministic parser is not a guarantee of semantic completeness: move any additional summary requirement into a requirement section and review the inventory before submitting.
+
+The synthetic audit-shaped fixture checks 12/17/19 requirements across import, browser preflight, server inventory, and provider input. To verify an unchanged private copy locally without committing it, run `COMPARISON_PRIVATE_ROLES_PATH=/absolute/path/to/positions.md node --test test/comparison-core.test.mjs`. The optional test expects that audited three-role shape and outputs counts/assertions only. Provider-stub tests cover malformed JSON/schema output, one retry within one budget reservation, safe debug IDs, and public service errors.
+
+Production ChatGPT/Codex verification on 30 August 2026 covered all four tools, a rendered three-role matrix, privacy-bounded state, cell focus, clear, and four-role rejection without state mutation.
+
+| Client path | Current status | Portable fallback |
+| --- | --- | --- |
+| OpenAI ChatGPT Work/Codex built-in browser | Production discovery and invocation verified on 30 August: three-role comparison, bounded state, cell focus, clear, and four-role rejection | Manual UI and HTTP API |
+| Chrome experimental WebMCP implementation | Native registration and invocation tested locally | Manual UI and HTTP API |
+| Grok, Hermes Agent, OpenClaw, and other agents | No native WebMCP certification claimed | Ordinary browser automation, manual UI, public resources, or HTTP API |
+
 ## Reproduce locally
 
 ```sh

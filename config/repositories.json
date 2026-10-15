@@ -2,8 +2,8 @@
   {
     "project": "Agent CV",
     "repository": "johnviklund/agent-cv",
-    "documents": ["README.md", "AGENTS.md", "USERGUIDE.md"],
-    "localDocuments": ["README.md", "AGENTS.md", "USERGUIDE.md"]
+    "documents": ["README.md"],
+    "localDocuments": ["README.md"]
   },
   {
     "project": "j-skills",

@@ -65,16 +65,20 @@ test("batch entry publishes a downloadable Markdown template", async () => {
 });
 
 test("compatibility notes separate native WebMCP validation from portable fallbacks", async () => {
-  const [agents, readme] = await Promise.all([read("public/AGENTS.md"), read("README.md")]);
-  for (const resource of [agents, readme]) {
+  const [agents, readme, submission] = await Promise.all([
+    read("public/AGENTS.md"),
+    read("README.md"),
+    read("docs/webmcp-challenge-submission.md"),
+  ]);
+  for (const resource of [agents, readme, submission]) {
     assert.match(resource, /ChatGPT Work\/Codex/i);
     assert.match(resource, /Chrome[^.]*experimental WebMCP/i);
-    assert.match(resource, /Grok/i);
     assert.match(resource, /browser automation|manual UI/i);
     assert.match(resource, /HTTP API/i);
   }
-  assert.match(readme, /Production discovery and invocation verified on 30 August/i);
-  assert.match(readme, /four-role rejection without state mutation/i);
+  for (const resource of [agents, submission]) assert.match(resource, /Grok/i);
+  assert.match(submission, /Production discovery and invocation verified on 30 August/i);
+  assert.match(submission, /four-role rejection without state mutation/i);
   assert.match(agents, /Production discovery and invocation were verified/i);
   assert.match(readme, /2026-08-30/);
   assert.match(readme, /WebMCP Challenge/i);

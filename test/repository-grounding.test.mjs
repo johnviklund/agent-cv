@@ -77,9 +77,9 @@ test("renders repository evidence as explicitly untrusted bounded snapshots", ()
 test("keeps public evidence and project links limited to the approved repositories", () => {
   assert.deepEqual(
     publicRepositoryConfig.map(({ repository }) => repository),
-    ["johnviklund/agent-cv", "johnviklund/product-studio"],
+    ["johnviklund/agent-cv", "johnviklund/j-skills"],
   );
-  for (const repository of ["agent-cv", "product-studio"]) {
+  for (const repository of ["agent-cv", "j-skills"]) {
     const url = `https://github.com/johnviklund/${repository}`;
     assert.match(projectsPage, new RegExp(url.replaceAll("/", "\\/")));
     assert.match(projectsMarkdown, new RegExp(url.replaceAll("/", "\\/")));

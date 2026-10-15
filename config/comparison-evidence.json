@@ -74,19 +74,12 @@
       "source": { "path": "data/overview.md", "headingPath": ["Roles of interest"] }
     },
     {
-      "id": "project.product-studio",
-      "source": { "path": "data/projects.md", "headingPath": ["Product Studio — governed multi-agent execution loop"] },
-      "supportingSources": [
-        { "path": "data/repositories.md", "headingPath": ["Product Studio"] }
-      ]
-    },
-    {
       "id": "project.cx-intelligence",
       "source": { "path": "data/projects.md", "headingPath": ["CX Intelligence — governed AI topic classification"] }
     },
     {
-      "id": "project.workflow",
-      "source": { "path": "data/projects.md", "headingPath": ["workflow — personal agent methodology"] }
+      "id": "project.j-skills",
+      "source": { "path": "data/projects.md", "headingPath": ["j-skills — skills for coding agents"] }
     },
     {
       "id": "project.cx-newsletter",

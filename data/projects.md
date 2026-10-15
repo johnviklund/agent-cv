@@ -1,38 +1,28 @@
 # Selected AI projects
 
-## Product Studio — governed multi-agent execution loop
-
-**Status:** Active local-first personal system with a public repository; not commercially launched.
-
-A local-first control plane for running AI coding-agent work across repositories as a governed lifecycle: idea, brainstorm, spec, plan, execute, review, test, ship, and learn.
-
-The implemented baseline is a Next.js and TypeScript application where versioned `.founder/` artifacts are durable workflow truth, a deterministic controller owns transitions and evidence checks, a connected Agent Client Protocol runtime performs bounded attempts, and SQLite remains a rebuildable projection. Agents cannot approve their own work; reviewer access stays source-read-only. The public architecture document clearly separates this working baseline from later service, policy, and orchestration options.
-
-**Stack:** Next.js, TypeScript, Tailwind, shadcn/ui, better-sqlite3, and an Agent Client Protocol adapter.
-
-**Verified scale on 15 August 2026:** 1,127 tracked files and 44 test files in the complete public Git tree.
-
-**Public repository:** [github.com/johnviklund/product-studio](https://github.com/johnviklund/product-studio)
-
 ## CX Intelligence — governed AI topic classification
 
-**Status:** Working proof of concept in user testing; not production.
+**Status:** Working proof of concept moving into beta; not production.
 
-Builds a shared customer-data foundation and uses AI enrichment to organize Customer Care, survey, and related signals into a unified customer-topic taxonomy. The working proof of concept has clustered hundreds of thousands of Customer Care interactions. Microsoft Foundry agents assess sentiment, market self-service coverage, and related social conversations, then synthesize the evidence into summaries and recommended actions.
+Turns governed Customer Care and survey signals into evidence-backed intelligence about customer friction: where customers hit effort, confusion, repeat contact, or failed self-service. Each customer topic carries its evidence, a Customer Friction Score, sentiment, weekly trends, market and vehicle-model heat maps, related social conversations, and self-service coverage, plus a recommended next step that can be "keep watching." A daily Pulse edition summarizes what is worth following.
 
-The intended operating model connects customer topics to improvement activities across markets and central teams so outcomes can become visible, reusable best practice. The architecture retains two-stage GPT-5 topic induction and classification, governed Snowflake procedures, explicit human review, first-class coverage and confidence signals, and a React/Vite validation interface. User testing is ongoing; production adoption and business impact have not yet been measured.
+Topics are not embedding clusters. A language model proposes topics with defining conditions and include/exclude guidance into a versioned catalog, and a shortlist-and-verify classifier links each contact to every topic whose condition it shows. A model identifies friction outcomes; deterministic code computes scores, counts, and coverage.
 
-The design separates what probabilistic AI may suggest from what governed data procedures are allowed to promote.
+The design principle is that agents think and the backend decides. Microsoft Foundry worker agents propose, independent reviewer agents challenge, and deterministic policy over governed Snowflake procedures activates changes with versioning and one-step rollback. The target operating model replaces routine approval queues with people who comment, flag, pause, and roll back. Models are chosen per task and compared on the same frozen inputs for correctness, evidence support, unsupported claims, latency, failure rate, and cost.
 
-**Verified validation milestone:** 15 candidate topics reviewed; 74 agree and 26 disagree; eight pass and six escalate; zero promotion mutations; approximately $11 of AI-service cost; usefulness verdict closed Yes on 11 August 2026; specificity, coverage, and distinctness each scored 3/3.
+Production adoption and business impact have not yet been measured.
 
-## workflow — personal agent methodology
+## j-skills — skills for coding agents
 
-**Status:** Active, maintained, and used daily.
+**Status:** Active, public, MIT-licensed, and used daily.
 
-A file-backed instruction system for a solo-development loop: brainstorm, spec, plan, execute, review, and learn. Work is organized around vendor-neutral seats, cross-vendor review is an invariant, and model-routing changes are evaluated before adoption rather than silently self-modifying.
+Ten skills for Claude Code, Codex CLI, and GitHub Copilot CLI. The core `workflow` skill takes a coding task through brainstorm, plan, execute, review, and wrap, with saved run state so a fresh session can resume, a reviewer normally from a different model vendor, and per-step model routing. Supporting skills cover app verification, durable memory, session retrospectives, cited HTML explainers, plain-language rewriting, and writing instructions for agents.
 
-**Scale:** 18 skill Markdown files and five top-level skills as of July 2026.
+The `evals` skill grades candidate reviewer models against golden sets for bug detection and false alarms, so model-routing changes are measured before adoption rather than silently self-modifying. It evolved from John's earlier private workflow methodology.
+
+**Scale on 15 October 2026:** ten skills, 79 tracked files, and 71 commits since 3 October 2026; plugin version 2.2.0.
+
+**Public repository:** [github.com/johnviklund/j-skills](https://github.com/johnviklund/j-skills)
 
 ## CX Newsletter — AI-scored research curation
 

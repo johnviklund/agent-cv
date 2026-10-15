@@ -1,4 +1,5 @@
 import meta from "./data/meta.md";
+import cv from "./data/cv.md";
 import overview from "./data/overview.md";
 import experience from "./data/experience.md";
 import projects from "./data/projects.md";
@@ -8,5 +9,5 @@ import personal from "./data/personal.md";
 import interests from "./data/interests.md";
 import faq from "./data/faq.md";
 
-export const knowledge = [meta, overview, experience, projects, repositories, skills, personal, interests, faq]
+export const knowledge = [meta, cv, overview, experience, projects, repositories, skills, personal, interests, faq]
   .join("\n\n---\n\n");

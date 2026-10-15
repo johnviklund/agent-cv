@@ -16,9 +16,11 @@ The implemented baseline is a Next.js and TypeScript application where versioned
 
 ## CX Intelligence — governed AI topic classification
 
-**Status:** Ongoing proof of concept with selected Volvo Cars markets; not production.
+**Status:** Working proof of concept in user testing; not production.
 
-Converts fragmented support contacts and survey signals into evidence-backed Customer Experience Intelligence. The current architecture uses two-stage GPT-5 topic induction and classification, governed Snowflake procedures, a human review queue, first-class coverage and confidence signals, Microsoft Foundry guidance agents, and a React/Vite validation interface.
+Builds a shared customer-data foundation and uses AI enrichment to organize Customer Care, survey, and related signals into a unified customer-topic taxonomy. The working proof of concept has clustered hundreds of thousands of Customer Care interactions. Microsoft Foundry agents assess sentiment, market self-service coverage, and related social conversations, then synthesize the evidence into summaries and recommended actions.
+
+The intended operating model connects customer topics to improvement activities across markets and central teams so outcomes can become visible, reusable best practice. The architecture retains two-stage GPT-5 topic induction and classification, governed Snowflake procedures, explicit human review, first-class coverage and confidence signals, and a React/Vite validation interface. User testing is ongoing; production adoption and business impact have not yet been measured.
 
 The design separates what probabilistic AI may suggest from what governed data procedures are allowed to promote.
 

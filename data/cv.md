@@ -122,7 +122,7 @@ Public, MIT-licensed Omarchy desktop widget that counts down to the next SpaceX 
 - Agent harnesses, tool integration, retrieval, structured outputs, evaluations, and human-in-the-loop systems
 - AI product strategy, enterprise adoption, governance, responsible AI, and build-versus-buy decisions
 - Product strategy and management, Customer Experience, CRM, service design, and global transformation
-- Hands-on project work across Python, Go, TypeScript, JavaScript, SQL, Snowflake, Microsoft Foundry, React, Next.js, Hono, SQLite, GraphQL, and Three.js
+- Hands-on project work across Python, JavaScript, SQL, QML, and shell, with Snowflake, Microsoft Foundry, React, and Cloudflare Workers
 
 ## Education
 

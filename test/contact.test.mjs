@@ -22,9 +22,9 @@ async function readTree(directory) {
 }
 
 test("contact page promotes the deliberate public channels", () => {
-  assert.match(contactPage, /href=["']https:\/\/www\.linkedin\.com\/in\/[^"'\s/?#]+\/["'][^>]*\brel=["']me["']/i);
+  assert.match(contactPage, /href=["']https:\/\/www\.linkedin\.com\/in\/[^"'\s/?#]+\/["'][^>]*\brel=["'](?:[^"']*\s)?me(?:\s[^"']*)?["']/i);
   assert.match(contactPage, /href=["']mailto:johnwik@gmail\.com["']/i);
-  assert.match(contactPage, /href=["']https:\/\/x\.com\/johnviklund["'][^>]*\brel=["']me["']/i);
+  assert.match(contactPage, /href=["']https:\/\/x\.com\/johnviklund["'][^>]*\brel=["'](?:[^"']*\s)?me(?:\s[^"']*)?["']/i);
   assert.doesNotMatch(contactPage, /temporarily unavailable/i);
 });
 

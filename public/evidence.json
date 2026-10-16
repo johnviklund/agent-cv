@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "digest": "sha256:6bd84aafd336213124a74a602d37c9742b5242d3a131d4fb7ca9c9c51da06e22",
+  "digest": "sha256:ec1a7016a9f7ee0fc987c9d97fd4c95416da3f9e15a4f445d0b45bc8f1b632de",
   "items": [
     {
       "id": "cv.profile",
@@ -166,7 +166,7 @@
     {
       "id": "cv.capabilities",
       "title": "Capabilities",
-      "text": "- Applied AI, LLM applications, AI agents, conversational AI, prompt and context engineering\n- Agent harnesses, tool integration, retrieval, structured outputs, evaluations, and human-in-the-loop systems\n- AI product strategy, enterprise adoption, governance, responsible AI, and build-versus-buy decisions\n- Product strategy and management, Customer Experience, CRM, service design, and global transformation\n- Hands-on project work across Python, Go, TypeScript, JavaScript, SQL, Snowflake, Microsoft Foundry, React, Next.js, Hono, SQLite, GraphQL, and Three.js",
+      "text": "- Applied AI, LLM applications, AI agents, conversational AI, prompt and context engineering\n- Agent harnesses, tool integration, retrieval, structured outputs, evaluations, and human-in-the-loop systems\n- AI product strategy, enterprise adoption, governance, responsible AI, and build-versus-buy decisions\n- Product strategy and management, Customer Experience, CRM, service design, and global transformation\n- Hands-on project work across Python, JavaScript, SQL, QML, and shell, with Snowflake, Microsoft Foundry, React, and Cloudflare Workers",
       "source": {
         "path": "data/cv.md",
         "headingPath": [

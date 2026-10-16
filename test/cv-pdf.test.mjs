@@ -15,11 +15,12 @@ test("the CV PDF is built from the public CV with contacts and a link back to th
   assert.match(html, /href="https:\/\/www\.linkedin\.com\/in\/johnviklund\/"/);
   assert.match(html, /<footer>[^<]*<a href="https:\/\/johnviklund\.com">/);
   assert.match(html, /<h2>Capabilities<\/h2>\n<p>[^<]+ · /);
-  assert.doesNotMatch(html, /Selected transformation case studies/);
+  assert.doesNotMatch(html, /Selected transformation case studies|Selected applied-AI projects/);
+  assert.match(html, /Generated automatically from John's approved CV data/);
   assert.doesNotMatch(html, /tel:|@font-face|file:\/\//i);
 });
 
-test("the CV PDF condenses projects and earlier roles without dropping later sections", () => {
+test("the CV PDF omits projects and condenses earlier roles without dropping later sections", () => {
   const markdown = [
     "# Name", "", "## Experience", "",
     "### Axient — Manager", "", "- First", "- Second", "",
@@ -31,8 +32,7 @@ test("the CV PDF condenses projects and earlier roles without dropping later sec
 
   assert.match(html, /<li>First<\/li><\/ul>/);
   assert.doesNotMatch(html, /Second/);
-  assert.match(html, /<strong>Tool<\/strong> — Does one thing\.<\/li>/);
-  assert.doesNotMatch(html, /Then more/);
+  assert.doesNotMatch(html, /Tool|Does one thing/);
   assert.match(html, /<p>Alpha · Beta<\/p>/);
   assert.match(html, /Updated 1 May 2026/);
 });

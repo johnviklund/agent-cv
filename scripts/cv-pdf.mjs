@@ -1,9 +1,7 @@
 // Builds the print-only HTML for /cv.pdf from the canonical public CV.
 // Kept free of filesystem and browser access so it can be tested directly.
 
-const OMITTED_SECTIONS = new Set(["Selected transformation case studies"]);
-// Sections condensed to one bullet per entry: the heading plus its first sentence.
-const CONDENSED_SECTIONS = new Set(["Selected applied-AI projects"]);
+const OMITTED_SECTIONS = new Set(["Selected transformation case studies", "Selected applied-AI projects"]);
 // Earlier roles keep only the first bullet of each list; the site has the rest.
 const FIRST_BULLET_ROLES = ["Axient —", "StreamServe / OpenText —"];
 // Sections whose bullets are joined into one compact paragraph.
@@ -18,7 +16,7 @@ export function buildCvPrintHtml(markdown, { email }) {
     link("https://x.com/johnviklund", "x.com/johnviklund"),
     link("https://www.linkedin.com/in/johnviklund/", "linkedin.com/in/johnviklund"),
   ].join(" · ");
-  const footer = `Case studies, projects, and an AI agent grounded in this CV: ${link(SITE_URL, "johnviklund.com")}${updated ? ` · Updated ${escapeHtml(updated)}` : ""}`;
+  const footer = `Generated automatically from John's approved CV data at ${link(SITE_URL, "johnviklund.com")}, where you can also find case studies and an AI agent grounded in this CV.${updated ? ` Updated ${escapeHtml(updated)}.` : ""}`;
 
   return `<!doctype html>
 <html lang="en">
@@ -57,23 +55,15 @@ function parseCv(markdown) {
   const html = [];
   let list = [];
   let skipping = false;
-  let condensing = false;
   let inlineList = false;
   let firstBulletOnly = false;
   let contactsPlaced = false;
-  let entry = null;
   let updated = "";
 
   const flush = () => {
     if (list.length && inlineList) html.push(`<p>${list.map(inline).join(" · ")}</p>`);
     else if (list.length) html.push(`<ul>${list.map((item) => `<li>${inline(item)}</li>`).join("")}</ul>`);
     list = [];
-  };
-  const finishCondensed = () => {
-    if (!condensing) return;
-    flush();
-    html.push(`<p class="meta">Details: ${link(`${SITE_URL}/projects/`, "johnviklund.com/projects")}</p>`);
-    condensing = false;
   };
 
   for (const raw of lines) {
@@ -83,11 +73,9 @@ function parseCv(markdown) {
     if (line === "---") skipping = true;
 
     if (line.startsWith("## ")) {
-      finishCondensed();
       flush();
       const heading = line.slice(3);
       skipping = OMITTED_SECTIONS.has(heading);
-      condensing = CONDENSED_SECTIONS.has(heading);
       firstBulletOnly = false;
       if (!contactsPlaced) {
         html.push("<!--contacts-->");
@@ -99,14 +87,6 @@ function parseCv(markdown) {
     }
     if (skipping) continue;
 
-    if (condensing) {
-      if (line.startsWith("### ")) entry = line.slice(4);
-      else if (line && entry) {
-        list.push(`**${entry}** — ${firstSentence(line)}`);
-        entry = null;
-      }
-      continue;
-    }
 
     if (line.startsWith("- ")) {
       if (!firstBulletOnly || list.length === 0) list.push(line.slice(2));
@@ -124,14 +104,8 @@ function parseCv(markdown) {
     else if (/^\*\*[^*]+\*\*$/.test(line)) html.push(`<p class="meta">${inline(line.slice(2, -2))}</p>`);
     else html.push(`<p>${inline(line)}</p>`);
   }
-  finishCondensed();
   flush();
   return { body: html.join("\n"), updated };
-}
-
-function firstSentence(text) {
-  const match = text.match(/^.+?\.(?=\s|$)/);
-  return match ? match[0] : text;
 }
 
 function inline(text) {

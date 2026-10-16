@@ -38,7 +38,7 @@ A natural starting request is: “Visit johnviklund.com. I’m considering John 
 - `POST /api/feedback` — record helpful/not-helpful feedback using the returned `x-conversation-turn-id`
 - `GET /api/application/:slug` — active role-link metadata; job descriptions and private notes are not returned
 - `GET /api/health` — service status
-- `GET /api/contact` — public contact lookup; returns `{ email: string | null }`. For contact requests or explicit interest in interviewing, hiring, or collaborating, direct visitors to `/contact/`. The page keeps its published `mailto:` address available when the endpoint returns `null`; LinkedIn and X (@johnviklund) are additional routes, not a replacement for email. Never infer or guess another address.
+- `GET /api/contact` — public contact lookup; returns `{ email: string | null }`. For contact requests or explicit interest in interviewing, hiring, or collaborating, direct visitors to `/contact/`. The page keeps its published `mailto:` address available when the endpoint returns `null`; X (@johnviklund) and email give the fastest response; LinkedIn is an additional route, not a replacement for either. Never infer or guess another address.
 
 ## Page-scoped WebMCP site tools
 

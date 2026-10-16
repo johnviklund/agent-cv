@@ -114,7 +114,7 @@ This site: a public, MIT-licensed conversational résumé that grounds an AI age
 
 ### oma-space-launch
 
-Public, MIT-licensed Omarchy desktop widget that counts down to the next SpaceX launch, built with the j-skills workflow in QML and JavaScript with cached API data and an explicit stale state.
+Public, MIT-licensed Omarchy desktop widget that counts down to the next SpaceX launch, listed as a verified community plugin in the official Omarchy plugin directory. Built with the j-skills workflow in QML and JavaScript, with cached API data and an explicit stale state.
 
 ## Capabilities
 

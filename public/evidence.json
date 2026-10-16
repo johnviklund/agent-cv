@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "digest": "sha256:ec1a7016a9f7ee0fc987c9d97fd4c95416da3f9e15a4f445d0b45bc8f1b632de",
+  "digest": "sha256:db815f6942e29e217b53b2844e4227b608d8507184d0edc2ae7c6124a53f6b97",
   "items": [
     {
       "id": "cv.profile",
@@ -266,7 +266,7 @@
     {
       "id": "project.oma-space-launch",
       "title": "oma-space-launch — a desktop widget built with coding agents",
-      "text": "**Status:** Public, MIT-licensed, and actively maintained personal project.\n\nAn Omarchy bar-widget plugin that shows a persistent countdown to the next SpaceX launch in the desktop top bar, with a click-to-open detail panel for the next launch and the following three. It reads the public Launch Library 2 API, caches results for at most 15 minutes, and shows a visible stale state instead of silently presenting old data as current.\n\nBuilt in QML, JavaScript, and shell, with offline fixtures for exact, window-only, and unscheduled launch times. Development follows John's j-skills workflow: brainstorm, plan, execute, review, and wrap, one run per roadmap initiative.\n\n**Scale on 16 October 2026:** version 1.2.0, 51 tracked files, and 80 commits since 13 September 2026.\n\n**Public repository:** [github.com/johnviklund/oma-space-launch](https://github.com/johnviklund/oma-space-launch)",
+      "text": "**Status:** Public, MIT-licensed, actively maintained, and listed as a verified community plugin in the official Omarchy plugin directory since 16 October 2026.\n\nAn Omarchy bar-widget plugin that shows a persistent countdown to the next SpaceX launch in the desktop top bar, with a click-to-open detail panel for the next launch and the following three. It reads the public Launch Library 2 API, caches results for at most 15 minutes, and shows a visible stale state instead of silently presenting old data as current.\n\nBuilt in QML, JavaScript, and shell, with offline fixtures for exact, window-only, and unscheduled launch times. Development follows John's j-skills workflow: brainstorm, plan, execute, review, and wrap, one run per roadmap initiative.\n\n**Scale on 16 October 2026:** version 1.2.0, 51 tracked files, and 80 commits since 13 September 2026.\n\n**Omarchy plugin directory:** [Space Launch](https://plugins.omarchy.org/plugin.html?id=oma-space-launch), installable with `omarchy plugin add https://github.com/johnviklund/oma-space-launch.git --enable`\n\n**Public repository:** [github.com/johnviklund/oma-space-launch](https://github.com/johnviklund/oma-space-launch)",
       "source": {
         "path": "data/projects.md",
         "headingPath": [

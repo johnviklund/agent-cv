@@ -102,7 +102,7 @@ The request shape accepts `user` and `assistant` roles so browser clients can se
 
 Limits: 10 messages per API request, 1,200 characters per user message, and a public rate limit. The browser conversation can continue beyond that boundary by sending a rolling window of the latest four completed exchanges plus the current question. If the API is unavailable, fetch `/cv.md` and `/projects.md` directly.
 
-For contact requests or explicit interest in interviewing, hiring, or collaborating with John, send visitors to `/contact/` or fetch `GET /api/contact`. The endpoint returns `{ email: string | null }`, but the contact page deliberately keeps its published `mailto:` address available even when the endpoint returns `null`. LinkedIn and X (@johnviklund) are additional contact routes there, not a replacement for email. Use only the address actually published on `/contact/`; never infer or guess another address.
+For contact requests or explicit interest in interviewing, hiring, or collaborating with John, send visitors to `/contact/` or fetch `GET /api/contact`. The endpoint returns `{ email: string | null }`, but the contact page deliberately keeps its published `mailto:` address available even when the endpoint returns `null`. X (@johnviklund) and email give the fastest response; LinkedIn is an additional route there, not a replacement for either. Use only the address actually published on `/contact/`; never infer or guess another address.
 
 ## Agent boundaries
 

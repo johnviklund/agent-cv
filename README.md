@@ -63,6 +63,8 @@ npm run dev                      # http://localhost:8787
 
 `npm run bootstrap:data` copies generic placeholders from `examples/private-data/` only where a private data file is missing; it never overwrites reviewed data. Run the full verification with `npm run check`, and `npm run build` for Worker packaging changes.
 
+Deploying a fork needs its own Cloudflare setup: a KV namespace, OpenAI and admin secrets, your own contact email and limits in `wrangler.jsonc`, and a custom domain with matching canonical metadata. Follow [Deploy your fork](USERGUIDE.md#deploy-your-fork) in the user guide before running `npm run deploy`.
+
 ## Repository map
 
 | Path | Contents |

@@ -104,21 +104,17 @@ John owns a proof of concept that combines a shared customer-data foundation, a 
 
 Working Volvo Cars proof of concept moving into beta: a governed Snowflake and Microsoft Foundry system that classifies Customer Care interactions into a versioned customer-topic catalog and scores customer friction. Worker agents propose, independent reviewer agents challenge, and deterministic policy decides. Agents also analyze sentiment, self-service coverage, and related social conversations, then synthesize findings and recommend actions. Production adoption and business impact have not yet been measured.
 
-### CX Newsletter
-
-Production-use research pipeline at Volvo Cars: AI-scored content curation across 236 sources and approximately 1,867 wiki knowledge files, with resumable Python stages and partial-failure recovery.
-
-### Volvo Evidence CLI
-
-Shipped internal Go CLI for deterministic, market-scoped evidence retrieval with citations, SQLite/FTS5, GraphQL, retries, and coverage diagnostics.
-
 ### j-skills
 
 Active public set of ten skills for Claude Code, Codex CLI, and GitHub Copilot CLI: a five-step coding workflow with cross-vendor review and model routing, plus evals that grade candidate reviewer models on bug detection and false alarms.
 
-### Agentoria
+### Agent CV
 
-Active personal MVP that turns multi-agent work into a legible Three.js/WebGPU hex-tile world. Approximately 198 tracked files and 21,600 lines of source.
+This site: a public, MIT-licensed conversational résumé that grounds an AI agent in reviewed Markdown, treats visitor input as untrusted, and streams a sanitized public contract from a Cloudflare Worker.
+
+### oma-space-launch
+
+Public, MIT-licensed Omarchy desktop widget that counts down to the next SpaceX launch, built with the j-skills workflow in QML and JavaScript with cached API data and an explicit stale state.
 
 ## Capabilities
 

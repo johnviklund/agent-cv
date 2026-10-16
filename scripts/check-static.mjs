@@ -7,6 +7,8 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const publicDir = resolve(root, "public");
 const pages = await collectHtml(publicDir);
 const failures = [];
+// Built during deploy rather than committed, so it is absent from a clean checkout.
+const DEPLOY_GENERATED = new Set(["/john-viklund-cv.pdf"]);
 
 await checkApiResourceParity();
 await checkInlineScriptCsp();
@@ -45,7 +47,7 @@ for (const page of pages) {
 
   for (const match of html.matchAll(/href="(\/[^"]*)"/g)) {
     const href = match[1].split(/[?#]/)[0];
-    if (!href || href.startsWith("/api/") || href === "/") continue;
+    if (!href || href.startsWith("/api/") || href === "/" || DEPLOY_GENERATED.has(href)) continue;
     const target = extname(href)
       ? resolve(publicDir, `.${href}`)
       : resolve(publicDir, `.${href}`, "index.html");

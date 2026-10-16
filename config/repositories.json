@@ -9,5 +9,10 @@
     "project": "j-skills",
     "repository": "johnviklund/j-skills",
     "documents": ["README.md"]
+  },
+  {
+    "project": "oma-space-launch",
+    "repository": "johnviklund/oma-space-launch",
+    "documents": ["README.md"]
   }
 ]

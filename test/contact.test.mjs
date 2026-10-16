@@ -16,6 +16,8 @@ async function readTree(directory) {
   const files = await Promise.all(entries.map(async (entry) => {
     const path = join(directory, entry.name);
     if (entry.isDirectory()) return readTree(path);
+    // The deploy-built PDF is binary; its text comes from public/cv.md, which is scanned.
+    if (entry.name.endsWith(".pdf")) return [];
     return [{ path, source: await readFile(path, "utf8") }];
   }));
   return files.flat();

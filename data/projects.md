@@ -24,32 +24,6 @@ The `evals` skill grades candidate reviewer models against golden sets for bug d
 
 **Public repository:** [github.com/johnviklund/j-skills](https://github.com/johnviklund/j-skills)
 
-## CX Newsletter — AI-scored research curation
-
-**Status:** Active and in production use at Volvo Cars.
-
-A resumable Python pipeline that scans external sources, scores relevance to Customer Experience and Customer Care, and produces daily or weekly newsletter drafts plus a wiki-backed research base.
-
-**Architecture:** Typer CLI; scan, import, score, wiki, and draft stages; GitHub Copilot CLI; a Claude Sonnet-class model; feedparser; httpx; trafilatura; BeautifulSoup; TinyDB; Pydantic; manifest tracking and partial-failure recovery.
-
-**Scale:** 236 curated sources and approximately 1,867 wiki knowledge files.
-
-## Volvo Evidence CLI — citation-first retrieval
-
-**Status:** Shipped v1; private/internal Volvo Cars work.
-
-A Go CLI that retrieves market-scoped evidence from official sources and returns deterministic citations instead of generated answers. It uses Cobra, SQLite/FTS5, GraphQL, locale normalization, retries, rate limiting, and coverage diagnostics.
-
-**Scale:** approximately 44 Go source files; v1 coverage diagnostics shipped 10 July 2026.
-
-## Agentoria — a living world for agent activity
-
-**Status:** Active personal side project; MVP in progress.
-
-A visual system that makes multi-agent task activity legible as a growing hex-tile world. The stack includes a pnpm monorepo, Three.js WebGPU/TSL, deterministic procedural generation, Wave Function Collapse, Hono, SQLite, Drizzle, REST/WebSocket communication, and a zero-dependency TypeScript SDK.
-
-**Scale:** approximately 198 tracked files and approximately 21,600 lines of source.
-
 ## Agent CV — this site
 
 **Status:** Public, MIT-licensed, deployed, and actively maintained.
@@ -58,10 +32,14 @@ The résumé itself is an AI system: reviewed Markdown evidence is bundled into 
 
 **Public repository:** [github.com/johnviklund/agent-cv](https://github.com/johnviklund/agent-cv)
 
-## Volvo Cars Support — owner-support evidence retrieval
+## oma-space-launch — a desktop widget built with coding agents
 
-**Status:** Personal prototype.
+**Status:** Public, MIT-licensed, and actively maintained personal project.
 
-An OpenClaw skill that searches public Volvo owner manuals, knowledge articles, PDFs, and support content through Volvo's GraphQL API. It demonstrates a lightweight evidence-retrieval pattern: model- and market-scoped search, quoted matching passages, and links back to source material rather than unsupported generation.
+An Omarchy bar-widget plugin that shows a persistent countdown to the next SpaceX launch in the desktop top bar, with a click-to-open detail panel for the next launch and the following three. It reads the public Launch Library 2 API, caches results for at most 15 minutes, and shows a visible stale state instead of silently presenting old data as current.
 
-**Stack:** Shell, GraphQL, `curl`, `jq`, and Markdown skill instructions.
+Built in QML, JavaScript, and shell, with offline fixtures for exact, window-only, and unscheduled launch times. Development follows John's j-skills workflow: brainstorm, plan, execute, review, and wrap, one run per roadmap initiative.
+
+**Scale on 16 October 2026:** version 1.2.0, 51 tracked files, and 80 commits since 13 September 2026.
+
+**Public repository:** [github.com/johnviklund/oma-space-launch](https://github.com/johnviklund/oma-space-launch)

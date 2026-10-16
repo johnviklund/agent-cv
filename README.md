@@ -52,7 +52,7 @@ Extraction rules, test fixtures, verification records, and the demo script are i
 
 ## Run it locally
 
-Requires Node.js 24, an OpenAI API key, and (for deployment) a Cloudflare account.
+Requires Node.js 24, an OpenAI API key, and (for deployment) a Cloudflare account plus Chromium, which prints `/john-viklund-cv.pdf` from `data/cv.md` on every deploy.
 
 ```sh
 npm ci

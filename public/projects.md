@@ -34,12 +34,14 @@ The résumé itself is an AI system: reviewed Markdown evidence is bundled into 
 
 ## oma-space-launch — a desktop widget built with coding agents
 
-**Status:** Public, MIT-licensed, and actively maintained personal project.
+**Status:** Public, MIT-licensed, actively maintained, and listed as a verified community plugin in the official Omarchy plugin directory since 16 October 2026.
 
 An Omarchy bar-widget plugin that shows a persistent countdown to the next SpaceX launch in the desktop top bar, with a click-to-open detail panel for the next launch and the following three. It reads the public Launch Library 2 API, caches results for at most 15 minutes, and shows a visible stale state instead of silently presenting old data as current.
 
 Built in QML, JavaScript, and shell, with offline fixtures for exact, window-only, and unscheduled launch times. Development follows John's j-skills workflow: brainstorm, plan, execute, review, and wrap, one run per roadmap initiative.
 
 **Scale on 16 October 2026:** version 1.2.0, 51 tracked files, and 80 commits since 13 September 2026.
+
+**Omarchy plugin directory:** [Space Launch](https://plugins.omarchy.org/plugin.html?id=oma-space-launch), installable with `omarchy plugin add https://github.com/johnviklund/oma-space-launch.git --enable`
 
 **Public repository:** [github.com/johnviklund/oma-space-launch](https://github.com/johnviklund/oma-space-launch)

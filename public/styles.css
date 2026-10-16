@@ -1433,7 +1433,7 @@ button:active:not(:disabled) { transform: translateY(1px); }
 @media (min-width: 48rem) {
   .home-stage { padding-block: var(--space-3xl); }
   .home-interaction { padding: var(--space-lg); }
-  .proof-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .proof-list, .work-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .timeline-item { grid-template-columns: 180px minmax(0, 1fr); gap: var(--space-xl); }
   .project-row { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); }
   .project-action { grid-column: 1 / -1; }
@@ -1445,7 +1445,7 @@ button:active:not(:disabled) { transform: translateY(1px); }
   .hero-intro { grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); align-items: start; gap: var(--space-3xl); }
   .hero-copy { padding-top: var(--space-sm); }
   .proof-list { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .work-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .work-list { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .project-row { grid-template-columns: minmax(0, 1.25fr) minmax(0, .8fr) auto; gap: var(--space-lg); }
   .project-action { grid-column: auto; justify-self: end; }
 }

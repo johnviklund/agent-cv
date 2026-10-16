@@ -37,6 +37,8 @@ test("makes conversation learning a private approval-gated Codex workflow", asyn
   assert.match(userGuide, /review my conversation learnings/i);
   assert.match(userGuide, /admin.*optional visual/i);
   assert.match(userGuide, /deletes the exact brief and any exact raw export/i);
-  assert.match(publicAgents, /approval-gated proposals/i);
-  assert.match(llms, /Conversation-derived proposals are never published automatically/i);
+  for (const publicGuide of [publicAgents, llms]) {
+    assert.doesNotMatch(publicGuide, /asks? Codex|conversation learnings|\/api\/admin\//i);
+    assert.match(publicGuide, /Administrative endpoints are private and authenticated/i);
+  }
 });

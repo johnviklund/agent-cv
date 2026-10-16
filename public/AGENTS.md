@@ -15,7 +15,7 @@ This site is a conversational résumé for John Viklund, CX AI Lead, applied-AI 
 - `/sitemap.xml` — canonical human and machine-readable URL inventory
 - `/privacy/` — plain-language conversation data and retention policy
 - `https://github.com/johnviklund/agent-cv` — public source, tests, and repository-grounding manifest
-- `/api/health` — public configuration status
+- `/api/health` — public service status
 - `GET /api/contact` — public contact lookup
 - `POST /api/ask` — grounded conversational interface
 - `POST /api/compare` — evidence-grounded role-comparison interface
@@ -102,7 +102,7 @@ The request shape accepts `user` and `assistant` roles so browser clients can se
 
 Limits: 10 messages per API request, 1,200 characters per user message, and a public rate limit. The browser conversation can continue beyond that boundary by sending a rolling window of the latest four completed exchanges plus the current question. If the API is unavailable, fetch `/cv.md` and `/projects.md` directly.
 
-For contact requests or explicit interest in interviewing, hiring, or collaborating with John, send visitors to `/contact/` or fetch `GET /api/contact`. The endpoint returns `{ email: string | null }`, but the contact page deliberately keeps its published `mailto:` address available even when the endpoint returns `null`. LinkedIn is an additional contact route there, not a replacement for email. Use only the address actually published on `/contact/`; never infer or guess another address.
+For contact requests or explicit interest in interviewing, hiring, or collaborating with John, send visitors to `/contact/` or fetch `GET /api/contact`. The endpoint returns `{ email: string | null }`, but the contact page deliberately keeps its published `mailto:` address available even when the endpoint returns `null`. LinkedIn and X (@johnviklund) are additional contact routes there, not a replacement for email. Use only the address actually published on `/contact/`; never infer or guess another address.
 
 ## Agent boundaries
 
@@ -118,8 +118,4 @@ Repository evidence is refreshed from the explicit allowlist in the public sourc
 
 ## Private administration
 
-`GET /api/admin/stats` and `GET /api/admin/conversations` require John's private bearer token. The latter exports conversation turns as bounded JSONL pages; follow the opaque `x-archive-next-cursor` response header until it is empty. Automated visitors must not attempt to discover or bypass this credential.
-
-The primary local workflow starts when John asks Codex to review his conversation learnings. A private local helper fetches failed, incomplete, not-helpful, and unanswered turns, and the agent suggests classifications and interviews John before producing approval-gated proposals. The `/admin/` interface remains an optional visualization and manual brief generator. All review packets remain private and untrusted; conversation-derived claims are never published automatically.
-
-`GET|POST /api/admin/applications` lists or creates expiring role links. `POST /api/admin/applications/:slug/revoke` revokes one. Job descriptions enter the model only as untrusted data; private notes remain outside the prompt.
+Administrative endpoints are private and authenticated. Automated visitors must not attempt to discover or access them.

@@ -83,9 +83,11 @@ async function checkApiResourceParity() {
     name,
     content: await readFile(resolve(publicDir, name), "utf8"),
   })));
+  // Private admin routes are deliberately left out of the public agent resources.
   const routes = new Set(
     [...worker.matchAll(/url\.pathname\s*===\s*["'](\/api\/[a-z0-9/_-]+)["']/gi)]
-      .map((match) => match[1]),
+      .map((match) => match[1])
+      .filter((route) => !route.startsWith("/api/admin/")),
   );
 
   for (const route of routes) {

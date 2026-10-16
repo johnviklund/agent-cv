@@ -14,7 +14,7 @@ const VALID_PAYLOAD = {
   source: "/",
 };
 
-test("health reports the configured OpenAI model", async () => {
+test("health reports readiness without revealing provider details", async () => {
   const response = await handleRequest(
     new Request("https://example.test/api/health"),
     baseEnv(),
@@ -25,7 +25,7 @@ test("health reports the configured OpenAI model", async () => {
   assert.equal(response.status, 200);
   assert.equal(health.ok, true);
   assert.equal(health.configured, true);
-  assert.equal(health.model, "gpt-5.6-luna");
+  assert.deepEqual(Object.keys(health).sort(), ["configured", "ok"]);
 });
 
 test("legacy and www hosts redirect to the canonical domain", async () => {

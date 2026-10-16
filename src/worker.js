@@ -73,7 +73,6 @@ export async function handleRequest(
   if (url.pathname === "/api/health") {
     return Response.json({
       ok: true,
-      model: env.OPENAI_MODEL || DEFAULT_OPENAI_MODEL,
       configured: Boolean(env.OPENAI_API_KEY && env.CHAT_BUDGET),
     }, {
       headers: { "cache-control": "no-store", "access-control-allow-origin": "*", "x-content-type-options": "nosniff" },

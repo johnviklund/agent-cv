@@ -24,11 +24,13 @@ async function readTree(directory) {
 test("contact page promotes the deliberate public channels", () => {
   assert.match(contactPage, /href=["']https:\/\/www\.linkedin\.com\/in\/[^"'\s/?#]+\/["'][^>]*\brel=["']me["']/i);
   assert.match(contactPage, /href=["']mailto:johnwik@gmail\.com["']/i);
+  assert.match(contactPage, /href=["']https:\/\/x\.com\/johnviklund["'][^>]*\brel=["']me["']/i);
   assert.doesNotMatch(contactPage, /temporarily unavailable/i);
 });
 
 test("deployable public files exclude unselected contact channels", () => {
-  assert.doesNotMatch(publicTree, /href\s*=\s*["']https?:\/\/(?:www\.)?(?:x|twitter)\.com\/[^"'\s/?#]+/i);
+  const socialLinks = publicTree.match(/href\s*=\s*["']https?:\/\/(?:www\.)?(?:x|twitter)\.com\/[^"'\s?#]*/gi) || [];
+  for (const link of socialLinks) assert.match(link, /["']https:\/\/x\.com\/johnviklund$/);
   assert.doesNotMatch(publicTree, /href\s*=\s*["']tel:/i);
   assert.doesNotMatch(publicTree, /\+\d(?:[\s().-]*\d){7,14}\b/);
   assert.doesNotMatch(publicTree, /\b\d{9,15}\b/);

@@ -38,7 +38,7 @@ A natural starting request is: “Visit johnviklund.com. I’m considering John 
 - `POST /api/feedback` — record helpful/not-helpful feedback using the returned `x-conversation-turn-id`
 - `GET /api/application/:slug` — active role-link metadata; job descriptions and private notes are not returned
 - `GET /api/health` — service status
-- `GET /api/contact` — public contact lookup; returns `{ email: string | null }`. For contact requests or explicit interest in interviewing, hiring, or collaborating, direct visitors to `/contact/`. The page keeps its published `mailto:` address available when the endpoint returns `null`; LinkedIn is an additional route, not a replacement. Never infer or guess another address.
+- `GET /api/contact` — public contact lookup; returns `{ email: string | null }`. For contact requests or explicit interest in interviewing, hiring, or collaborating, direct visitors to `/contact/`. The page keeps its published `mailto:` address available when the endpoint returns `null`; LinkedIn and X (@johnviklund) are additional routes, not a replacement for email. Never infer or guess another address.
 
 ## Page-scoped WebMCP site tools
 
@@ -46,11 +46,6 @@ While `/` is open in a compatible browser, the page registers `compare_candidate
 
 ## Private administration
 
-- `GET /api/admin/stats` — bearer-authenticated private archive summary
-- `GET /api/admin/conversations` — bearer-authenticated private JSONL conversation export
-- `GET|POST /api/admin/applications` — bearer-authenticated role-link administration
-- `POST /api/admin/applications/:slug/revoke` — bearer-authenticated link revocation
-
-A local natural-language workflow securely fetches and groups conversation-learning candidates when John asks Codex to review them, then suggests classifications and asks for human confirmation. The private `/admin/` browser remains an optional visualization and manual brief generator. Conversation-derived proposals are never published automatically.
+Administrative endpoints are private and authenticated. Automated visitors must not attempt to discover or access them.
 
 Data last updated: 2026-10-15

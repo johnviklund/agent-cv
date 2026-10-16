@@ -8,7 +8,7 @@ const publicDir = resolve(root, "public");
 const pages = await collectHtml(publicDir);
 const failures = [];
 // Built during deploy rather than committed, so it is absent from a clean checkout.
-const DEPLOY_GENERATED = new Set(["/cv.pdf"]);
+const DEPLOY_GENERATED = new Set(["/john-viklund-cv.pdf"]);
 
 await checkApiResourceParity();
 await checkInlineScriptCsp();

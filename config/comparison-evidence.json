@@ -82,18 +82,6 @@
       "source": { "path": "data/projects.md", "headingPath": ["j-skills — skills for coding agents"] }
     },
     {
-      "id": "project.cx-newsletter",
-      "source": { "path": "data/projects.md", "headingPath": ["CX Newsletter — AI-scored research curation"] }
-    },
-    {
-      "id": "project.volvo-evidence-cli",
-      "source": { "path": "data/projects.md", "headingPath": ["Volvo Evidence CLI — citation-first retrieval"] }
-    },
-    {
-      "id": "project.agentoria",
-      "source": { "path": "data/projects.md", "headingPath": ["Agentoria — a living world for agent activity"] }
-    },
-    {
       "id": "project.agent-cv",
       "source": { "path": "data/projects.md", "headingPath": ["Agent CV — this site"] },
       "supportingSources": [
@@ -101,8 +89,8 @@
       ]
     },
     {
-      "id": "project.volvo-cars-support",
-      "source": { "path": "data/projects.md", "headingPath": ["Volvo Cars Support — owner-support evidence retrieval"] }
+      "id": "project.oma-space-launch",
+      "source": { "path": "data/projects.md", "headingPath": ["oma-space-launch — a desktop widget built with coding agents"] }
     }
   ]
 }

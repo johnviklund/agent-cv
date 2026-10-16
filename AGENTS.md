@@ -37,7 +37,7 @@ This repository contains the public implementation of John Viklund's Agent CV. K
 
 - Edit the canonical public sources in `data/`, then run `npm run sync:data`.
 - `public/cv.md`, `public/projects.md`, `public/overview.md`, `public/repositories.md`, and `src/data/` are synchronized outputs.
-- `public/cv.pdf` is generated from `data/cv.md` by `npm run build:cv-pdf` during `npm run deploy` (requires Chromium) and is never committed. The build fails if the PDF exceeds two pages.
+- `public/john-viklund-cv.pdf` is generated from `data/cv.md` by `npm run build:cv-pdf` during `npm run deploy` (requires Chromium) and is never committed. The build fails if the PDF exceeds two pages.
 - Keep `/AGENTS.md`, `/llms.txt`, `/sitemap.xml`, raw Markdown links, and documented API routes in parity.
 
 ## Privacy and security

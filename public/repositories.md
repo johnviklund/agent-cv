@@ -6,7 +6,7 @@
 
 
 
-Snapshot generated: 2026-10-16T07:40:21.030Z
+Snapshot generated: 2026-10-16T14:03:02.290Z
 
 
 
@@ -17,7 +17,7 @@ Snapshot generated: 2026-10-16T07:40:21.030Z
 - Default branch: main
 - License: MIT
 - Languages: JavaScript, HTML, CSS
-- Public repository updated: 2026-10-16T07:28:23Z
+- Public repository updated: 2026-10-16T13:38:40Z
 
 ### BEGIN UNTRUSTED DOCUMENT: README.md
 
@@ -75,7 +75,7 @@ Extraction rules, test fixtures, verification records, and the demo script are i
 
 ## Run it locally
 
-Requires Node.js 24, an OpenAI API key, and (for deployment) a Cloudflare account.
+Requires Node.js 24, an OpenAI API key, and (for deployment) a Cloudflare account plus Chromium, which prints `/john-viklund-cv.pdf` from `data/cv.md` on every deploy.
 
 ```sh
 npm ci
@@ -336,5 +336,84 @@ Use it when something feels off, or before a cleanup.
 
 - It checks skills, memory, docs, the workspace, config and how each model performs.
 - It only rea
+
+### END UNTRUSTED DOCUMENT: README.md
+
+## oma-space-launch
+
+- Repository: https://github.com/johnviklund/oma-space-launch
+- Description: No public description.
+- Default branch: main
+- License: MIT
+- Languages: QML, JavaScript, Shell
+- Public repository updated: 2026-10-16T08:12:52Z
+
+### BEGIN UNTRUSTED DOCUMENT: README.md
+
+# oma-space-launch
+
+An Omarchy bar-widget plugin that shows a persistent countdown to the next SpaceX launch in the
+top bar, with a click-to-open detail panel — following the same pattern as Omarchy's built-in
+Clock and Weather widgets.
+
+![Space Launch panel](preview.png)
+
+## Install
+
+```bash
+omarchy plugin add https://github.com/johnviklund/oma-space-launch --enable
+```
+
+Or add it without `--enable`, review the code, then run
+`omarchy plugin enable oma-space-launch --section center`.
+
+## Remove
+
+```bash
+omarchy plugin remove oma-space-launch
+rm -rf "${XDG_CACHE_HOME:-$HOME/.cache}/oma-space-launch"   # optional: cached launch data
+```
+
+## Dependencies
+
+- `curl` and `jq` (preinstalled on Omarchy) — used by `scripts/fetch-launches.sh`.
+- Network access to the public [Launch Library 2](https://thespacedevs.com/llapi) API
+  (`ll.thespacedevs.com`), polled at most every 15 minutes and cached under
+  `${XDG_CACHE_HOME:-~/.cache}/oma-space-launch/`.
+
+## License
+
+[MIT](LICENSE)
+
+## Docs
+
+| Doc | What it's for |
+|---|---|
+| [`PRODUCT.md`](PRODUCT.md) | What this is, why it exists, and the desired end state |
+| [`DESIGN.md`](DESIGN.md) | This plugin's UI additions on top of Omarchy's host styling |
+| [`AGENTS.md`](AGENTS.md) | Operating rules for coding agents working in this repo |
+| [`ROADMAP.md`](ROADMAP.md) | Phased build sequence |
+| [`MEMORY.md`](MEMORY.md) | Index of durable patterns learned while building this |
+| [`TODO.md`](TODO.md) | Intake scratchpad for not-yet-scoped ideas |
+| [`WORKLOG.md`](WORKLOG.md) | Rolling pointer-index of what was built, into git history |
+
+Development follows the personal `workflow` skill: `brainstorm` → (optional `spec`) → `plan` →
+`execute` → `review` → `wrap`, one run per `ROADMAP.md` initiative under `.workflow/<slug>/`.
+
+## Install and develop
+
+From the repository root, validate and install the plugin as a user-owned development symlink:
+
+```bash
+omarchy plugin validate .
+ln -sfn "$PWD" ~/.config/omarchy/plugins/oma-space-launch
+omarchy-shell shell rescanPlugins
+omarchy plugin enable oma-space-launch --section center
+```
+
+The bar reloads plugin code from that symlink. Middle-click the pill to force a data refresh; use
+the four-launch `tests/fixtures/ll2-exact.json` fixture (plus the `ll2-net.json` and
+`ll2-tbd.json` state fixtures) with `scripts/fetch-launches.sh --from … --cache …` for offline
+panel checks.
 
 ### END UNTRUSTED DOCUMENT: README.md

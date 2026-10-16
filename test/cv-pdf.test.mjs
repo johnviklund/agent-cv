@@ -20,7 +20,7 @@ test("the CV PDF is built from the public CV with contacts and a link back to th
   assert.doesNotMatch(html, /tel:|@font-face|file:\/\//i);
 });
 
-test("the CV PDF omits projects and condenses earlier roles without dropping later sections", () => {
+test("the CV PDF keeps every role bullet, omits projects, and joins capabilities", () => {
   const markdown = [
     "# Name", "", "## Experience", "",
     "### Axient — Manager", "", "- First", "- Second", "",
@@ -30,8 +30,7 @@ test("the CV PDF omits projects and condenses earlier roles without dropping lat
   ].join("\n");
   const html = buildCvPrintHtml(markdown, { email: "a@example.com" });
 
-  assert.match(html, /<li>First<\/li><\/ul>/);
-  assert.doesNotMatch(html, /Second/);
+  assert.match(html, /<li>First<\/li><li>Second<\/li><\/ul>/);
   assert.doesNotMatch(html, /Tool|Does one thing/);
   assert.match(html, /<p>Alpha · Beta<\/p>/);
   assert.match(html, /Updated 1 May 2026/);
@@ -50,6 +49,6 @@ test("deploy always regenerates the ignored PDF", async () => {
   ]);
 
   assert.match(pkg.scripts.deploy, /npm run sync:data && npm run build:cv-pdf && .*wrangler deploy/);
-  assert.match(gitignore, /^public\/cv\.pdf$/m);
-  assert.match(headers, /\/cv\.pdf\n  Content-Type: application\/pdf\n  Content-Disposition: inline; filename="John-Viklund-CV\.pdf"/);
+  assert.match(gitignore, /^public\/john-viklund-cv\.pdf$/m);
+  assert.match(headers, /\/john-viklund-cv\.pdf\n  Content-Type: application\/pdf\n  Content-Disposition: inline; filename="john-viklund-cv\.pdf"/);
 });

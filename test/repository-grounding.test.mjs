@@ -77,24 +77,25 @@ test("renders repository evidence as explicitly untrusted bounded snapshots", ()
 test("keeps public evidence and project links limited to the approved repositories", () => {
   assert.deepEqual(
     publicRepositoryConfig.map(({ repository }) => repository),
-    ["johnviklund/agent-cv", "johnviklund/j-skills"],
+    ["johnviklund/agent-cv", "johnviklund/j-skills", "johnviklund/oma-space-launch"],
   );
-  for (const repository of ["agent-cv", "j-skills"]) {
+  for (const repository of ["agent-cv", "j-skills", "oma-space-launch"]) {
     const url = `https://github.com/johnviklund/${repository}`;
     assert.match(projectsPage, new RegExp(url.replaceAll("/", "\\/")));
     assert.match(projectsMarkdown, new RegExp(url.replaceAll("/", "\\/")));
   }
-  assert.match(projectsPage, /Volvo Cars Support/);
-  assert.match(projectsMarkdown, /Volvo Cars Support/);
-  assert.doesNotMatch(projectsPage, /volvo-cars-support/i);
-  assert.doesNotMatch(projectsMarkdown, /volvo-cars-support/i);
+  // A project can be listed without an approved public repository or source link.
+  assert.match(projectsPage, /CX Intelligence/);
+  assert.match(projectsMarkdown, /CX Intelligence/);
+  assert.doesNotMatch(projectsPage, /github\.com\/[^"]*cx-intelligence/i);
+  assert.doesNotMatch(projectsMarkdown, /github\.com\/[^)]*cx-intelligence/i);
 });
 
 test("keeps source links out of the project action column", async () => {
   const projectsPage = await readFile(new URL("../public/projects/index.html", import.meta.url), "utf8");
   const rows = [...projectsPage.matchAll(/<article class="project-row">([\s\S]*?)<\/article>/g)].map((match) => match[1]);
 
-  assert.equal(rows.length, 7);
+  assert.equal(rows.length, 4);
   assert.doesNotMatch(projectsPage, /class="project-actions"/);
   for (const row of rows) {
     assert.match(row, /class="project-meta-block"/);

@@ -6,7 +6,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { buildCvPrintHtml, countPdfPages } from "./cv-pdf.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const output = resolve(root, "public", "cv.pdf");
+const output = resolve(root, "public", "john-viklund-cv.pdf");
 const MAX_PAGES = 2;
 
 function findChromium() {
@@ -19,7 +19,7 @@ function findChromium() {
       // Try the next browser.
     }
   }
-  throw new Error("Chromium is required to build /cv.pdf. Install it or set CHROME_PATH.");
+  throw new Error("Chromium is required to build /john-viklund-cv.pdf. Install it or set CHROME_PATH.");
 }
 
 const [markdown, workerConfig] = await Promise.all([
@@ -49,12 +49,12 @@ try {
 const pdf = await readFile(output);
 const pages = countPdfPages(pdf);
 if (pages < 1 || pages > MAX_PAGES) {
-  throw new Error(`/cv.pdf must be 1–${MAX_PAGES} pages; generated ${pages}. Shorten data/cv.md or the omitted sections.`);
+  throw new Error(`/john-viklund-cv.pdf must be 1–${MAX_PAGES} pages; generated ${pages}. Shorten data/cv.md or the omitted sections.`);
 }
 if (/\/Subtype\s*\/Type3/.test(pdf.toString("latin1"))) {
-  throw new Error("/cv.pdf uses Type 3 fonts; use static fonts so applicant tracking systems can read it.");
+  throw new Error("/john-viklund-cv.pdf uses Type 3 fonts; use static fonts so applicant tracking systems can read it.");
 }
 if (/\/home\/|\/Users\/|file:\/\//.test(pdf.toString("latin1"))) {
-  throw new Error("/cv.pdf contains a local file path.");
+  throw new Error("/john-viklund-cv.pdf contains a local file path.");
 }
-console.log(`Built public/cv.pdf (${pages} pages, ${Math.round(pdf.length / 1024)} KB).`);
+console.log(`Built public/john-viklund-cv.pdf (${pages} pages, ${Math.round(pdf.length / 1024)} KB).`);

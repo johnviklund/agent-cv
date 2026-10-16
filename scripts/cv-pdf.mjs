@@ -1,9 +1,7 @@
-// Builds the print-only HTML for /cv.pdf from the canonical public CV.
+// Builds the print-only HTML for /john-viklund-cv.pdf from the canonical public CV.
 // Kept free of filesystem and browser access so it can be tested directly.
 
 const OMITTED_SECTIONS = new Set(["Selected transformation case studies", "Selected applied-AI projects"]);
-// Earlier roles keep only the first bullet of each list; the site has the rest.
-const FIRST_BULLET_ROLES = ["Axient —", "StreamServe / OpenText —"];
 // Sections whose bullets are joined into one compact paragraph.
 const INLINE_LIST_SECTIONS = new Set(["Capabilities"]);
 const SITE_URL = "https://johnviklund.com";
@@ -56,7 +54,6 @@ function parseCv(markdown) {
   let list = [];
   let skipping = false;
   let inlineList = false;
-  let firstBulletOnly = false;
   let contactsPlaced = false;
   let updated = "";
 
@@ -76,7 +73,6 @@ function parseCv(markdown) {
       flush();
       const heading = line.slice(3);
       skipping = OMITTED_SECTIONS.has(heading);
-      firstBulletOnly = false;
       if (!contactsPlaced) {
         html.push("<!--contacts-->");
         contactsPlaced = true;
@@ -89,7 +85,7 @@ function parseCv(markdown) {
 
 
     if (line.startsWith("- ")) {
-      if (!firstBulletOnly || list.length === 0) list.push(line.slice(2));
+      list.push(line.slice(2));
       continue;
     }
     flush();
@@ -97,10 +93,7 @@ function parseCv(markdown) {
 
     if (line.startsWith("# ")) html.push(`<h1>${inline(line.slice(2))}</h1>`);
     else if (line.startsWith("#### ")) html.push(`<h4>${inline(line.slice(5))}</h4>`);
-    else if (line.startsWith("### ")) {
-      firstBulletOnly = FIRST_BULLET_ROLES.some((role) => line.slice(4).startsWith(role));
-      html.push(`<h3>${inline(line.slice(4))}</h3>`);
-    }
+    else if (line.startsWith("### ")) html.push(`<h3>${inline(line.slice(4))}</h3>`);
     else if (/^\*\*[^*]+\*\*$/.test(line)) html.push(`<p class="meta">${inline(line.slice(2, -2))}</p>`);
     else html.push(`<p>${inline(line)}</p>`);
   }

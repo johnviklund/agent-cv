@@ -11,7 +11,7 @@ This site is a conversational résumé for John Viklund, CX AI Lead, applied-AI 
 - `/repositories.md` — bounded snapshots from explicitly allowlisted public repositories
 - `/evidence.json` — versioned comparison evidence catalog with a `sha256:` digest and stable public evidence IDs
 - `/cv.md` — complete traditional CV in Markdown
-- `/cv.pdf` — two-page US Letter PDF generated from `/cv.md` at each deploy
+- `/john-viklund-cv.pdf` — two-page US Letter PDF generated from `/cv.md` at each deploy
 - `/llms.txt` — resource index
 - `/sitemap.xml` — canonical human and machine-readable URL inventory
 - `/privacy/` — plain-language conversation data and retention policy

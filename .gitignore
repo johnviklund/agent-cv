@@ -22,7 +22,7 @@ data/skills.md
 src/data/
 
 # Generated at deploy from data/cv.md by npm run build:cv-pdf.
-public/cv.pdf
+public/john-viklund-cv.pdf
 
 # Private working material and superseded data exports.
 docs/agent-cv-data.zip

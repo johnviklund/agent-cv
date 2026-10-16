@@ -193,3 +193,18 @@ test("chat knowledge includes the canonical public CV", async () => {
   assert.match(wrangler, /"data\/cv\.md"/);
   assert.match(packageCheck, /"data\/cv\.md"/);
 });
+
+test("external links open in a new tab without exposing the opener", async () => {
+  const pages = await Promise.all([
+    "public/index.html", "public/404.html", "public/about/index.html", "public/admin/index.html",
+    "public/application/index.html", "public/contact/index.html", "public/cv/index.html",
+    "public/experience/index.html", "public/privacy/index.html", "public/projects/index.html",
+  ].map(read));
+  const links = pages.flatMap((page) => page.match(/<a\s[^>]*href="https?:\/\/[^"]*"[^>]*>/gi) || []);
+
+  assert.ok(links.length > 0);
+  for (const link of links) {
+    assert.match(link, /\starget="_blank"/, link);
+    assert.match(link, /\srel="[^"]*\bnoopener\b[^"]*"/, link);
+  }
+});

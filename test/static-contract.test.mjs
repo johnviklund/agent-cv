@@ -76,7 +76,8 @@ test("compatibility notes separate native WebMCP validation from portable fallba
     assert.match(resource, /browser automation|manual UI/i);
     assert.match(resource, /HTTP API/i);
   }
-  for (const resource of [agents, submission]) assert.match(resource, /Grok/i);
+  assert.match(submission, /Grok/i);
+  assert.doesNotMatch(agents, /certification/i);
   assert.match(submission, /Production discovery and invocation verified on 30 August/i);
   assert.match(submission, /four-role rejection without state mutation/i);
   assert.match(agents, /Production discovery and invocation were verified/i);

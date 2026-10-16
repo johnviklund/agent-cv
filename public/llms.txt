@@ -15,6 +15,7 @@ A natural starting request is: “Visit johnviklund.com. I’m considering John 
 - [Public repository evidence](/repositories.md): bounded snapshots from explicitly allowlisted GitHub repositories
 - [Comparison evidence catalog](/evidence.json): versioned public evidence IDs and source excerpts used by role comparison
 - [Full CV](/cv.md): complete traditional résumé in Markdown
+- [CV PDF](/cv.pdf): two-page US Letter résumé generated from the Markdown CV at each deploy
 - [Agent instructions](/AGENTS.md): API contract, limits, and behavioral boundaries
 - [Privacy](/privacy/): conversation data, purpose, retention, and deletion route
 - [Sitemap](/sitemap.xml): canonical URL inventory

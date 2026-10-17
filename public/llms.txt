@@ -49,4 +49,4 @@ While `/` is open in a compatible browser, the page registers `compare_candidate
 
 Administrative endpoints are private and authenticated. Automated visitors must not attempt to discover or access them.
 
-Data last updated: 2026-10-15
+Data last updated: 2026-10-18

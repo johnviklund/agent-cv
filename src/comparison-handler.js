@@ -11,7 +11,7 @@ import {
   validateComparisonPayload,
 } from "./comparison-core.js";
 
-const DEFAULT_COMPARISON_MODEL = "gpt-5.6-luna";
+const DEFAULT_COMPARISON_MODEL = "gpt-6-luna";
 const DEFAULT_COMPARISON_OUTPUT_TOKENS = 8_000;
 const DEFAULT_COMPARISON_MONTHLY_CAP = 60;
 const DEFAULT_RESPONSE_HEADER_TIMEOUT_MS = 45_000;

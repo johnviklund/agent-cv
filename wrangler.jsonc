@@ -88,11 +88,11 @@
     }
   ],
   "vars": {
-    "OPENAI_MODEL": "gpt-5.6-luna",
+    "OPENAI_MODEL": "gpt-6-luna",
     "OPENAI_REASONING_EFFORT": "none",
     "MAX_OUTPUT_TOKENS": "700",
     "MONTHLY_REQUEST_CAP": "1000",
-    "COMPARISON_MODEL": "gpt-5.6-luna",
+    "COMPARISON_MODEL": "gpt-6-luna",
     "COMPARISON_MAX_OUTPUT_TOKENS": "8000",
     "COMPARISON_MONTHLY_REQUEST_CAP": "60",
     "ARCHIVE_RETENTION_DAYS": "90",

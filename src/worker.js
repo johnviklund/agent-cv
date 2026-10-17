@@ -29,7 +29,7 @@ const JSON_HEADERS = {
   "access-control-allow-origin": "*",
   "x-content-type-options": "nosniff",
 };
-const DEFAULT_OPENAI_MODEL = "gpt-5.6-luna";
+const DEFAULT_OPENAI_MODEL = "gpt-6-luna";
 const DEFAULT_OPENAI_REASONING_EFFORT = "none";
 const CANONICAL_ORIGIN = "https://johnviklund.com";
 const LEGACY_HOSTS = new Set([

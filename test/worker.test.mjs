@@ -181,7 +181,7 @@ test("successful OpenAI Responses streams preserve SSE headers, privacy, and gro
   assert.equal(response.status, 200);
   assert.equal(response.headers.get("content-type"), "text/event-stream; charset=utf-8");
   assert.equal(response.headers.get("cache-control"), "no-cache, no-store");
-  assert.equal(response.headers.get("x-agent-model"), "gpt-5.6-luna");
+  assert.equal(response.headers.get("x-agent-model"), "gpt-6-luna");
   const publicStream = await response.text();
   assert.equal(publicStream, [
     'event: response.output_text.delta\ndata: {"type":"response.output_text.delta","delta":"Hello"}\n\n',
@@ -193,7 +193,7 @@ test("successful OpenAI Responses streams preserve SSE headers, privacy, and gro
   const upstreamBody = JSON.parse(upstreamRequest.init.body);
   assert.equal(upstreamBody.stream, true);
   assert.equal(upstreamBody.store, false);
-  assert.equal(upstreamBody.model, "gpt-5.6-luna");
+  assert.equal(upstreamBody.model, "gpt-6-luna");
   assert.deepEqual(upstreamBody.reasoning, { effort: "none" });
   assert.equal(upstreamBody.instructions, "grounded prompt");
   assert.equal(upstreamBody.input.length, 1);
@@ -348,7 +348,7 @@ test("completed answers are archived as expiring conversation turns without netw
   assert.equal(record.question, "What has John built?");
   assert.equal(record.answer, "A grounded answer.");
   assert.equal(record.outcome, "completed");
-  assert.equal(record.model, "gpt-5.6-luna");
+  assert.equal(record.model, "gpt-6-luna");
   assert.equal("ip" in record, false);
   assert.equal(JSON.stringify(record).includes("192.0.2.1"), false);
   assert.equal(write.options.expiration, Math.floor(Date.parse(record.expiresAt) / 1_000));
@@ -880,7 +880,7 @@ test("server agents without Origin can create a grounded comparison without pers
   assert.equal(upstream.body.store, false);
   assert.equal(upstream.body.stream, false);
   assert.equal(upstream.body.background, false);
-  assert.equal(upstream.body.model, "gpt-5.6-luna");
+  assert.equal(upstream.body.model, "gpt-6-luna");
   assert.equal(upstream.body.max_output_tokens, 8_000);
   assert.equal(upstream.body.text.format.type, "json_schema");
   assert.equal(upstream.body.text.format.strict, true);
@@ -1185,7 +1185,7 @@ function compareRequest(body = JSON.stringify({
 function baseEnv(overrides = {}) {
   return {
     OPENAI_API_KEY: "test-secret",
-    OPENAI_MODEL: "gpt-5.6-luna",
+    OPENAI_MODEL: "gpt-6-luna",
     OPENAI_REASONING_EFFORT: "none",
     MAX_OUTPUT_TOKENS: "700",
     MONTHLY_REQUEST_CAP: "1000",
@@ -1197,7 +1197,7 @@ function baseEnv(overrides = {}) {
 
 function comparisonEnv(overrides = {}) {
   return baseEnv({
-    COMPARISON_MODEL: "gpt-5.6-luna",
+    COMPARISON_MODEL: "gpt-6-luna",
     COMPARISON_MAX_OUTPUT_TOKENS: "8000",
     COMPARISON_MONTHLY_REQUEST_CAP: "60",
     COMPARISON_RATE_LIMITER: { limit: async () => ({ success: true }) },

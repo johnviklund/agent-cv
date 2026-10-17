@@ -1,5 +1,5 @@
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self' https://static.cloudflareinsights.com 'sha256-+Gp0OX2pE+DdHURx08lrh9BNpNT42Nrvjuj6FaD78ow='; style-src 'self'; img-src 'self' data:; connect-src 'self' https://cloudflareinsights.com; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://static.cloudflareinsights.com 'sha256-fJUX7dkRuGfb4kqgt5Ewh/+DbdkkEkuI0ltGpC9Kvtc='; style-src 'self'; img-src 'self' data:; connect-src 'self' https://cloudflareinsights.com; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), tools=(self)
   Referrer-Policy: strict-origin-when-cross-origin
   X-Content-Type-Options: nosniff

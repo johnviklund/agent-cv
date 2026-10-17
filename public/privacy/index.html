@@ -6,6 +6,17 @@
   <title>Privacy — John Viklund's Agent CV</title>
   <meta name="description" content="How the Agent CV handles chat, transient role comparisons, processor retention, feedback, and private exports.">
   <meta name="theme-color" content="#20231f">
+  <meta property="og:title" content="Privacy — John Viklund's Agent CV">
+  <meta property="og:description" content="How the Agent CV handles chat, transient role comparisons, processor retention, feedback, and private exports.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://johnviklund.com/privacy/">
+  <meta property="og:site_name" content="John Viklund — Agent CV">
+  <meta property="og:image" content="https://johnviklund.com/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="John Viklund — CX AI Lead at Volvo Cars. Applied-AI builder and product leader. johnviklund.com">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@johnviklund">
   <link rel="canonical" href="https://johnviklund.com/privacy/">
   <link rel="describedby" href="/llms.txt" type="text/plain">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -29,6 +40,9 @@
       <p>Cloudflare stores the rolling archive for up to 90 days, after which records expire automatically. John may create restricted local exports for the same content-improvement purpose and should delete them when no longer needed.</p>
       <p>Chat prompts are processed by Cloudflare Workers and the OpenAI API. The chat request sets <code>store: false</code> to avoid Responses API application-state storage. Under OpenAI's default controls, prompts and responses may still appear in abuse-monitoring logs for up to 30 days unless approved data-retention controls apply. API content is not used to train OpenAI models by default unless the API organization opts in. See OpenAI's <a href="https://platform.openai.com/docs/models/default-usage-policies-by-endpoint" rel="noopener noreferrer" target="_blank">official usage policies by endpoint</a>.</p>
 
+      <h2>Visit statistics</h2>
+      <p>The site uses Cloudflare Web Analytics to count page views and see which pages and referring sites, such as X or LinkedIn, bring visitors. It sets no cookies, uses no local storage, and does not fingerprint or track you across sites. John sees only aggregated counts by page, referrer, country, browser and device type, never individual visitors.</p>
+
       <h2>Transient role comparisons</h2>
       <p>The comparison workspace keeps role drafts and completed results in memory while the page is open and also uses this site's same-origin <code>sessionStorage</code> for the current tab when the browser permits it. If session storage is blocked, the workflow remains usable in memory but its state disappears when the page closes. Clearing the comparison removes the site-controlled comparison state in that tab. Tab duplication and browser restore behavior are controlled by your browser, however, so the site cannot promise immediate erasure from a duplicated or restored tab.</p>
       <p>This site does not archive or persist role comparison postings or results in Cloudflare KV or in the chat archive. The site chat archive is separate and may last up to 90 days. Persistent private application links are also separate from the transient comparison workspace. The comparison's public WebMCP tool results omit human-entered role text and generated prose, although the visible page still needs that content to show the comparison.</p>
@@ -40,9 +54,10 @@
 
       <h2>Access or deletion</h2>
       <p>To ask about a conversation record or request deletion, use the contact route supplied with John's application or reach John through his <a href="https://github.com/johnviklund" rel="me noopener noreferrer" target="_blank">public GitHub profile</a>. Include the approximate date and wording of the question; do not send credentials.</p>
-      <p><strong>Last updated:</strong> 30 August 2026.</p>
+      <p><strong>Last updated:</strong> 17 October 2026.</p>
     </article>
   </main>
   <footer class="site-footer"><a href="/">Ask John's agent</a><span class="footer-separator" aria-hidden="true">|</span><a href="https://github.com/johnviklund/agent-cv" rel="noopener noreferrer" target="_blank">View source ↗</a></footer>
+  <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "c7d9e434c60a4ce794a639192a5247ff"}'></script>
 </body>
 </html>

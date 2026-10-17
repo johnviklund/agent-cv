@@ -126,7 +126,7 @@ Public, MIT-licensed Omarchy desktop widget that counts down to the next SpaceX 
 
 ## Education
 
-**Gothenburg Technical Institute (Göteborgs Tekniska Institut), 1999–2000** — two-year Engineering Diploma (ingenjörsexamen) in Computer Technology and IT Electronics.
+**Gothenburg Technical Institute (Göteborgs Tekniska Institut)** — two-year Engineering Diploma (ingenjörsexamen) in Computer Technology and IT Electronics.
 
 **Strativity Group, New York, 2013** — Customer Experience Management certification program.
 

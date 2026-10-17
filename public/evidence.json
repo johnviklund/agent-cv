@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "digest": "sha256:db815f6942e29e217b53b2844e4227b608d8507184d0edc2ae7c6124a53f6b97",
+  "digest": "sha256:dfc9708e7b34c5a069ce6c66b8fed1e72c94cfa9279058ce1481076858b5c257",
   "items": [
     {
       "id": "cv.profile",
@@ -177,7 +177,7 @@
     {
       "id": "cv.education",
       "title": "Education",
-      "text": "**Gothenburg Technical Institute (Göteborgs Tekniska Institut), 1999–2000** — two-year Engineering Diploma (ingenjörsexamen) in Computer Technology and IT Electronics.\n\n**Strativity Group, New York, 2013** — Customer Experience Management certification program.",
+      "text": "**Gothenburg Technical Institute (Göteborgs Tekniska Institut)** — two-year Engineering Diploma (ingenjörsexamen) in Computer Technology and IT Electronics.\n\n**Strativity Group, New York, 2013** — Customer Experience Management certification program.",
       "source": {
         "path": "data/cv.md",
         "headingPath": [

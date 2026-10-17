@@ -143,6 +143,39 @@ test("every page loads the shared navigation controller and preserves its CSS-on
   assert.match(styles, /@media\s*\(max-width:\s*900px\)[\s\S]*?\.mobile-nav\s*\{[^}]*display:\s*block/s);
 });
 
+test("public pages share a social preview card and cookieless visit analytics", async () => {
+  const sharedPages = [
+    "public/index.html", "public/about/index.html", "public/contact/index.html",
+    "public/cv/index.html", "public/experience/index.html", "public/privacy/index.html",
+    "public/projects/index.html",
+  ];
+  for (const path of sharedPages) {
+    const html = await read(path);
+    const canonical = html.match(/<link rel="canonical" href="([^"]+)">/)?.[1];
+    assert.ok(canonical, path);
+    assert.match(html, new RegExp(`<meta property="og:url" content="${canonical}">`), path);
+    assert.match(html, /<meta property="og:title" content="[^"]+">/, path);
+    assert.match(html, /<meta property="og:image" content="https:\/\/johnviklund\.com\/og-image\.png">/, path);
+    assert.match(html, /<meta name="twitter:card" content="summary_large_image">/, path);
+  }
+
+  const beacon = /<script type="module" src="https:\/\/static\.cloudflareinsights\.com\/beacon\.min\.js" data-cf-beacon='\{"token": "[a-f0-9]{32}"\}'><\/script>/;
+  for (const path of [...sharedPages, "public/application/index.html", "public/404.html"]) {
+    assert.match(await read(path), beacon, path);
+  }
+  assert.doesNotMatch(await read("public/admin/index.html"), /cloudflareinsights/);
+
+  const [headers, privacy, image] = await Promise.all([
+    read("public/_headers"),
+    read("public/privacy/index.html"),
+    readFile(new URL("../public/og-image.png", import.meta.url)),
+  ]);
+  assert.match(headers, /Content-Security-Policy:[^\n]*script-src 'self' https:\/\/static\.cloudflareinsights\.com /);
+  assert.match(headers, /Content-Security-Policy:[^\n]*connect-src 'self' https:\/\/cloudflareinsights\.com;/);
+  assert.match(privacy, /Cloudflare Web Analytics[^<]*no cookies/);
+  assert.deepEqual([image.readUInt32BE(16), image.readUInt32BE(20)], [1200, 630]);
+});
+
 test("headers expose evidence JSON safely and keep WebMCP same-origin", async () => {
   const headers = await read("public/_headers");
   const evidenceBlock = headers.match(/\/evidence\.json\n([\s\S]*?)(?=\n\/|$)/)?.[1] || "";

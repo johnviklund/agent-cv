@@ -265,7 +265,7 @@ stateDiagram-v2
 - A stale session restores role inputs but does not automatically spend budget to regenerate results.
 - Limit the evidence catalog to 48 items and 64 KiB of normalized emitted JSON so public grounding cannot silently inflate prompt cost.
 - Module dependencies flow from `public/app.js` into workspace, comparison controller, view, and WebMCP adapters; lower layers never import the composition root or each other through the DOM.
-- Backend use of `gpt-5.6-luna` is independent of the browser-agent model. Real ChatGPT/Codex WebMCP testing must use a currently supported site-tools model such as GPT-5.6 Sol or GPT-5.6 Terra. [Official OpenAI documentation](https://learn.chatgpt.com/docs/webmcp)
+- Backend use of `gpt-6-luna` is independent of the browser-agent model. Real ChatGPT/Codex WebMCP testing must use a currently supported site-tools model such as GPT-5.6 Sol or GPT-5.6 Terra. [Official OpenAI documentation](https://learn.chatgpt.com/docs/webmcp)
 - The WebMCP draft is an unstable external contract. Keep it behind `public/webmcp.js` and pin adapter tests to the subset used. [WebMCP Draft Community Group Report](https://webmachinelearning.github.io/webmcp/)
 
 ### System-Wide Impact

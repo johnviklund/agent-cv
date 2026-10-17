@@ -132,8 +132,8 @@ Public, MIT-licensed Omarchy desktop widget that counts down to the next SpaceX 
 
 ## Languages and location
 
-Native Swedish and fluent professional English. Based near Gothenburg, Sweden. Open to relocation, travel, remote, and hybrid roles in Europe or the United States. Previous employer-sponsored US work history; future authorization would depend on employer and role.
+Native Swedish and fluent professional English. Based near Gothenburg, Sweden. Open to relocation, travel, remote, and hybrid roles in Europe or the United States. Previously worked in the United States on an employer-sponsored L-1B intracompany transferee visa; future authorization would depend on employer and role.
 
 ---
 
-Data last updated: 15 October 2026. Ask the conversational CV at the site root or fetch machine-readable resources from `/AGENTS.md` and `/llms.txt`.
+Data last updated: 18 October 2026. Ask the conversational CV at the site root or fetch machine-readable resources from `/AGENTS.md` and `/llms.txt`.

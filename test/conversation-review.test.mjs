@@ -133,7 +133,7 @@ function turn(overrides = {}) {
     updatedAt: "2026-08-15T10:00:30.000Z",
     source: "/",
     visitorType: "human",
-    model: "gpt-5.6-luna",
+    model: "gpt-6-luna",
     question: "What evidence is missing?",
     answer: "A complete answer",
     outcome: "completed",

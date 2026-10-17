@@ -38,20 +38,20 @@ test("the documented challenge cost ceiling matches the enforced request caps", 
   ]);
   assert.deepEqual(config.vars, {
     ...config.vars,
-    OPENAI_MODEL: "gpt-5.6-luna",
+    OPENAI_MODEL: "gpt-6-luna",
     MAX_OUTPUT_TOKENS: "700",
     MONTHLY_REQUEST_CAP: "1000",
-    COMPARISON_MODEL: "gpt-5.6-luna",
+    COMPARISON_MODEL: "gpt-6-luna",
     COMPARISON_MAX_OUTPUT_TOKENS: "8000",
     COMPARISON_MONTHLY_REQUEST_CAP: "60",
   });
 
-  const worstCaseCost = (1_000 * 320_000 * 0.20 / 1_000_000)
-    + (1_000 * 700 * 1.20 / 1_000_000)
-    + (120 * 100_000 * 0.20 / 1_000_000)
-    + (120 * 8_000 * 1.20 / 1_000_000);
-  assert.equal(Number(worstCaseCost.toFixed(3)), 68.392);
-  assert.match(submission, /Worst-case configured total: \$68\.392/);
+  const worstCaseCost = (1_000 * 320_000 * 0.10 / 1_000_000)
+    + (1_000 * 700 * 0.50 / 1_000_000)
+    + (120 * 100_000 * 0.10 / 1_000_000)
+    + (120 * 8_000 * 0.50 / 1_000_000);
+  assert.equal(Number(worstCaseCost.toFixed(3)), 34.03);
+  assert.match(submission, /Worst-case configured total: \$34\.03\b/);
   assert.match(submission, /60 public requests × at most 2 attempts/i);
   assert.match(submission, /24,000-character private application job description/i);
   assert.match(submission, /These are billing-safety bounds, not expected English usage/i);

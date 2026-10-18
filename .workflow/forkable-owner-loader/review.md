@@ -1,43 +1,36 @@
 Command: workflow review forkable-owner-loader
 Created: 2026-10-18
-Base: 17687d3
-Inputs: plan.md @ a0ec9b9
+Base: 78a28de
+Inputs: patch_plan.md @ 17687d3
 Status: complete
 
 ## Coverage
-- [x] T1 — 6/6 acceptance lines pass; unsafe CLI failure path C1-1 remains
-- [x] T2 — 5/5 literal acceptance lines pass; broader B4/B6 defects C1-2/C1-3 remain
-- [x] T3 — 3/3 receipt checks verified; golden diff empty, private faq.md remains modified
-- [x] T4 — 6/6 acceptance lines pass; check and build exit 0
-- [x] Outcome observed through npm run golden:diff and generated owner module; no UI change, no verify skill. B1–B3/B5/B7/B8 pass; B4/B6 have findings.
-- [x] .workflow/ dependency scan clean; escape-hatch scan clean; out-of-scope surfaces unchanged.
-Size: +358 code · +283 tests · ratio 0.79 · net +544 · over 1,000: none
-Reachability: golden CLI → snapshot helpers; sync-owner/sync-public-data → owner/schema; knowledge → generated owner. Owner export is the approved U2 packaging bridge.
-Verification: npm run check and npm run build exit 0 (219 pass, 1 skipped); npm run golden:diff exit 0. Existing sync tests retain all 6 assertions.
-Mutation: invert deploy example equality in a detached temporary worktree; owner test fails as expected (4 pass, 1 fail).
-Independence: cross-vendor; Opus 5.5 writer, GPT-6 Astra reviewer (T3 runtime record; current user-selected session differs from ROUTING.md).
+- [x] C1-T1: 2/2 acceptance lines pass; missing/empty/unknown arguments and unsafe capture destinations are refused.
+- [x] C1-T2: 2/2 acceptance lines pass; inherited names use own-property lookup at every recursive validation boundary.
+- [x] C1-T3: 2/2 acceptance lines pass; direct roots, environment roots, fallback and symlink paths refuse example deployment before writes.
+- [x] B1–B8 delivered; npm run golden:diff reports empty. Generated owner module remains packaged; no UI change, no verify skill.
+- [x] All three reproducing test commits are unchanged by their corresponding fix commits; existing assertions were retained.
+- [x] .workflow/ dependency scan clean; escape-hatch scan clean; no out-of-scope changes in the fix diff.
+Size: +402 code · +415 tests · ratio 1.03 · net +720 · over 1,000: none
+Reachability: no new modules in cycle 2; golden CLI calls argument/path guards; resolver and loader call example refusal; syncOwner passes deploy to loader.
+Verification: npm run build includes npm run check; exit 0, 224 pass, 1 skipped, 0 fail. Dry-run Worker packaging passes with 23 imported modules.
+Mutation: temporary detached worktree baseline passes; removing exact-root refusal, ancestor refusal or canonical-path lookup separately fails test/golden.test.mjs:128. Worktree removed.
+Independence: cross-vendor; Opus 5.5 wrote the fixes, GPT-6 Astra reviewed them, confirmed by the T3 runtime catalog. Current session differs from ROUTING.md.
 
-## Cycle 1 findings
-### P0 — C1-1: A missing snapshot path deletes the working directory
-- Evidence: `scripts/golden.mjs:71` defaults a missing `--golden` value to `""`; `writeGolden` at line 49 recursively removes that resolved directory. Running `capture --golden` in a temporary directory exited 0 and deleted its sentinel file. In the normal checkout this targets the checkout itself.
-- Remedy: reject missing/empty/unknown arguments before collecting or writing; prevent capture from deleting the engine, owner root or their ancestors.
-- Disposition: fix now
-- Resolved: —
+## Resolved
+| Finding | Sev | Title | Disposition | Resolved |
+|---|---|---|---|---|
+| C1-1 | P0 | Missing snapshot path deletes working directory | fix now | @ 0923a8e (cycle 2) |
+| C1-2 | P1 | Inherited names bypass schema validation | fix now | @ 1969b9b (cycle 2) |
+| C1-3 | P1 | Example refusal checks spelling instead of directory | fix now | @ 94d61d2 (cycle 2) |
 
-### P1 — C1-2: Inherited property names bypass strict schema validation
-- Evidence: B4; `scripts/owner.mjs:52` reads `schema.properties[key]` through the prototype. Adding `site.constructor`, `site.toString` or `site.__proto__` to valid JSON is accepted despite `additionalProperties: false`.
-- Remedy: use own-property lookup, including schema-less dictionaries such as links and deploy.vars; test inherited names at strict and dictionary boundaries.
-- Disposition: fix now
-- Resolved: —
-
-### P1 — C1-3: Example-owner refusal checks spelling instead of the directory
-- Evidence: B6; `scripts/owner.mjs:22` accepts `deploy: true` with AGENT_CV_OWNER_ROOT set to a symlink to examples/owner. `loadOwner({root: examplesPath, deploy: true})` also skips the resolver at line 84.
-- Remedy: enforce the deploy check at the loader boundary for explicit and resolved roots, compare canonical paths, and preserve rejection before copying.
-- Disposition: fix now
-- Resolved: —
+## Cycle 2 findings
+None. The review covers the fix diff and all entry paths for the three finding classes.
 
 ## Pre-existing / environmental
-MEMORY.md absent; exam Must name entries checked, no matching prior class. Model routing differs from the skill, recorded above. Approved feature-branch workflow retained instead of merging to main before fixes.
+MEMORY.md is absent. The approved feature-branch workflow remains in force: feat/forkable-owner-loader, one PR at the end.
+Mutation worktree first lacked generated data; bootstrap:data and sync:data established a passing baseline before the three mutations.
+No public claims changed and no live deployment ran.
 
-## Cycle 1 verdict
-Do not ship: 1 P0, 2 P1, 0 P2, 0 P3. Execute patch tickets C1-T1–C1-T3, then re-review. Product code unchanged by review.
+## Cycle 2 verdict
+Ship as-is: 0 P0, 0 P1, 0 P2, 0 P3. All three cycle 1 findings are resolved. Next: workflow wrap forkable-owner-loader.

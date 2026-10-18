@@ -9,10 +9,9 @@ Size: code 7517 · tests 5902 · ratio 0.79 · baseline includes moved browser J
 Decisions: user 1a approved technical golden exceptions; John approved B1–B6, six tickets and their acceptance criteria. Main session writes; Opus 5.5 audit incorporated; verified findings and dispositions in notes/audit.md.
 
 ## Execution state
-T1 @ 9aa0df6 · next T2 or T3 (contract, both unblocked) · writer: Opus 5.5 (see Deviations)
-Baseline 224 passed, 1 skipped; after T1 226 passed, 1 skipped; golden:diff empty.
+T1 @ 9aa0df6 · next T2 or T3 (contract, both unblocked) · writer: Opus 5.5 (see Deviations) · Session 1: T1
+Every ticket runs npm run check and local golden:diff before commit; six verified ticket commits (approved). Baseline 224 passed, 1 skipped; after T1 226 passed, 1 skipped; golden:diff empty. Owner data/faq.md edit is pre-existing, untouched.
 Exception manifest: <owner root>/golden-exceptions.json = {"exceptions":[{path, before, after, reason, diff}]}; digests "sha256:<hex>" or null for added/removed paths; prompts/ paths rejected.
-Owner data/faq.md modification is pre-existing and untouched. Session 1: T1
 
 ## Findings
 | # | What is true | What it changes |
@@ -118,5 +117,6 @@ None named by the source plan; TODO.md and ROADMAP.md not opened.
 
 ## Product doc impacts
 design.md: update canonical published token path to build/site/tokens.css; visual rules unchanged. AGENTS.md and refresh skill: correct output/content paths only. PRODUCT.md and ROADMAP.md absent.
+
 ## Deviations
 - Execute seat switched from GPT-6.1 Sol to Opus 5.5 by human approval; the plan was written on OpenAI Astra. Review must use an OpenAI model.

@@ -9,10 +9,10 @@ Size: code 7517 · tests 5902 · ratio 0.79 · baseline includes moved browser J
 Decisions: user 1a approved technical golden exceptions; John approved B1–B6, six tickets and their acceptance criteria. Main session writes; Opus 5.5 audit incorporated; verified findings and dispositions in notes/audit.md.
 
 ## Execution state
-T1 @ 9aa0df6 · T2 @ e262441 (private b95360d) · T3 @ 04f3a25 (private 746d16b) · next T4 (contract) · writer: Opus 5.5 (see Deviations) · Session 1: T1 · Session 2: T2, T3
-Every ticket runs npm run check and local golden:diff before commit; six verified ticket commits (approved). Baseline 224 passed, 1 skipped; now 235 passed, 1 skipped; golden:diff empty. Owner data/faq.md edit is pre-existing, untouched.
-In flight: golden-exceptions.json {"exceptions":[{path, before, after, reason, diff}]}; buildSystemPrompt(knowledge, { owner, updatedAt }); canonicalizeComparisonDraft(..., owner) and handleRequest({ owner }) default to src/data/owner.js; test/fixtures/owners.mjs JOHN, ADA, ELISE.
-Rendering: scripts/build-site.mjs renderSite({ owner, site }) → { path: text }, CLI writes build/site (ignored); site/templates/{html,home,headers}.mjs; site.json sections meta, person, home (validator has no $ref, so item shapes repeat). John's index.html and _headers render byte-identical to public/.
+T1 @ 9aa0df6 · T2 @ e262441 (private b95360d) · T3 @ 04f3a25 (private 746d16b) · T4 @ 7a9f61a (private 984d692) · next T5 (logic) · writer: Opus 5.5 (see Deviations) · Session 1: T1 · Session 2: T2, T3 · Session 3: T4
+Every ticket runs npm run check and local golden:diff before commit (approved). Baseline 224 passed, 1 skipped; now 239 passed, 1 skipped; golden:diff empty. Owner data/faq.md edit is pre-existing, untouched.
+In flight: golden-exceptions.json {"exceptions":[{path, before, after, reason, diff}]}; buildSystemPrompt(knowledge, { owner, updatedAt }); canonicalizeComparisonDraft(..., owner), handleRequest({ owner }) default to src/data/owner.js; test/fixtures/owners.mjs JOHN, ADA, ELISE.
+Rendering: build-site renderSite({ owner, site }) → 15 files; buildSite({ owner, site, out, dataRoot }) adds the 4 public Markdown; site/templates/{html,home,pages,discovery,headers}.mjs; site.json meta, person, home, pages.{about,experience,projects,cv,contact,privacy}; prose blocks p/h2/h3/kicker/quote/list with **bold**, `code`, [label](href). John's render equals public/ except experience/ " &amp; ".
 
 ## Findings
 | # | What is true | What it changes |
@@ -76,12 +76,13 @@ Delivers: B4 · Blocked by: T3 · Lane: contract
 Budget: code +650 · tests +200
 Seam: shared templates, page sections, John's private site.json and synthetic fixture, robots, sitemap, llms.txt and public AGENTS.md.
 Accept:
-- [ ] All ten existing HTML routes retain John's copy, links and layout; fictional fixtures supply every section and render their own identity. (B4)
-- [ ] Discovery resources retain API/tool names and limits; site.json.updatedAt drives freshness; owner origin/slug drive canonical URLs, sitemap, robots and PDF headers. (B4)
-- [ ] Public output includes four approved Markdown files and excludes six private sources, deploy settings, admin secrets and operator notes. (B4)
+- [x] All ten existing HTML routes retain John's copy, links and layout; fictional fixtures supply every section and render their own identity. (B4)
+- [x] Discovery resources retain API/tool names and limits; site.json.updatedAt drives freshness; owner origin/slug drive canonical URLs, sitemap, robots and PDF headers. (B4)
+- [x] Public output includes four approved Markdown files and excludes six private sources, deploy settings, admin secrets and operator notes. (B4)
 Verify: `node --test test/site-rendering.test.mjs && node --test test/static-contract.test.mjs` (pre: new file; static tests 12 passed)
 Skills: /home/john/.codex/skills/agent-docs/SKILL.md
-Status: todo
+Status: done @ 7a9f61a
+Writer: Opus 5.5
 
 ### T5 — Read browser identity from the rendered document
 Delivers: B5 · Blocked by: T2, T4 · Lane: logic
@@ -125,3 +126,4 @@ design.md: update canonical published token path to build/site/tokens.css; visua
 - Execute seat switched from GPT-6.1 Sol to Opus 5.5 by human approval; the plan was written on OpenAI Astra. Review must use an OpenAI model.
 - T2: six existing tests changed setup only, assertion counts unchanged: chat-core, worker redirect and comparison question tests pass JOHN; owner/sync-owner fixtures add site.json updatedAt. Conclusion patterns keep their "john" tokens (cleanup is U8). Tests +129 against budget +100.
 - T3: _headers renders now, CSP hashes and the PDF route from the slug, because the CSP hash acceptance line needs it; T4 keeps the rest of the discovery resources. Code about +557 against +500, mostly the copied page body and the repeated schema item shapes. The John byte-equality test skips without John's owner root, as in CI.
+- T4: experience/ renders "&amp;" where the published page has raw "&" (three lines, same display); T6 needs a golden exception outside the four approved categories, or a human ruling. Code about +1,000 against +650, mostly page markup copied from public/ by the one-off generators in scripts/.

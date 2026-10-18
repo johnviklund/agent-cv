@@ -9,14 +9,14 @@ Size: code 101 · tests 66 · ratio 0.65 · largest touched scripts/sync-private
 Decisions: 1a plan U0+U1 as a run · 2a GPT-6.1 Sol writes, Opus 5.5 reviews · 3a minimal Ada example owner · run on branch feat/forkable-owner-loader, one PR at the end
 
 ## Execution state
-Current: T4 in progress, uncommitted · pending decision: build rejects unimported `data/owner.js` · baseline at a0ec9b9: `npm run check` exit 0, 208 pass, 1 skipped, 0 fail
+Current: all tickets done · baseline at a0ec9b9: `npm run check` exit 0, 208 pass, 1 skipped, 0 fail
 T1 @ f3d40da
 T2 @ ccba344
 T3 @ 26365ea (private commit 6e68283; receipt `receipts/t3-golden-capture.md`)
+T4 @ 0a92f92
 writer: Opus 5.5 (human ran execute on Opus 5.5 instead of GPT-6.1 Sol: review must go to OpenAI)
 Session 1: T1, T2, T3
-Session 2: T4 (stopped: `npm run build` exit 1, `Wrangler dry-run included unexpected module data/owner.js`)
-Uncommitted: AGENTS.md, package.json, scripts/golden.mjs, scripts/sync-owner.mjs (git mv), scripts/sync-public-data.mjs, test/sync-owner.test.mjs (git mv)
+Session 2: T4 (paused once on the build check; human chose 1a)
 
 ## Findings
 | # | What is true | What it changes |
@@ -82,19 +82,25 @@ Delivers: B6, B7, B8 · Blocked by: T2, T3 · Lane: contract
 Budget: code +70 · tests +80 · why: each resolution path that copies or refuses needs its own fixture owner
 Seam: `syncOwner({ sourceRoot, destinationRoot, deploy })` in `scripts/sync-owner.mjs` (git mv of `sync-private-data.mjs`); `writeOwnerModule({ root, owner })` called by `scripts/sync-public-data.mjs`
 Accept:
-- [ ] valid fixture owner → copies exactly the six private files and returns `owner.slug` of the fixture (B7)
-- [ ] invalid `owner.json` → rejects with `owner.json: …`; destination `data/` bytes unchanged (B7)
-- [ ] `deploy: true` resolving to the example owner → rejects `Refusing to deploy the example owner…`; destination unchanged (B6)
-- [ ] `npm run sync:owner` and `npm run sync:private-data` run `scripts/sync-owner.mjs`; `deploy` starts with `npm run sync:owner -- --deploy` (B7)
-- [ ] imported `src/data/owner.js` deep-equals the owner without `deploy` and `analytics` (B8)
-- [ ] John's checkout after the ticket: `npm run golden:diff` exit 0 and `npm run build` exit 0 (B8)
+- [x] valid fixture owner → copies exactly the six private files and returns `owner.slug` of the fixture (B7)
+- [x] invalid `owner.json` → rejects with `owner.json: …`; destination `data/` bytes unchanged (B7)
+- [x] `deploy: true` resolving to the example owner → rejects `Refusing to deploy the example owner…`; destination unchanged (B6)
+- [x] `npm run sync:owner` and `npm run sync:private-data` run `scripts/sync-owner.mjs`; `deploy` starts with `npm run sync:owner -- --deploy` (B7)
+- [x] imported `src/data/owner.js` deep-equals the owner without `deploy` and `analytics` (B8)
+- [x] John's checkout after the ticket: `npm run golden:diff` exit 0 and `npm run build` exit 0 (B8)
 Verify: `node --test test/sync-owner.test.mjs && npm run golden:diff` (pre: new file; golden:diff not yet a script)
 Skills: none
-Status: todo
+Status: done @ 0a92f92
+Writer: Opus 5.5
 
 ## Deviations
 - T1: `scripts/sync-private-data.mjs` gains an exported `defaultPrivateRoot()` (F4 reuse); code ~+109 vs budget +90, tests +77 vs +70.
 - T2: schemas also bound `name`, `links`, `contact`, `analytics`, `deploy` fields from the docs sketch; `location` and `analytics` optional.
+
+- T4: `npm run build` rejected the unimported `src/data/owner.js` (F10); human chose 1a, so `src/knowledge.js` re-exports `owner` until U2 uses it. Golden diff stays empty.
+- T4: `test/sync-owner.test.mjs` (git mv of `sync-private-data.test.mjs`) fixtures gain `owner.json` and `site.json`; its 6 existing assertions are unchanged, plus 1 new slug assertion.
+- T4: `AGENTS.md` Data boundaries line rewritten for `sync:owner`; `README.md`, `USERGUIDE.md` and `data/repositories.md` still name `sync:private-data`, which works as the alias (U7).
+- Writer: every ticket ran on Opus 5.5 by the human's choice, so the cross-vendor review goes to OpenAI.
 
 ## Coverage
 - Outcome → T3 (golden frozen and empty diff on John's checkout), T4 (owner module plus empty diff)

@@ -1,10 +1,19 @@
-import { existsSync } from "node:fs";
+import { existsSync, realpathSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const defaultEngineRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const ROOT_VARIABLES = ["AGENT_CV_OWNER_ROOT", "AGENT_CV_PRIVATE_ROOT"];
+
+const realPath = (path) => (existsSync(path) ? realpathSync(path) : resolve(path));
+
+// Compares real directories, so a symlink or another spelling of examples/owner is refused too.
+function refuseExample(root, engineRoot) {
+  if (realPath(root) === realPath(resolve(engineRoot, "examples/owner"))) {
+    throw new Error("Refusing to deploy the example owner; set AGENT_CV_OWNER_ROOT");
+  }
+}
 
 export function resolveOwnerRoot({ env = process.env, deploy = false, engineRoot = defaultEngineRoot } = {}) {
   const example = resolve(engineRoot, "examples/owner");
@@ -19,9 +28,7 @@ export function resolveOwnerRoot({ env = process.env, deploy = false, engineRoot
     root = existsSync(sibling) ? sibling : example;
   }
 
-  if (deploy && root === example) {
-    throw new Error("Refusing to deploy the example owner; set AGENT_CV_OWNER_ROOT");
-  }
+  if (deploy) refuseExample(root, engineRoot);
   return root;
 }
 
@@ -82,6 +89,7 @@ async function readJson(path, file) {
 
 export async function loadOwner({ root, env, deploy, engineRoot = defaultEngineRoot } = {}) {
   const ownerRoot = root ? resolve(root) : resolveOwnerRoot({ env, deploy, engineRoot });
+  if (deploy) refuseExample(ownerRoot, engineRoot);
   const [ownerSchema, siteSchema, owner, site] = await Promise.all([
     readJson(resolve(engineRoot, "schemas/owner.schema.json"), "owner.schema.json"),
     readJson(resolve(engineRoot, "schemas/site.schema.json"), "site.schema.json"),

@@ -2,7 +2,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-import { loadOwner, resolveOwnerRoot } from "./owner.mjs";
+import { loadOwner } from "./owner.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -17,8 +17,10 @@ export const privateDataFiles = Object.freeze([
 
 // Validates the owner config, then copies the six private files; nothing is written on failure.
 export async function syncOwner({ sourceRoot, destinationRoot = root, deploy = false, env = process.env }) {
-  const ownerRoot = resolveOwnerRoot({ env: sourceRoot ? { AGENT_CV_OWNER_ROOT: sourceRoot } : env, deploy });
-  const { owner } = await loadOwner({ root: ownerRoot });
+  const { root: ownerRoot, owner } = await loadOwner({
+    env: sourceRoot ? { AGENT_CV_OWNER_ROOT: sourceRoot } : env,
+    deploy,
+  });
   const sourceData = resolve(ownerRoot, "data");
   const destinationData = resolve(destinationRoot, "data");
   let contents;

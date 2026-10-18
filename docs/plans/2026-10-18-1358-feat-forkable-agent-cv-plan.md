@@ -4,6 +4,7 @@ type: feat
 date: 2026-10-18
 artifact_readiness: draft-for-review
 execution: code
+workflow_runs: U0 + U1 → .workflow/forkable-owner-loader/
 ---
 
 # Forkable Agent CV - Plan
@@ -123,7 +124,8 @@ Before any refactor, build John's site and save the full output (`public/` after
 
 ### U1. Owner config, schemas and loader
 
-- Add the `owner.json` and `site.json` schemas and `scripts/owner.mjs`, which resolves `AGENT_CV_OWNER_ROOT` (falling back to `examples/owner/` only outside deploy), validates both files and returns typed values.
+- Add the `owner.json` and `site.json` schemas and `scripts/owner.mjs`, which resolves `AGENT_CV_OWNER_ROOT`, then `AGENT_CV_PRIVATE_ROOT` (alias for one release), then the sibling `../agent-cv-private`, then `examples/owner/` (outside deploy only), validates both files and returns typed values. An explicitly set root that is missing is an error, never a fallback.
+- U1 ships a minimal Ada `examples/owner/` (`owner.json`, `site.json` only); U7 completes it. U1's `site.json` schema covers the envelope (`schemaVersion`); U3 adds the page sections.
 - Generalize `sync:private-data` into `sync:owner`, which copies the whole owner directory's sources into the engine's ignored build locations. Keep `sync:private-data` as an alias for one release.
 - Generate `src/data/owner.js` during `sync:data`.
 - Tests: valid and invalid configs, error messages, deploy refusing the example owner.

@@ -17,6 +17,7 @@ T4 @ 0a92f92
 writer: Opus 5.5 (human ran execute on Opus 5.5 instead of GPT-6.1 Sol: review must go to OpenAI)
 Session 1: T1, T2, T3
 Session 2: T4 (paused once on the build check; human chose 1a)
+Session 3: C1-T1, C1-T2, C1-T3 (patch cycle 1; `patch_plan.md`)
 
 ## Findings
 | # | What is true | What it changes |

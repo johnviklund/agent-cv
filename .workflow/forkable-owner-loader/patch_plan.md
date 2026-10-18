@@ -5,9 +5,11 @@ Inputs: review.md @ 17687d3
 Status: complete
 
 ## Execution state
-Current: C1-T3 todo · baseline at 17583eb: `npm run check` exit 0, 219 pass, 1 skipped
+Current: all patch tickets done; next re-review · baseline at 17583eb: `npm run check` exit 0, 219 pass, 1 skipped
 C1-T1 @ 0923a8e (red tests @ 26b4747)
 C1-T2 @ 1969b9b (red test @ b114531)
+C1-T3 @ 94d61d2 (red tests @ ef9ee03)
+Verify at 94d61d2: `npm run check` 224 pass, 1 skipped · golden:diff empty · build exit 0 · `sync:owner -- --deploy` syncs john-viklund
 writer: Opus 5.5 (human ran execute on Opus 5.5 instead of GPT-6.1 Sol, as in cycle 0)
 
 ## Tickets
@@ -43,16 +45,18 @@ Delivers: C1-3 · Blocked by: none · Lane: contract
 Budget: code +25 · tests +35
 Seam: scripts/owner.mjs resolveOwnerRoot/loadOwner; scripts/sync-owner.mjs syncOwner
 Accept:
-- [ ] deploy rejects examples/owner through direct root, sourceRoot, both environment variables, sibling/fallback and symlink aliases; destination bytes remain unchanged.
-- [ ] Valid non-example roots still load and sync; missing explicit roots remain errors; existing golden diff and build pass.
+- [x] deploy rejects examples/owner through direct root, sourceRoot, both environment variables, sibling/fallback and symlink aliases; destination bytes remain unchanged.
+- [x] Valid non-example roots still load and sync; missing explicit roots remain errors; existing golden diff and build pass.
 Verify: `node --test test/owner.test.mjs test/sync-owner.test.mjs && npm run golden:diff && npm run build` (pre: symlink resolution and explicit-root load accept Ada in deploy mode)
 Skills: none
-Status: todo
-Red: pending — commit failing regression tests first; then fix without editing those tests.
+Status: done @ 94d61d2
+Writer: Opus 5.5
+Red: ef9ee03 — 2 new tests failed: symlinked example accepted by resolver, loader and sync
 
 ## Deviations
 - C1-T1: tests +57 vs budget +45; the engine-root cases run a temp copy of the CLI so a failing refusal cannot delete this checkout.
 - C1-T2: the `required` check still reads `value[key]` through the prototype; no schema requires an inherited name, so it is left as is.
+- C1-T3: tests +49 vs budget +35; `syncOwner` now takes its root from `loadOwner`, so `resolveOwnerRoot` is no longer imported there.
 
 ## Handoff
 Fixes stay on feat/forkable-owner-loader per the approved plan; one PR at the end. C1-T1 is P0 and uses the heavy executor at high effort; C1-T2/C1-T3 are contract fixes at the same seat and effort. No public claims or deployment authorized by this review.

@@ -9,9 +9,13 @@ Size: code 7517 · tests 5902 · ratio 0.79 · baseline includes moved browser J
 Decisions: user 1a approved technical golden exceptions; John approved B1–B6, six tickets and their acceptance criteria. Main session writes; Opus 5.5 audit incorporated; verified findings and dispositions in notes/audit.md.
 
 ## Execution state
-Planning only. Engine tree started clean on feat/forkable-owner-loader at 7e92346; Run A wrap reports pushed, no PR. Resolve branch/PR ancestry before execution handoff.
-Baseline: npm run check passes 224 tests, 1 skipped; npm run golden:diff is empty. Owner data/faq.md has a pre-existing modification.
-Every ticket runs npm run check and local golden:diff before commit; approved refinement: six verified ticket commits instead of three oversized unit commits.
+Current: T1 done; next T2 (contract) or T3 (contract), both unblocked.
+T1 @ 9aa0df6
+writer: Opus 5.5 (human approved 2026-10-18; ROUTING names GPT-6.1 Sol, so review must run on an OpenAI model)
+Baseline: npm run check 224 passed, 1 skipped; golden:diff empty. After T1: 226 passed, 1 skipped; golden:diff empty.
+Exception manifest: <owner root>/golden-exceptions.json = {"exceptions":[{path, before, after, reason, diff}]}; digests "sha256:<hex>" or null for added/removed paths; prompts/ paths rejected.
+Owner data/faq.md modification in the private repo is pre-existing and untouched.
+Session 1: T1
 
 ## Findings
 | # | What is true | What it changes |
@@ -37,11 +41,12 @@ Delivers: B1 · Blocked by: none · Lane: logic
 Budget: code +100 · tests +90
 Seam: golden collector, CLI and private exception manifest; prepares T3–T6.
 Accept:
-- [ ] Frozen baseline plus exact recorded before/after digests reports accepted technical changes individually; every unlisted change exits 1. (B1)
-- [ ] Prompt exceptions are rejected; unapproved prose changes fail; exact technical exceptions retain raw differences and reviewed diffs. (B1)
+- [x] Frozen baseline plus exact recorded before/after digests reports accepted technical changes individually; every unlisted change exits 1. (B1)
+- [x] Prompt exceptions are rejected; unapproved prose changes fail; exact technical exceptions retain raw differences and reviewed diffs. (B1)
 Verify: `node --test test/golden.test.mjs` (pre: 5 passed)
 Skills: none
-Status: todo
+Status: done @ 9aa0df6
+Writer: Opus 5.5
 
 ### T2 — Use owner identity throughout Worker behaviour
 Delivers: B2 · Blocked by: T1 · Lane: contract
@@ -116,3 +121,6 @@ None named by the source plan; TODO.md and ROADMAP.md not opened.
 
 ## Product doc impacts
 design.md: update canonical published token path to build/site/tokens.css; visual rules unchanged. AGENTS.md and refresh skill: correct output/content paths only. PRODUCT.md and ROADMAP.md absent.
+
+## Deviations
+- Execute seat switched from GPT-6.1 Sol to Opus 5.5 by human approval; the plan was written on OpenAI Astra. Review must use an OpenAI model.

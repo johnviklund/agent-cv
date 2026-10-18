@@ -49,7 +49,7 @@ export function validate(schema, value, file, path = "") {
       if (value[key] === undefined) throw new Error(`${file}: ${join(key)} is required`);
     }
     for (const [key, item] of Object.entries(value)) {
-      const property = schema.properties?.[key] ?? schema.additionalProperties;
+      const property = Object.hasOwn(schema.properties ?? {}, key) ? schema.properties[key] : schema.additionalProperties;
       if (property === false || (property === undefined && schema.properties)) {
         throw new Error(`${file}: ${join(key)} is not allowed`);
       }

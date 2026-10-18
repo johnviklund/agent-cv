@@ -22,6 +22,7 @@ import {
 } from "./applications.js";
 import { sanitizeOpenAIResponseStream } from "./openai-stream.js";
 import { handleCompare } from "./comparison-handler.js";
+import generatedOwner from "./data/owner.js";
 
 const JSON_HEADERS = {
   "content-type": "application/json; charset=utf-8",
@@ -31,11 +32,6 @@ const JSON_HEADERS = {
 };
 const DEFAULT_OPENAI_MODEL = "gpt-6-luna";
 const DEFAULT_OPENAI_REASONING_EFFORT = "none";
-const CANONICAL_ORIGIN = "https://johnviklund.com";
-const LEGACY_HOSTS = new Set([
-  "www.johnviklund.com",
-  "john-viklund-agent-cv.agent-cv.workers.dev",
-]);
 const OPENAI_REASONING_EFFORTS = new Set(["none", "low", "medium", "high", "xhigh", "max"]);
 const MAX_ARCHIVED_ANSWER_CHARACTERS = 16_000;
 const OPENAI_RESPONSE_HEADER_TIMEOUT_MS = 30_000;
@@ -60,11 +56,14 @@ export async function handleRequest(
     systemPrompt = "",
     openAIConnectTimeoutMs = OPENAI_RESPONSE_HEADER_TIMEOUT_MS,
     comparisonOpenAIConnectTimeoutMs,
+    owner = generatedOwner,
   } = {},
 ) {
   const url = new URL(request.url);
-  if (LEGACY_HOSTS.has(url.hostname)) {
-    return Response.redirect(`${CANONICAL_ORIGIN}${url.pathname}${url.search}`, 308);
+  // Every configured host except the canonical one is an alias of the owner's origin.
+  const canonical = new URL(owner.site.origin);
+  if (url.hostname !== canonical.hostname && owner.site.hosts.includes(url.hostname)) {
+    return Response.redirect(`${canonical.origin}${url.pathname}${url.search}`, 308);
   }
   const adminApplicationMatch = url.pathname.match(/^\/api\/admin\/applications(?:\/([a-z0-9_-]{10,32})\/revoke)?$/);
   const publicApplicationMatch = url.pathname.match(/^\/api\/application\/([a-z0-9_-]{10,32})$/);

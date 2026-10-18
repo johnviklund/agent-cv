@@ -35,12 +35,12 @@ export async function collectOutputs({ root = engineRoot } = {}) {
   }
 
   const module = (path) => import(pathToFileURL(resolve(root, path)).href);
-  const [{ knowledge }, { buildSystemPrompt }, { buildComparisonInstructions }] = await Promise.all([
+  const [{ knowledge, owner, updatedAt }, { buildSystemPrompt }, { buildComparisonInstructions }] = await Promise.all([
     module("src/knowledge.js"),
     module("src/chat-core.js"),
     module("src/comparison-core.js"),
   ]);
-  outputs["prompts/system.txt"] = Buffer.from(buildSystemPrompt(knowledge));
+  outputs["prompts/system.txt"] = Buffer.from(buildSystemPrompt(knowledge, { owner, updatedAt }));
   outputs["prompts/comparison.txt"] = Buffer.from(buildComparisonInstructions());
   outputs["wrangler.jsonc"] = await readFile(resolve(root, "wrangler.jsonc"));
   return outputs;

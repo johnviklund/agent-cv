@@ -4,6 +4,7 @@ import { BudgetCounter, handleRequest } from "../src/worker.js";
 import { readRecordsWithStatus } from "../src/archive.js";
 import { parseRoleBatch } from "../public/comparison-transfer.js";
 import { PLAIN_LINE_BATCH, PLAIN_LINE_REQUIREMENT_COUNTS } from "./fixtures/requirement-sections.mjs";
+import { JOHN } from "./fixtures/owners.mjs";
 
 const ASK_URL = "https://example.test/api/ask";
 const COMPARE_URL = "https://example.test/api/compare";
@@ -35,7 +36,7 @@ test("legacy and www hosts redirect to the canonical domain", async () => {
   ];
 
   for (const alias of aliases) {
-    const response = await handleRequest(new Request(alias), baseEnv(), emptyContext());
+    const response = await handleRequest(new Request(alias), baseEnv(), emptyContext(), { owner: JOHN });
     const source = new URL(alias);
 
     assert.equal(response.status, 308);

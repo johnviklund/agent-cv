@@ -12,6 +12,7 @@ import {
   validateComparisonResult,
 } from "./data/comparison-contract.js";
 import evidenceCatalog from "./data/comparison-evidence.js";
+import generatedOwner from "./data/owner.js";
 
 const COVERAGE_STATES = new Set(COMPARISON_COVERAGE_STATES);
 const UNSAFE_GENERATED_TEXT = /<[^>]*>|(?:https?|mailto|javascript|data):|www\./i;
@@ -20,8 +21,8 @@ const DEFAULT_REASON_CODE_BY_COVERAGE = Object.freeze({
   documented: "directly_relevant_delivery",
   transferable: "related_domain_experience",
 });
-const QUESTION_TEMPLATES = Object.freeze({
-  ownership_scope: "Which parts of this work did John own directly?",
+const questionTemplates = (owner) => Object.freeze({
+  ownership_scope: `Which parts of this work did ${owner.name.short} own directly?`,
   evidence_depth: "What additional documented example would help clarify this requirement?",
   transfer_context: "Which aspects of this experience transfer most directly to this requirement?",
   gap_clarification: "What additional context could clarify this currently undocumented requirement?",
@@ -42,6 +43,15 @@ const UNSAFE_PROVIDER_CONCLUSIONS = [
   /\b(?:hire|select|choose|advance|reject)\s+(?:john|the candidate|this candidate)\b/i,
   /\b(?:john|the candidate|this candidate|the applicant|this applicant)\s+(?:is|appears|seems)\s+(?:an?\s+)?(?:strong|good|excellent|poor|weak|bad|ideal|best|unsuitable)\s+(?:fit|match|candidate)\b/i,
 ];
+
+// The owner's questions, and a Unicode-aware match of their names that the conclusion guards read as "the candidate".
+function ownerScreen(owner) {
+  const names = [owner.name.full, owner.name.short].map((name) => name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  return {
+    questions: questionTemplates(owner),
+    names: new RegExp(`(?<![\\p{L}\\p{N}_])(?:${names.join("|")})(?![\\p{L}\\p{N}_])`, "giu"),
+  };
+}
 
 export class ComparisonInputError extends Error {
   constructor(message, status = 400) {
@@ -188,7 +198,9 @@ export function canonicalizeComparisonDraft(
   roles,
   catalog = evidenceCatalog,
   requirementInventory = buildComparisonRequirementInventory(roles),
+  owner = generatedOwner,
 ) {
+  const screen = ownerScreen(owner);
   try {
     exactObject(draft, ["rows", "unmappedRequirements"], "Comparison draft");
     if (!Array.isArray(draft.rows) || draft.rows.length < 1 || draft.rows.length > COMPARISON_CONTRACT.limits.maxRows) {
@@ -202,11 +214,13 @@ export function canonicalizeComparisonDraft(
       roles,
       evidenceIds,
       inventoryState,
+      screen,
     ));
     const unmappedRequirements = normalizeDraftUnmappedRequirements(
       draft.unmappedRequirements,
       roles,
       inventoryState,
+      screen,
     );
     validateRequirementInventoryConsumption(inventoryState);
     const result = {
@@ -242,9 +256,9 @@ function classifyDraftFailure(error) {
   return "draft_validation";
 }
 
-function normalizeDraftRow(row, rowIndex, roles, evidenceIds, inventoryState) {
+function normalizeDraftRow(row, rowIndex, roles, evidenceIds, inventoryState, screen) {
   exactObject(row, ["label", "cells"], `Draft row ${rowIndex + 1}`);
-  const label = generatedText(row.label, COMPARISON_CONTRACT.limits.maxRowLabelCharacters, "Draft row label");
+  const label = generatedText(row.label, COMPARISON_CONTRACT.limits.maxRowLabelCharacters, "Draft row label", screen);
   if (!Array.isArray(row.cells) || row.cells.length !== roles.length) {
     throw new TypeError("Every draft row requires exactly one cell per role.");
   }
@@ -259,11 +273,12 @@ function normalizeDraftRow(row, rowIndex, roles, evidenceIds, inventoryState) {
       roleIndex,
       evidenceIds,
       inventoryState[roleIndex],
+      screen,
     )),
   };
 }
 
-function normalizeDraftCell(cell, rowId, roleIndex, evidenceIds, inventory) {
+function normalizeDraftCell(cell, rowId, roleIndex, evidenceIds, inventory, screen) {
   exactObject(cell, ["roleIndex", "requirementId", "coverage", "evidence", "questionKinds"], `Draft cell ${rowId}:${roleIndex + 1}`);
   if (cell.roleIndex !== roleIndex) throw new TypeError("Draft cells must preserve role input order.");
   if (!COVERAGE_STATES.has(cell.coverage)) throw new TypeError("Draft coverage state is invalid.");
@@ -271,7 +286,7 @@ function normalizeDraftCell(cell, rowId, roleIndex, evidenceIds, inventory) {
   let requirement = null;
   if (cell.requirementId !== null) {
     const item = consumeRequirementId(cell.requirementId, inventory, "assessed");
-    requirement = generatedText(item.text, COMPARISON_CONTRACT.limits.maxRequirementCharacters, "Source requirement");
+    requirement = generatedText(item.text, COMPARISON_CONTRACT.limits.maxRequirementCharacters, "Source requirement", screen);
   }
   if ((cell.coverage === "not_listed") !== (requirement === null)) {
     throw new TypeError("Draft requirement ID does not match its coverage state.");
@@ -301,7 +316,7 @@ function normalizeDraftCell(cell, rowId, roleIndex, evidenceIds, inventory) {
   const questions = cell.questionKinds.map((kind) => {
     if (!QUESTION_KINDS.has(kind) || seenQuestionKinds.has(kind)) throw new TypeError("Draft question kind is invalid or duplicated.");
     seenQuestionKinds.add(kind);
-    return QUESTION_TEMPLATES[kind];
+    return screen.questions[kind];
   });
 
   const roleId = canonicalRoleId(roleIndex);
@@ -315,7 +330,7 @@ function normalizeDraftCell(cell, rowId, roleIndex, evidenceIds, inventory) {
   };
 }
 
-function normalizeDraftUnmappedRequirements(value, roles, inventoryState) {
+function normalizeDraftUnmappedRequirements(value, roles, inventoryState, screen) {
   // Provider-authored unmapped IDs are advisory bookkeeping only. The strict
   // upstream schema still bounds their shape, but canonical output is repaired
   // entirely from the server-owned inventory so omissions, duplicates, wrong
@@ -328,6 +343,7 @@ function normalizeDraftUnmappedRequirements(value, roles, inventoryState) {
         text,
         COMPARISON_CONTRACT.limits.maxRequirementCharacters,
         "Source unmapped requirement",
+        screen,
       ));
     return { roleId: canonicalRoleId(roleIndex), requirements };
   });
@@ -378,12 +394,13 @@ function canonicalRequirementId(roleIndex, requirementIndex) {
   return `requirement_${canonicalRoleId(roleIndex)}_${String(requirementIndex + 1).padStart(2, "0")}`;
 }
 
-function generatedText(value, maximum, label) {
+function generatedText(value, maximum, label, screen) {
   if (typeof value !== "string" || /[\u0000-\u001f\u007f]/.test(value)) throw new TypeError(`${label} must be text.`);
   const clean = value.replace(/\s+/g, " ").trim();
   if (!clean || clean.length > maximum || UNSAFE_GENERATED_TEXT.test(clean)) throw new TypeError(`${label} is unsafe or out of bounds.`);
   if (PROTECTED_TRAIT_TEXT.test(clean)) throw new TypeError(`${label} contains protected-trait content.`);
-  if (UNSAFE_PROVIDER_CONCLUSIONS.some((pattern) => pattern.test(clean))) throw new TypeError(`${label} contains a prohibited conclusion.`);
+  const named = clean.replace(screen.names, "the candidate");
+  if (UNSAFE_PROVIDER_CONCLUSIONS.some((pattern) => pattern.test(named))) throw new TypeError(`${label} contains a prohibited conclusion.`);
   return clean;
 }
 

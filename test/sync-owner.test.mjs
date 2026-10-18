@@ -22,7 +22,7 @@ async function makeWorkspace(context) {
     mkdir(resolve(destinationRoot, "data"), { recursive: true }),
   ]);
   await writeFile(resolve(sourceRoot, "owner.json"), JSON.stringify({ ...exampleOwner, slug: "fixture-owner" }));
-  await writeFile(resolve(sourceRoot, "site.json"), JSON.stringify({ schemaVersion: 1 }));
+  await writeFile(resolve(sourceRoot, "site.json"), JSON.stringify({ schemaVersion: 1, updatedAt: "2026-10-18" }));
 
   return { sourceRoot, destinationRoot };
 }
@@ -131,7 +131,7 @@ test("sync:owner, its sync:private-data alias and deploy run the owner sync", as
 test("the generated owner module carries the owner without deploy settings or analytics", async (context) => {
   const { destinationRoot } = await makeWorkspace(context);
 
-  await writeOwnerModule({ root: destinationRoot, owner: exampleOwner });
+  await writeOwnerModule({ root: destinationRoot, owner: exampleOwner, site: { updatedAt: "2026-10-18" } });
   const { default: owner } = await import(pathToFileURL(resolve(destinationRoot, "src/data/owner.js")).href);
 
   const { deploy, analytics, ...expected } = exampleOwner;

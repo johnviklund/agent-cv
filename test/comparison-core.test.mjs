@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { parseRoleBatch, buildRoleRequirementPreview } from "../public/comparison-transfer.js";
 import { PLAIN_LINE_BATCH, PLAIN_LINE_REQUIREMENT_COUNTS } from "./fixtures/requirement-sections.mjs";
+import { JOHN } from "./fixtures/owners.mjs";
 import evidenceCatalog from "../src/data/comparison-evidence.js";
 import {
   buildComparisonRequirementInventory,
@@ -257,7 +258,7 @@ test("new career subroles are available as bounded comparison evidence", () => {
 
 test("a valid provider draft becomes a deterministic canonical comparison", () => {
   const draft = validDraft();
-  const result = canonicalizeComparisonDraft(draft, validateComparisonPayload({ roles: ROLES }).roles, evidenceCatalog);
+  const result = canonicalizeComparisonDraft(draft, validateComparisonPayload({ roles: ROLES }).roles, evidenceCatalog, undefined, JOHN);
 
   assert.deepEqual(result.roles.map(({ id }) => id), ["role_01", "role_02"]);
   assert.equal(result.rows[0].id, "row_01");

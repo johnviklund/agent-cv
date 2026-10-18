@@ -27,11 +27,12 @@ test("loadOwner returns the example owner, its site and its root", async () => {
 
 test("loadOwner names the file and field of an invalid config", async (context) => {
   const owner = JSON.parse(await readFile(resolve(example, "owner.json"), "utf8"));
+  const site = JSON.parse(await readFile(resolve(example, "site.json"), "utf8"));
   const cases = [
     ["owner.json", { ...owner, site: { ...owner.site, origin: undefined } }, "owner.json: site.origin is required"],
     ["owner.json", { ...owner, slug: "Ada Example" }, "owner.json: slug must match ^[a-z0-9]+(-[a-z0-9]+)*$"],
     ["owner.json", { ...owner, site: { ...owner.site, extra: true } }, "owner.json: site.extra is not allowed"],
-    ["site.json", { schemaVersion: 2 }, "site.json: schemaVersion must be 1"],
+    ["site.json", { ...site, schemaVersion: 2 }, "site.json: schemaVersion must be 1"],
     ["site.json", "{ not json", /^site\.json: invalid JSON/],
   ];
 

@@ -11,6 +11,7 @@ import {
   validateChatPayload,
 } from "../src/chat-core.js";
 import { consumeEventStream, extractTextDelta } from "../public/stream.js";
+import { JOHN } from "./fixtures/owners.mjs";
 
 test("accepts a short grounded conversation and preserves only role and text", () => {
   const input = validateChatPayload({
@@ -70,7 +71,7 @@ test("requires the final turn to be from the visitor", () => {
 });
 
 test("system prompt establishes grounding, injection, fit, privacy, and contact boundaries", () => {
-  const prompt = buildSystemPrompt("# Verified data\nJohn built a governed loop.");
+  const prompt = buildSystemPrompt("# Verified data\nJohn built a governed loop.", { owner: JOHN, updatedAt: "2026-10-18" });
   assert.match(prompt, /John Viklund's professional experience/);
   assert.doesNotMatch(prompt, /\bErik\b/);
   assert.match(prompt, /Use only facts inside <cv_data>/);

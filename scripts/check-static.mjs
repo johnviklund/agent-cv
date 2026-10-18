@@ -1,7 +1,7 @@
 import { access, readFile, readdir } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { dirname, extname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const publicDir = resolve(root, "public");
@@ -137,15 +137,16 @@ async function checkDiscoveryResources() {
 }
 
 async function checkFreshnessParity() {
-  const [chatCore, agents, llms, cv, sitemap] = await Promise.all([
-    readFile(resolve(root, "src", "chat-core.js"), "utf8"),
+  // The prompt's date is the generated site.json updatedAt, whatever the builder's signature looks like.
+  const [{ updatedAt }, agents, llms, cv, sitemap] = await Promise.all([
+    import(pathToFileURL(resolve(root, "src", "data", "owner.js")).href),
     readFile(resolve(publicDir, "AGENTS.md"), "utf8"),
     readFile(resolve(publicDir, "llms.txt"), "utf8"),
     readFile(resolve(publicDir, "cv.md"), "utf8"),
     readFile(resolve(publicDir, "sitemap.xml"), "utf8"),
   ]);
   const dates = [
-    chatCore.match(/buildSystemPrompt\(knowledge, updatedAt = "(\d{4}-\d{2}-\d{2})"\)/)?.[1],
+    updatedAt,
     llms.match(/Data last updated: (\d{4}-\d{2}-\d{2})/)?.[1],
     toIsoDate(agents.match(/Public data last updated: ([^.]+)\./)?.[1]),
     toIsoDate(cv.match(/Data last updated: ([^.]+)\./)?.[1]),

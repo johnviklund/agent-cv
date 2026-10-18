@@ -11,3 +11,6 @@ import faq from "./data/faq.md";
 
 export const knowledge = [meta, cv, overview, experience, projects, repositories, skills, personal, interests, faq]
   .join("\n\n---\n\n");
+
+// Generated from owner.json by npm run sync:data; the Worker reads it from U2 on.
+export { default as owner } from "./data/owner.js";

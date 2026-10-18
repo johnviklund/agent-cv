@@ -2,6 +2,8 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
+import { loadOwner, resolveOwnerRoot } from "./owner.mjs";
+
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 export const privateDataFiles = Object.freeze([
@@ -13,12 +15,11 @@ export const privateDataFiles = Object.freeze([
   "skills.md",
 ]);
 
-export function defaultPrivateRoot(env = process.env) {
-  return resolve(env.AGENT_CV_PRIVATE_ROOT || resolve(root, "..", "agent-cv-private"));
-}
-
-export async function syncPrivateData({ sourceRoot, destinationRoot = root }) {
-  const sourceData = resolve(sourceRoot, "data");
+// Validates the owner config, then copies the six private files; nothing is written on failure.
+export async function syncOwner({ sourceRoot, destinationRoot = root, deploy = false, env = process.env }) {
+  const ownerRoot = resolveOwnerRoot({ env: sourceRoot ? { AGENT_CV_OWNER_ROOT: sourceRoot } : env, deploy });
+  const { owner } = await loadOwner({ root: ownerRoot });
+  const sourceData = resolve(ownerRoot, "data");
   const destinationData = resolve(destinationRoot, "data");
   let contents;
 
@@ -38,11 +39,12 @@ export async function syncPrivateData({ sourceRoot, destinationRoot = root }) {
     privateDataFiles.map((file, index) => writeFile(resolve(destinationData, file), contents[index])),
   );
 
-  return { files: [...privateDataFiles], sourceData, destinationData };
+  return { owner, files: [...privateDataFiles], sourceData, destinationData };
 }
 
-function parseSourceRoot(argumentsList) {
+function parseArguments(argumentsList) {
   let source;
+  let deploy = false;
 
   for (let index = 0; index < argumentsList.length; index += 1) {
     const argument = argumentsList[index];
@@ -53,18 +55,19 @@ function parseSourceRoot(argumentsList) {
     } else if (argument.startsWith("--source=")) {
       source = argument.slice("--source=".length);
       if (!source) throw new Error("--source requires a path.");
+    } else if (argument === "--deploy") {
+      deploy = true;
     } else {
       throw new Error(`Unknown argument: ${argument}`);
     }
   }
 
-  return source ? resolve(source) : defaultPrivateRoot();
+  return { sourceRoot: source && resolve(source), deploy };
 }
 
 async function main() {
-  const sourceRoot = parseSourceRoot(process.argv.slice(2));
-  const result = await syncPrivateData({ sourceRoot });
-  console.log(`Synced ${result.files.length} private data files from ${result.sourceData}.`);
+  const result = await syncOwner(parseArguments(process.argv.slice(2)));
+  console.log(`Synced ${result.files.length} private data files for ${result.owner.slug} from ${result.sourceData}.`);
 }
 
 if (process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.meta.url) {

@@ -4,7 +4,7 @@ import { registerHooks } from "node:module";
 import { dirname, relative, resolve, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-import { defaultPrivateRoot } from "./sync-private-data.mjs";
+import { resolveOwnerRoot } from "./owner.mjs";
 
 const engineRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -68,7 +68,7 @@ export async function diffGolden(dir, outputs) {
 
 async function main([command, ...args]) {
   const flag = args.indexOf("--golden");
-  const dir = resolve(flag === -1 ? resolve(defaultPrivateRoot(), "golden") : args[flag + 1] ?? "");
+  const dir = resolve(flag === -1 ? resolve(resolveOwnerRoot(), "golden") : args[flag + 1] ?? "");
   const outputs = await collectOutputs();
 
   if (command === "capture") {

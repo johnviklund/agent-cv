@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -96,6 +96,28 @@ test("owner sync refuses an invalid owner or a deploy of the example owner befor
       assert.equal(await readFile(resolve(workspace.destinationRoot, "data", file), "utf8"), `existing ${file}\n`);
     }
   }
+});
+
+test("owner sync refuses a deploy of the example owner through a symlink, and deploys any other owner", async (context) => {
+  const { sourceRoot, destinationRoot } = await makeWorkspace(context);
+  const link = resolve(dirname(sourceRoot), "example-link");
+  await symlink(resolve(engineRoot, "examples/owner"), link);
+  for (const file of privateDataFiles) {
+    await writeFile(resolve(sourceRoot, "data", file), `new ${file}\n`);
+    await writeFile(resolve(destinationRoot, "data", file), `existing ${file}\n`);
+  }
+
+  for (const options of [{ sourceRoot: link }, { env: { AGENT_CV_OWNER_ROOT: link } }, { env: { AGENT_CV_PRIVATE_ROOT: link } }]) {
+    await assert.rejects(syncOwner({ ...options, destinationRoot, deploy: true }), {
+      message: /^Refusing to deploy the example owner/,
+    });
+    for (const file of privateDataFiles) {
+      assert.equal(await readFile(resolve(destinationRoot, "data", file), "utf8"), `existing ${file}\n`);
+    }
+  }
+
+  assert.equal((await syncOwner({ sourceRoot, destinationRoot, deploy: true })).owner.slug, "fixture-owner");
+  assert.equal(await readFile(resolve(destinationRoot, "data", privateDataFiles[0]), "utf8"), `new ${privateDataFiles[0]}\n`);
 });
 
 test("sync:owner, its sync:private-data alias and deploy run the owner sync", async () => {

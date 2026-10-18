@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { cp, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -114,4 +114,30 @@ test("inherited property names are checked against the schema like any other key
   await cp(example, root, { recursive: true });
   await writeFile(resolve(root, "owner.json"), JSON.stringify(accepted));
   assert.equal((await loadOwner({ root })).owner.links.constructor, "https://example.com");
+});
+
+test("deploy refuses the example owner through every entry path and alias", async (context) => {
+  const workspace = await tempDir(context);
+  const link = resolve(workspace, "example-link");
+  await symlink(example, link);
+  const engine = resolve(workspace, "agent-cv");
+  await mkdir(resolve(engine, "examples/owner"), { recursive: true });
+  await symlink(resolve(engine, "examples/owner"), resolve(workspace, "agent-cv-private"));
+  const refusal = { message: "Refusing to deploy the example owner; set AGENT_CV_OWNER_ROOT" };
+
+  for (const options of [
+    { env: { AGENT_CV_OWNER_ROOT: link }, engineRoot },
+    { env: { AGENT_CV_PRIVATE_ROOT: link }, engineRoot },
+    { env: { AGENT_CV_PRIVATE_ROOT: example }, engineRoot },
+    { env: {}, engineRoot: engine },
+  ]) {
+    assert.throws(() => resolveOwnerRoot({ ...options, deploy: true }), refusal, JSON.stringify(options));
+  }
+  for (const options of [{ root: example }, { root: `${example}/.` }, { root: link }, { env: { AGENT_CV_OWNER_ROOT: link } }]) {
+    await assert.rejects(loadOwner({ ...options, deploy: true }), refusal, JSON.stringify(options));
+  }
+
+  const copy = await tempDir(context);
+  await cp(example, copy, { recursive: true });
+  assert.equal((await loadOwner({ root: copy, deploy: true })).owner.slug, "ada-example");
 });

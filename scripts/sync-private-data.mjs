@@ -13,6 +13,10 @@ export const privateDataFiles = Object.freeze([
   "skills.md",
 ]);
 
+export function defaultPrivateRoot(env = process.env) {
+  return resolve(env.AGENT_CV_PRIVATE_ROOT || resolve(root, "..", "agent-cv-private"));
+}
+
 export async function syncPrivateData({ sourceRoot, destinationRoot = root }) {
   const sourceData = resolve(sourceRoot, "data");
   const destinationData = resolve(destinationRoot, "data");
@@ -54,7 +58,7 @@ function parseSourceRoot(argumentsList) {
     }
   }
 
-  return resolve(source || process.env.AGENT_CV_PRIVATE_ROOT || resolve(root, "..", "agent-cv-private"));
+  return source ? resolve(source) : defaultPrivateRoot();
 }
 
 async function main() {

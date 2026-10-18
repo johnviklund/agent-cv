@@ -2,7 +2,7 @@ Command: workflow review forkable-owner-loader
 Created: 2026-10-18
 Base: 78a28de
 Inputs: patch_plan.md @ 17687d3
-Status: complete
+Status: done
 
 ## Coverage
 - [x] C1-T1: 2/2 acceptance lines pass; missing/empty/unknown arguments and unsafe capture destinations are refused.

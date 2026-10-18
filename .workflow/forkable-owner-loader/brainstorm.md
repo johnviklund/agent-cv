@@ -2,7 +2,7 @@ Command: workflow plan forkable-owner-loader (brief derived from the approved do
 Created: 2026-10-18
 Base:    a0ec9b9
 Inputs:  docs/plans/2026-10-18-1358-feat-forkable-agent-cv-plan.md @ a0ec9b9
-Status:  complete
+Status:  done
 
 Docs read: none in scope (no UI or product wording changes)
 

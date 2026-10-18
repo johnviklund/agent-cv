@@ -9,9 +9,9 @@ Size: code 7517 · tests 5902 · ratio 0.79 · baseline includes moved browser J
 Decisions: user 1a approved technical golden exceptions; John approved B1–B6, six tickets and their acceptance criteria. Main session writes; Opus 5.5 audit incorporated; verified findings and dispositions in notes/audit.md.
 
 ## Execution state
-T1 @ 9aa0df6 · next T2 or T3 (contract, both unblocked) · writer: Opus 5.5 (see Deviations) · Session 1: T1
-Every ticket runs npm run check and local golden:diff before commit; six verified ticket commits (approved). Baseline 224 passed, 1 skipped; after T1 226 passed, 1 skipped; golden:diff empty. Owner data/faq.md edit is pre-existing, untouched.
-Exception manifest: <owner root>/golden-exceptions.json = {"exceptions":[{path, before, after, reason, diff}]}; digests "sha256:<hex>" or null for added/removed paths; prompts/ paths rejected.
+T1 @ 9aa0df6 · T2 @ e262441 (private b95360d) · next T3 (contract) · writer: Opus 5.5 (see Deviations) · Session 1: T1 · Session 2: T2
+Every ticket runs npm run check and local golden:diff before commit; six verified ticket commits (approved). Baseline 224 passed, 1 skipped; now 230 passed, 1 skipped; golden:diff empty. Owner data/faq.md edit is pre-existing, untouched.
+In flight: golden-exceptions.json {"exceptions":[{path, before, after, reason, diff}]}, sha256: digests or null; buildSystemPrompt(knowledge, { owner, updatedAt }); src/data/owner.js exports updatedAt; canonicalizeComparisonDraft(..., owner) and handleRequest({ owner }) default to the generated owner; test/fixtures/owners.mjs has JOHN, ADA, ELISE.
 
 ## Findings
 | # | What is true | What it changes |
@@ -49,12 +49,13 @@ Delivers: B2 · Blocked by: T1 · Lane: contract
 Budget: code +110 · tests +100
 Seam: pass generated identity into pure prompt/comparison functions; add site.json.updatedAt to schema and generated metadata; golden collector uses production inputs.
 Accept:
-- [ ] John chat and comparison prompts equal frozen bytes; Ada chat names Ada Example and Ada; comparison instructions remain identical. (B2)
-- [ ] Both owners receive named ownership questions; prohibited named scores and hiring conclusions fail, including Unicode names and regex punctuation. (B2)
-- [ ] Configured aliases return 308 preserving path/query; canonical and local hosts do not redirect; John's existing Workers alias remains supported. (B2)
+- [x] John chat and comparison prompts equal frozen bytes; Ada chat names Ada Example and Ada; comparison instructions remain identical. (B2)
+- [x] Both owners receive named ownership questions; prohibited named scores and hiring conclusions fail, including Unicode names and regex punctuation. (B2)
+- [x] Configured aliases return 308 preserving path/query; canonical and local hosts do not redirect; John's existing Workers alias remains supported. (B2)
 Verify: `node --test test/owner-runtime.test.mjs && node --test test/chat-core.test.mjs test/comparison-core.test.mjs test/worker.test.mjs` (pre: new file; existing tests 75 passed, 1 skipped)
 Skills: none
-Status: todo
+Status: done @ e262441
+Writer: Opus 5.5
 
 ### T3 — Render the home page from validated structured content
 Delivers: B3 · Blocked by: T1 · Lane: contract
@@ -120,3 +121,4 @@ design.md: update canonical published token path to build/site/tokens.css; visua
 
 ## Deviations
 - Execute seat switched from GPT-6.1 Sol to Opus 5.5 by human approval; the plan was written on OpenAI Astra. Review must use an OpenAI model.
+- T2: six existing tests changed setup only, assertion counts unchanged: chat-core, worker redirect and comparison question tests pass JOHN; owner/sync-owner fixtures add site.json updatedAt. Conclusion patterns keep their "john" tokens (cleanup is U8). Tests +129 against budget +100.

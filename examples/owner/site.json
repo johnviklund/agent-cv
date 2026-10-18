@@ -1,4 +1,67 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-18"
+  "updatedAt": "2026-10-18",
+  "meta": {
+    "description": "Ask Ada Example's grounded AI agent about distributed systems, platform reliability and engineering leadership.",
+    "ogDescription": "A conversational résumé for a staff engineer in distributed systems.",
+    "ogImageAlt": "Ada Example — Staff engineer, distributed systems. ada.example"
+  },
+  "person": {
+    "description": "Staff engineer working on distributed systems and platform reliability.",
+    "jobTitle": "Staff engineer",
+    "worksFor": null,
+    "locality": "Lisbon",
+    "country": "PT",
+    "knowsAbout": [
+      "Distributed systems",
+      "Platform reliability",
+      "Engineering leadership"
+    ]
+  },
+  "home": {
+    "eyebrow": "Staff engineer · Lisbon, Portugal",
+    "heading": {
+      "first": "Ada",
+      "second": "Example."
+    },
+    "deck": "Staff engineer for distributed systems. I design platforms that stay up and help teams ship them.",
+    "starters": [
+      {
+        "label": "Summarize my experience",
+        "prompt": "Summarize Ada's experience in three sentences.",
+        "href": "/experience/"
+      },
+      {
+        "label": "Explore projects",
+        "prompt": "What systems has Ada built?",
+        "href": "/projects/"
+      }
+    ],
+    "summary": "Staff engineer for distributed systems and platform reliability.",
+    "proof": [
+      {
+        "title": "Runs platforms",
+        "text": "Keeps a fictional payments platform available across three regions.",
+        "href": "/experience/"
+      }
+    ],
+    "work": [
+      {
+        "title": "Example platform",
+        "text": "A fictional service mesh used only for this example.",
+        "href": "/projects/"
+      },
+      {
+        "title": "Example library",
+        "text": "A fictional open-source client library.",
+        "href": "https://github.com/ada-example"
+      }
+    ],
+    "followups": [
+      {
+        "label": "Platform work",
+        "prompt": "What platform work has Ada led?"
+      }
+    ]
+  }
 }

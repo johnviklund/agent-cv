@@ -10,6 +10,7 @@ import { writeOwnerModule } from "../scripts/sync-public-data.mjs";
 
 const engineRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const exampleOwner = JSON.parse(await readFile(resolve(engineRoot, "examples/owner/owner.json"), "utf8"));
+const exampleSite = await readFile(resolve(engineRoot, "examples/owner/site.json"), "utf8");
 
 async function makeWorkspace(context) {
   const workspace = await mkdtemp(resolve(tmpdir(), "agent-cv-private-sync-"));
@@ -22,7 +23,7 @@ async function makeWorkspace(context) {
     mkdir(resolve(destinationRoot, "data"), { recursive: true }),
   ]);
   await writeFile(resolve(sourceRoot, "owner.json"), JSON.stringify({ ...exampleOwner, slug: "fixture-owner" }));
-  await writeFile(resolve(sourceRoot, "site.json"), JSON.stringify({ schemaVersion: 1, updatedAt: "2026-10-18" }));
+  await writeFile(resolve(sourceRoot, "site.json"), exampleSite);
 
   return { sourceRoot, destinationRoot };
 }

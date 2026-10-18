@@ -1,5 +1,6 @@
 // Builds the print-only HTML for /john-viklund-cv.pdf from the canonical public CV.
 // Kept free of filesystem and browser access so it can be tested directly.
+import { escapeHtml } from "../site/templates/html.mjs";
 
 const OMITTED_SECTIONS = new Set(["Selected transformation case studies", "Selected applied-AI projects"]);
 // Sections whose bullets are joined into one compact paragraph.
@@ -110,14 +111,6 @@ function inline(text) {
 
 function link(href, label) {
   return `<a href="${escapeHtml(href)}">${escapeHtml(label)}</a>`;
-}
-
-function escapeHtml(value) {
-  return String(value)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
 }
 
 export function countPdfPages(buffer) {

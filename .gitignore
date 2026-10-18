@@ -27,3 +27,6 @@ public/john-viklund-cv.pdf
 # Private working material and superseded data exports.
 docs/agent-cv-data.zip
 docs/agent-cv-master-profile.md
+
+# Generated site output (npm run build:site).
+build/

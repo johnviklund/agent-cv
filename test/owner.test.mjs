@@ -86,3 +86,32 @@ test("deploy refuses the example owner", async (context) => {
     });
   }
 });
+
+test("inherited property names are checked against the schema like any other key", async (context) => {
+  const owner = JSON.parse(await readFile(resolve(example, "owner.json"), "utf8"));
+  // Spreading parsed JSON keeps "__proto__" as an own key, as JSON.parse does for a real file.
+  const own = (key, value) => JSON.parse(`{${JSON.stringify(key)}:${JSON.stringify(value)}}`);
+  const rejected = [];
+  for (const key of ["constructor", "toString", "__proto__"]) {
+    rejected.push(
+      [{ ...owner, ...own(key, {}) }, `owner.json: ${key} is not allowed`],
+      [{ ...owner, site: { ...owner.site, ...own(key, "x") } }, `owner.json: site.${key} is not allowed`],
+      [{ ...owner, deploy: { ...owner.deploy, ...own(key, "x") } }, `owner.json: deploy.${key} is not allowed`],
+      [{ ...owner, links: { ...owner.links, ...own(key, 5) } }, `owner.json: links.${key} must be string or null`],
+      [{ ...owner, deploy: { ...owner.deploy, vars: own(key, 5) } }, `owner.json: deploy.vars.${key} must be string`],
+    );
+  }
+  const accepted = { ...owner, links: { ...owner.links, ...own("constructor", "https://example.com") },
+    deploy: { ...owner.deploy, vars: own("__proto__", "value") } };
+
+  for (const [value, message] of rejected) {
+    const root = await tempDir(context);
+    await cp(example, root, { recursive: true });
+    await writeFile(resolve(root, "owner.json"), JSON.stringify(value));
+    await assert.rejects(loadOwner({ root }), { message });
+  }
+  const root = await tempDir(context);
+  await cp(example, root, { recursive: true });
+  await writeFile(resolve(root, "owner.json"), JSON.stringify(accepted));
+  assert.equal((await loadOwner({ root })).owner.links.constructor, "https://example.com");
+});

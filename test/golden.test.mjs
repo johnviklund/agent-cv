@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, mkdtemp, readFile, rm, stat, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -20,7 +20,13 @@ async function tempDir(context) {
 }
 
 function golden(...args) {
-  return run(process.execPath, [resolve(root, "scripts/golden.mjs"), ...args], { cwd: root })
+  return goldenAt(root, {}, ...args);
+}
+
+// Runs the CLI of the engine at `engine` from `cwd`, with an owner root kept out of John's checkout.
+function goldenAt(engine, { cwd = root, ownerRoot }, ...args) {
+  const env = ownerRoot ? { ...process.env, AGENT_CV_OWNER_ROOT: ownerRoot } : process.env;
+  return run(process.execPath, [resolve(engine, "scripts/golden.mjs"), ...args], { cwd, env })
     .then(({ stdout, stderr }) => ({ code: 0, stdout, stderr }))
     .catch((error) => ({ code: error.code, stdout: error.stdout, stderr: error.stderr }));
 }
@@ -74,4 +80,53 @@ test("golden CLI reports a missing snapshot, drift and an empty diff", async (co
   const drift = await golden("diff", "--golden", dir);
   assert.equal(drift.code, 1);
   assert.match(drift.stdout, /site\/llms\.txt/);
+});
+
+async function sentinelIn(dir) {
+  await mkdir(dir, { recursive: true });
+  await writeFile(resolve(dir, "sentinel.txt"), "keep\n");
+  return async () => (await stat(resolve(dir, "sentinel.txt")).catch(() => null))?.isFile() ?? false;
+}
+
+test("golden CLI rejects a missing, empty or unknown argument and leaves the working directory", async (context) => {
+  const workspace = await tempDir(context);
+  const ownerRoot = resolve(workspace, "owner");
+  const cwd = resolve(workspace, "cwd");
+  const kept = await sentinelIn(cwd);
+  await mkdir(ownerRoot);
+
+  for (const [args, message] of [
+    [["capture", "--golden"], "--golden requires a path."],
+    [["capture", "--golden", ""], "--golden requires a path."],
+    [["capture", "--bogus"], "Unknown argument: --bogus"],
+  ]) {
+    const result = await goldenAt(root, { cwd, ownerRoot }, ...args);
+    assert.equal(result.code, 1, args.join(" "));
+    assert.equal(result.stderr.trim(), message);
+    assert.equal(await kept(), true, args.join(" "));
+  }
+});
+
+test("golden capture refuses the engine root, the owner root and their ancestors", async (context) => {
+  const workspace = await tempDir(context);
+  const ownerRoot = resolve(workspace, "owner");
+  // A copy of the CLI stands in for the engine, so a refusal that fails cannot touch this checkout.
+  const engine = resolve(workspace, "engine");
+  await mkdir(resolve(engine, "scripts"), { recursive: true });
+  for (const file of ["golden.mjs", "owner.mjs"]) {
+    await copyFile(resolve(root, "scripts", file), resolve(engine, "scripts", file));
+  }
+  const ownerKept = await sentinelIn(ownerRoot);
+  const engineKept = await sentinelIn(engine);
+  await symlink(ownerRoot, resolve(workspace, "owner-link"));
+  await symlink(engine, resolve(workspace, "engine-link"));
+
+  for (const target of [ownerRoot, `${ownerRoot}/.`, resolve(workspace, "owner-link"),
+    engine, resolve(workspace, "engine-link"), workspace]) {
+    const result = await goldenAt(engine, { ownerRoot }, "capture", "--golden", target);
+    assert.equal(result.code, 1, target);
+    assert.match(result.stderr, /^Refusing to replace /, target);
+    assert.equal(await ownerKept(), true, target);
+    assert.equal(await engineKept(), true, target);
+  }
 });

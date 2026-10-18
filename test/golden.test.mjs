@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
+import { createHash } from "node:crypto";
 import { copyFile, mkdir, mkdtemp, readFile, rm, stat, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, resolve } from "node:path";
@@ -128,5 +129,67 @@ test("golden capture refuses the engine root, the owner root and their ancestors
     assert.match(result.stderr, /^Refusing to replace /, target);
     assert.equal(await ownerKept(), true, target);
     assert.equal(await engineKept(), true, target);
+  }
+});
+
+const digest = (content) => `sha256:${createHash("sha256").update(content).digest("hex")}`;
+
+// A snapshot whose llms.txt and sitemap.xml differ from the current outputs, and an owner root for its manifest.
+async function driftedSnapshot(context) {
+  const workspace = await tempDir(context);
+  const dir = resolve(workspace, "golden");
+  const ownerRoot = resolve(workspace, "owner");
+  await mkdir(ownerRoot);
+  assert.equal((await golden("capture", "--golden", dir)).code, 0);
+  const current = {};
+  for (const file of ["llms.txt", "sitemap.xml"]) {
+    current[file] = await readFile(resolve(dir, "site", file));
+    await writeFile(resolve(dir, "site", file), `old ${file}\n`);
+  }
+  const exception = (file, overrides = {}) => ({
+    path: `site/${file}`, before: digest(`old ${file}\n`), after: digest(current[file]),
+    reason: `reviewed ${file} change`, diff: `-old ${file}\n+new ${file}`, ...overrides,
+  });
+  const diff = async (exceptions) => {
+    await writeFile(resolve(ownerRoot, "golden-exceptions.json"), JSON.stringify({ exceptions }));
+    return goldenAt(root, { ownerRoot }, "diff", "--golden", dir);
+  };
+  return { exception, diff };
+}
+
+test("golden diff accepts each exactly recorded technical change and fails every unlisted one", async (context) => {
+  const { exception, diff } = await driftedSnapshot(context);
+
+  const all = await diff([exception("llms.txt"), exception("sitemap.xml")]);
+  assert.equal(all.code, 0, all.stderr);
+  assert.match(all.stdout, /^accepted changed site\/llms\.txt: reviewed llms\.txt change$/m);
+  assert.match(all.stdout, /^accepted changed site\/sitemap\.xml: reviewed sitemap\.xml change$/m);
+
+  for (const [name, exceptions] of [
+    ["unlisted", [exception("llms.txt")]],
+    ["wrong before digest", [exception("llms.txt"), exception("sitemap.xml", { before: digest("other") })]],
+    ["wrong after digest", [exception("llms.txt"), exception("sitemap.xml", { after: digest("other") })]],
+  ]) {
+    const result = await diff(exceptions);
+    assert.equal(result.code, 1, name);
+    assert.match(result.stdout, /^accepted changed site\/llms\.txt: /m, name);
+    assert.match(result.stdout, /^changed site\/sitemap\.xml$/m, name);
+  }
+});
+
+test("golden diff rejects prompt exceptions and exceptions without a reason or reviewed diff", async (context) => {
+  const { exception, diff } = await driftedSnapshot(context);
+
+  for (const [name, entry, message] of [
+    ["system prompt", exception("llms.txt", { path: "prompts/system.txt" }), /Prompt exceptions are not allowed: prompts\/system\.txt/],
+    ["comparison prompt", exception("llms.txt", { path: "prompts/comparison.txt" }), /Prompt exceptions are not allowed: prompts\/comparison\.txt/],
+    ["no reason", exception("llms.txt", { reason: "" }), /site\/llms\.txt needs a reason/],
+    ["no diff", exception("llms.txt", { diff: undefined }), /site\/llms\.txt needs a reviewed diff/],
+    ["bad digest", exception("llms.txt", { after: "abc" }), /site\/llms\.txt after must be a sha256: digest or null/],
+  ]) {
+    const result = await diff([entry, exception("sitemap.xml")]);
+    assert.equal(result.code, 1, name);
+    assert.match(result.stderr, message, name);
+    assert.doesNotMatch(result.stdout, /accepted/, name);
   }
 });

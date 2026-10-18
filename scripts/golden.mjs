@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { registerHooks } from "node:module";
@@ -66,6 +67,47 @@ export async function diffGolden(dir, outputs) {
   };
 }
 
+const digestPattern = /^sha256:[0-9a-f]{64}$/;
+const digest = (content) => `sha256:${createHash("sha256").update(content).digest("hex")}`;
+
+// Approved technical differences: each names a path, its exact old and new digests (null when the
+// path is added or removed), a reason and the reviewed diff. Prompts never take an exception.
+export function parseExceptions({ exceptions = [] } = {}) {
+  for (const entry of exceptions) {
+    const path = String(entry?.path ?? "");
+    if (path.startsWith("prompts/")) throw new Error(`Prompt exceptions are not allowed: ${path}`);
+    for (const key of ["before", "after"]) {
+      if (entry[key] !== null && !digestPattern.test(entry[key])) throw new Error(`${path} ${key} must be a sha256: digest or null`);
+    }
+    if (typeof entry.reason !== "string" || !entry.reason.trim()) throw new Error(`${path} needs a reason`);
+    if (typeof entry.diff !== "string" || !entry.diff.trim()) throw new Error(`${path} needs a reviewed diff`);
+  }
+  return exceptions;
+}
+
+// Splits a diff into changes an exception matches exactly and changes no exception covers.
+export async function reviewGolden(dir, outputs, exceptions) {
+  const { changed, added, removed } = await diffGolden(dir, outputs);
+  const stored = async (path) => digest(await readFile(resolve(dir, path)));
+  const accepted = [];
+  const unlisted = [];
+  for (const [kind, paths] of [["changed", changed], ["added", added], ["removed", removed]]) {
+    for (const path of paths) {
+      const before = kind === "added" ? null : await stored(path);
+      const after = kind === "removed" ? null : digest(outputs[path]);
+      const match = exceptions.find((entry) => entry.path === path && entry.before === before && entry.after === after);
+      if (match) accepted.push({ kind, path, reason: match.reason });
+      else unlisted.push({ kind, path });
+    }
+  }
+  return { accepted, unlisted };
+}
+
+async function readExceptions(file) {
+  const text = await readFile(file, "utf8").catch((error) => (error.code === "ENOENT" ? null : Promise.reject(error)));
+  return text === null ? [] : parseExceptions(JSON.parse(text));
+}
+
 function parseArguments([command, ...args]) {
   if (command !== "capture" && command !== "diff") throw new Error("Usage: golden.mjs capture|diff [--golden <dir>]");
   let dir;
@@ -104,6 +146,7 @@ async function main(argv) {
   const ownerRoot = resolveOwnerRoot();
   const dir = resolve(requested ?? resolve(ownerRoot, "golden"));
   if (command === "capture") refuseRoots(dir, [engineRoot, ownerRoot]);
+  const exceptions = command === "diff" ? await readExceptions(resolve(ownerRoot, "golden-exceptions.json")) : [];
   const outputs = await collectOutputs();
 
   if (command === "capture") {
@@ -116,14 +159,13 @@ async function main(argv) {
     console.error(`No golden snapshot at ${dir}; run npm run golden:capture`);
     return 1;
   }
-  const { changed, added, removed } = await diffGolden(dir, outputs);
+  const { accepted, unlisted } = await reviewGolden(dir, outputs, exceptions);
   const lines = [
-    ...changed.map((path) => `changed ${path}`),
-    ...added.map((path) => `added   ${path}`),
-    ...removed.map((path) => `removed ${path}`),
+    ...accepted.map(({ kind, path, reason }) => `accepted ${kind} ${path}: ${reason}`),
+    ...unlisted.map(({ kind, path }) => `${kind.padEnd(7)} ${path}`),
   ];
   console.log(lines.length ? lines.join("\n") : "Golden diff: empty");
-  return lines.length ? 1 : 0;
+  return unlisted.length ? 1 : 0;
 }
 
 if (process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.meta.url) {

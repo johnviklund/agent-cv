@@ -97,7 +97,6 @@ Writer: Opus 5.5
 ## Deviations
 - T1: `scripts/sync-private-data.mjs` gains an exported `defaultPrivateRoot()` (F4 reuse); code ~+109 vs budget +90, tests +77 vs +70.
 - T2: schemas also bound `name`, `links`, `contact`, `analytics`, `deploy` fields from the docs sketch; `location` and `analytics` optional.
-
 - T4: `npm run build` rejected the unimported `src/data/owner.js` (F10); human chose 1a, so `src/knowledge.js` re-exports `owner` until U2 uses it. Golden diff stays empty.
 - T4: `test/sync-owner.test.mjs` (git mv of `sync-private-data.test.mjs`) fixtures gain `owner.json` and `site.json`; its 6 existing assertions are unchanged, plus 1 new slug assertion.
 - T4: `AGENTS.md` Data boundaries line rewritten for `sync:owner`; `README.md`, `USERGUIDE.md` and `data/repositories.md` still name `sync:private-data`, which works as the alias (U7).

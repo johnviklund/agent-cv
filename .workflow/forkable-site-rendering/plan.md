@@ -9,9 +9,10 @@ Size: code 7517 · tests 5902 · ratio 0.79 · baseline includes moved browser J
 Decisions: user 1a approved technical golden exceptions; John approved B1–B6, six tickets and their acceptance criteria. Main session writes; Opus 5.5 audit incorporated; verified findings and dispositions in notes/audit.md.
 
 ## Execution state
-T1 @ 9aa0df6 · T2 @ e262441 (private b95360d) · next T3 (contract) · writer: Opus 5.5 (see Deviations) · Session 1: T1 · Session 2: T2
-Every ticket runs npm run check and local golden:diff before commit; six verified ticket commits (approved). Baseline 224 passed, 1 skipped; now 230 passed, 1 skipped; golden:diff empty. Owner data/faq.md edit is pre-existing, untouched.
-In flight: golden-exceptions.json {"exceptions":[{path, before, after, reason, diff}]}, sha256: digests or null; buildSystemPrompt(knowledge, { owner, updatedAt }); src/data/owner.js exports updatedAt; canonicalizeComparisonDraft(..., owner) and handleRequest({ owner }) default to the generated owner; test/fixtures/owners.mjs has JOHN, ADA, ELISE.
+T1 @ 9aa0df6 · T2 @ e262441 (private b95360d) · T3 @ 04f3a25 (private 746d16b) · next T4 (contract) · writer: Opus 5.5 (see Deviations) · Session 1: T1 · Session 2: T2, T3
+Every ticket runs npm run check and local golden:diff before commit; six verified ticket commits (approved). Baseline 224 passed, 1 skipped; now 235 passed, 1 skipped; golden:diff empty. Owner data/faq.md edit is pre-existing, untouched.
+In flight: golden-exceptions.json {"exceptions":[{path, before, after, reason, diff}]}; buildSystemPrompt(knowledge, { owner, updatedAt }); canonicalizeComparisonDraft(..., owner) and handleRequest({ owner }) default to src/data/owner.js; test/fixtures/owners.mjs JOHN, ADA, ELISE.
+Rendering: scripts/build-site.mjs renderSite({ owner, site }) → { path: text }, CLI writes build/site (ignored); site/templates/{html,home,headers}.mjs; site.json sections meta, person, home (validator has no $ref, so item shapes repeat). John's index.html and _headers render byte-identical to public/.
 
 ## Findings
 | # | What is true | What it changes |
@@ -62,12 +63,13 @@ Delivers: B3 · Blocked by: T1 · Lane: contract
 Budget: code +500 · tests +180
 Seam: owner loader, site schema, build-site and home template; render alongside current output until T6; update John and examples/owner/site.json with every schema extension.
 Accept:
-- [ ] John's home renders approved copy, controls and metadata; a fictional home renders Ada Example from structured data without raw owner HTML. (B3)
-- [ ] Invalid sections name site.json and field; HTML characters display literally, unsafe URLs fail, and hostile names, email and analytics values remain inert text. (B3)
-- [ ] Rendered home JSON-LD matches its generated CSP hash; navigation, labels, IDs and data attributes retain existing controller contracts. (B3)
+- [x] John's home renders approved copy, controls and metadata; a fictional home renders Ada Example from structured data without raw owner HTML. (B3)
+- [x] Invalid sections name site.json and field; HTML characters display literally, unsafe URLs fail, and hostile names, email and analytics values remain inert text. (B3)
+- [x] Rendered home JSON-LD matches its generated CSP hash; navigation, labels, IDs and data attributes retain existing controller contracts. (B3)
 Verify: `node --test test/site-rendering.test.mjs && node --test test/owner.test.mjs` (pre: new file; owner tests 7 passed)
 Skills: none
-Status: todo
+Status: done @ 04f3a25
+Writer: Opus 5.5
 
 ### T4 — Render the remaining pages and discovery resources
 Delivers: B4 · Blocked by: T3 · Lane: contract
@@ -122,3 +124,4 @@ design.md: update canonical published token path to build/site/tokens.css; visua
 ## Deviations
 - Execute seat switched from GPT-6.1 Sol to Opus 5.5 by human approval; the plan was written on OpenAI Astra. Review must use an OpenAI model.
 - T2: six existing tests changed setup only, assertion counts unchanged: chat-core, worker redirect and comparison question tests pass JOHN; owner/sync-owner fixtures add site.json updatedAt. Conclusion patterns keep their "john" tokens (cleanup is U8). Tests +129 against budget +100.
+- T3: _headers renders now, CSP hashes and the PDF route from the slug, because the CSP hash acceptance line needs it; T4 keeps the rest of the discovery resources. Code about +557 against +500, mostly the copied page body and the repeated schema item shapes. The John byte-equality test skips without John's owner root, as in CI.

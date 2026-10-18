@@ -9,11 +9,12 @@ Size: code 101 · tests 66 · ratio 0.65 · largest touched scripts/sync-private
 Decisions: 1a plan U0+U1 as a run · 2a GPT-6.1 Sol writes, Opus 5.5 reviews · 3a minimal Ada example owner · run on branch feat/forkable-owner-loader, one PR at the end
 
 ## Execution state
-Current: T3 awaiting-human (approve `receipts/t3-handoff.md`) · baseline at a0ec9b9: `npm run check` exit 0, 208 pass, 1 skipped, 0 fail
+Current: T4 todo · baseline at a0ec9b9: `npm run check` exit 0, 208 pass, 1 skipped, 0 fail
 T1 @ f3d40da
 T2 @ ccba344
+T3 @ 26365ea (private commit 6e68283; receipt `receipts/t3-golden-capture.md`)
 writer: Opus 5.5 (human ran execute on Opus 5.5 instead of GPT-6.1 Sol: review must go to OpenAI)
-Session 1: T1, T2, T3 (handoff)
+Session 1: T1, T2, T3
 
 ## Findings
 | # | What is true | What it changes |
@@ -66,12 +67,13 @@ Writer: Opus 5.5
 Delivers: B1 · Blocked by: T1, T2 · Lane: operator · Risk: cheap · Runner: agent after approval
 Seam: `../agent-cv-private`: append `golden/` to `.gitignore`; add `owner.json` (values from `wrangler.jsonc`, `config/admin-origin.json`, current pages) and `site.json` `{"schemaVersion":1}`; commit those three files only; push only if approved
 Accept:
-- [ ] `loadOwner()` from the engine resolves `../agent-cv-private` and returns slug `john-viklund` (B1)
-- [ ] `npm run golden:capture` writes `../agent-cv-private/golden/`; `git -C ../agent-cv-private status --short` lists no `golden/` (B1)
-- [ ] `npm run golden:diff` right after → exit 0 (B1)
+- [x] `loadOwner()` from the engine resolves `../agent-cv-private` and returns slug `john-viklund` (B1)
+- [x] `npm run golden:capture` writes `../agent-cv-private/golden/`; `git -C ../agent-cv-private status --short` lists no `golden/` (B1)
+- [x] `npm run golden:diff` right after → exit 0 (B1)
 Verify: `receipt: receipts/t3-golden-capture.md — slug john-viklund · golden file count · diff exit 0 · faq.md still uncommitted` (pre: no receipt)
 Skills: none
-Status: awaiting-human · handoff `receipts/t3-handoff.md` · draft `notes/t3-owner-draft.md`
+Status: done @ 26365ea
+Writer: Opus 5.5
 
 ### T4 — sync:owner and the generated owner module
 Delivers: B6, B7, B8 · Blocked by: T2, T3 · Lane: contract

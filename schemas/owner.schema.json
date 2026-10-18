@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Agent CV owner",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "slug", "name", "headline", "site", "links", "contact", "deploy"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "slug": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+    "name": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["full", "short"],
+      "properties": {
+        "full": { "type": "string", "minLength": 1 },
+        "short": { "type": "string", "minLength": 1 }
+      }
+    },
+    "headline": { "type": "string", "minLength": 1 },
+    "location": { "type": "string" },
+    "site": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["origin", "hosts", "lang"],
+      "properties": {
+        "origin": { "type": "string", "pattern": "^https://[a-z0-9.-]+$" },
+        "hosts": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^[a-z0-9.-]+$" } },
+        "lang": { "type": "string", "pattern": "^[a-z]{2}(-[A-Z]{2})?$" },
+        "sourceRepository": { "type": ["string", "null"], "pattern": "^https://" }
+      }
+    },
+    "links": {
+      "type": "object",
+      "additionalProperties": { "type": ["string", "null"], "pattern": "^https://" }
+    },
+    "contact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["email"],
+      "properties": {
+        "email": { "type": ["string", "null"], "pattern": "^[^@\\s]+@[^@\\s]+$" }
+      }
+    },
+    "analytics": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "cloudflareBeaconToken": { "type": ["string", "null"] }
+      }
+    },
+    "deploy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["workerName", "archiveNamespaceId", "vars"],
+      "properties": {
+        "workerName": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+        "archiveNamespaceId": { "type": "string", "minLength": 1 },
+        "vars": { "type": "object", "additionalProperties": { "type": "string" } }
+      }
+    }
+  }
+}

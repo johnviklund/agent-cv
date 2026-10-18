@@ -21,7 +21,7 @@ This repository contains the public implementation of John Viklund's Agent CV. K
 
 - `data/cv.md`, `data/overview.md`, `data/projects.md`, and `data/repositories.md` are public sources.
 - The other `data/*.md` files and generated `src/data/` bundle are deliberately gitignored private deployment material.
-- `npm run sync:private-data` imports exactly those six private files from the sibling `agent-cv-private` checkout (or `AGENT_CV_PRIVATE_ROOT`) and must remain a local build/deploy step, never a runtime fetch.
+- `npm run sync:owner` validates the owner's `owner.json` and `site.json`, then imports exactly those six private files from the owner root: `AGENT_CV_OWNER_ROOT`, else `AGENT_CV_PRIVATE_ROOT` (alias for one release), else the sibling `agent-cv-private` checkout. `sync:private-data` is its alias for one release. It must remain a local build/deploy step, never a runtime fetch, and `deploy` refuses the `examples/owner/` fallback.
 - Never add `.dev.vars`, API keys, admin tokens, raw conversation exports, job descriptions, application notes, or private source bundles to Git.
 - `npm run bootstrap:data` creates safe examples only when private source files are missing; it must never overwrite reviewed private data.
 

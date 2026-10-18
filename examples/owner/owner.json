@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "slug": "ada-example",
+  "name": { "full": "Ada Example", "short": "Ada" },
+  "headline": "Staff engineer, distributed systems",
+  "location": "Lisbon, Portugal",
+  "site": {
+    "origin": "https://ada.example",
+    "hosts": ["ada.example", "www.ada.example"],
+    "lang": "en",
+    "sourceRepository": null
+  },
+  "links": { "linkedin": null, "x": null, "github": "https://github.com/ada-example" },
+  "contact": { "email": null },
+  "analytics": { "cloudflareBeaconToken": null },
+  "deploy": {
+    "workerName": "ada-example-agent-cv",
+    "archiveNamespaceId": "00000000000000000000000000000000",
+    "vars": { "MONTHLY_REQUEST_CAP": "1000" }
+  }
+}

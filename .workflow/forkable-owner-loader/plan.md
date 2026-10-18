@@ -9,12 +9,14 @@ Size: code 101 · tests 66 · ratio 0.65 · largest touched scripts/sync-private
 Decisions: 1a plan U0+U1 as a run · 2a GPT-6.1 Sol writes, Opus 5.5 reviews · 3a minimal Ada example owner · run on branch feat/forkable-owner-loader, one PR at the end
 
 ## Execution state
-Current: T4 todo · baseline at a0ec9b9: `npm run check` exit 0, 208 pass, 1 skipped, 0 fail
+Current: T4 in progress, uncommitted · pending decision: build rejects unimported `data/owner.js` · baseline at a0ec9b9: `npm run check` exit 0, 208 pass, 1 skipped, 0 fail
 T1 @ f3d40da
 T2 @ ccba344
 T3 @ 26365ea (private commit 6e68283; receipt `receipts/t3-golden-capture.md`)
 writer: Opus 5.5 (human ran execute on Opus 5.5 instead of GPT-6.1 Sol: review must go to OpenAI)
 Session 1: T1, T2, T3
+Session 2: T4 (stopped: `npm run build` exit 1, `Wrangler dry-run included unexpected module data/owner.js`)
+Uncommitted: AGENTS.md, package.json, scripts/golden.mjs, scripts/sync-owner.mjs (git mv), scripts/sync-public-data.mjs, test/sync-owner.test.mjs (git mv)
 
 ## Findings
 | # | What is true | What it changes |

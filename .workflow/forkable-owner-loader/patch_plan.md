@@ -5,8 +5,9 @@ Inputs: review.md @ 17687d3
 Status: complete
 
 ## Execution state
-Current: C1-T2 todo · baseline at 17583eb: `npm run check` exit 0, 219 pass, 1 skipped
+Current: C1-T3 todo · baseline at 17583eb: `npm run check` exit 0, 219 pass, 1 skipped
 C1-T1 @ 0923a8e (red tests @ 26b4747)
+C1-T2 @ 1969b9b (red test @ b114531)
 writer: Opus 5.5 (human ran execute on Opus 5.5 instead of GPT-6.1 Sol, as in cycle 0)
 
 ## Tickets
@@ -29,12 +30,13 @@ Delivers: C1-2 · Blocked by: none · Lane: contract
 Budget: code +10 · tests +25
 Seam: scripts/owner.mjs validate property lookup; all recursive strict objects and dictionaries
 Accept:
-- [ ] JSON keys constructor, toString and __proto__ are rejected at owner root and strict nested objects with file and field errors.
-- [ ] links and deploy.vars apply their additionalProperties schemas to those same keys; invalid values fail, valid dictionary values pass.
+- [x] JSON keys constructor, toString and __proto__ are rejected at owner root and strict nested objects with file and field errors.
+- [x] links and deploy.vars apply their additionalProperties schemas to those same keys; invalid values fail, valid dictionary values pass.
 Verify: `node --test test/owner.test.mjs` (pre: inherited keys bypass schema validation)
 Skills: none
-Status: todo
-Red: pending — commit failing regression tests first; then fix without editing those tests.
+Status: done @ 1969b9b
+Writer: Opus 5.5
+Red: b114531 — new test failed: root `constructor` accepted (missing expected rejection)
 
 ### C1-T3 — Enforce deploy refusal for every owner entry path
 Delivers: C1-3 · Blocked by: none · Lane: contract
@@ -50,6 +52,7 @@ Red: pending — commit failing regression tests first; then fix without editing
 
 ## Deviations
 - C1-T1: tests +57 vs budget +45; the engine-root cases run a temp copy of the CLI so a failing refusal cannot delete this checkout.
+- C1-T2: the `required` check still reads `value[key]` through the prototype; no schema requires an inherited name, so it is left as is.
 
 ## Handoff
 Fixes stay on feat/forkable-owner-loader per the approved plan; one PR at the end. C1-T1 is P0 and uses the heavy executor at high effort; C1-T2/C1-T3 are contract fixes at the same seat and effort. No public claims or deployment authorized by this review.

@@ -3,7 +3,7 @@
   "title": "Agent CV site content",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "updatedAt", "meta", "person", "home"],
+  "required": ["schemaVersion", "updatedAt", "meta", "person", "home", "pages"],
   "properties": {
     "schemaVersion": { "const": 1 },
     "updatedAt": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
@@ -12,9 +12,9 @@
       "additionalProperties": false,
       "required": ["description", "ogDescription", "ogImageAlt"],
       "properties": {
-        "description": { "type": "string", "minLength": 1 },
-        "ogDescription": { "type": "string", "minLength": 1 },
-        "ogImageAlt": { "type": "string", "minLength": 1 }
+        "description": { "$ref": "#/$defs/text" },
+        "ogDescription": { "$ref": "#/$defs/text" },
+        "ogImageAlt": { "$ref": "#/$defs/text" }
       }
     },
     "person": {
@@ -22,12 +22,12 @@
       "additionalProperties": false,
       "required": ["description", "jobTitle", "worksFor", "locality", "country", "knowsAbout"],
       "properties": {
-        "description": { "type": "string", "minLength": 1 },
-        "jobTitle": { "type": "string", "minLength": 1 },
+        "description": { "$ref": "#/$defs/text" },
+        "jobTitle": { "$ref": "#/$defs/text" },
         "worksFor": { "type": ["string", "null"], "minLength": 1 },
-        "locality": { "type": "string", "minLength": 1 },
+        "locality": { "$ref": "#/$defs/text" },
         "country": { "type": "string", "pattern": "^[A-Z]{2}$" },
-        "knowsAbout": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+        "knowsAbout": { "type": "array", "items": { "$ref": "#/$defs/text" } }
       }
     },
     "home": {
@@ -35,14 +35,14 @@
       "additionalProperties": false,
       "required": ["eyebrow", "heading", "deck", "starters", "summary", "proof", "work", "followups"],
       "properties": {
-        "eyebrow": { "type": "string", "minLength": 1 },
+        "eyebrow": { "$ref": "#/$defs/text" },
         "heading": {
           "type": "object",
           "additionalProperties": false,
           "required": ["first", "second"],
-          "properties": { "first": { "type": "string", "minLength": 1 }, "second": { "type": "string", "minLength": 1 } }
+          "properties": { "first": { "$ref": "#/$defs/text" }, "second": { "$ref": "#/$defs/text" } }
         },
-        "deck": { "type": "string", "minLength": 1 },
+        "deck": { "$ref": "#/$defs/text" },
         "starters": {
           "type": "array",
           "minItems": 1,
@@ -50,42 +50,12 @@
             "type": "object",
             "additionalProperties": false,
             "required": ["label", "prompt", "href"],
-            "properties": {
-              "label": { "type": "string", "minLength": 1 },
-              "prompt": { "type": "string", "minLength": 1 },
-              "href": { "type": "string", "pattern": "^(https://[^/\\s]|/(?!/)|#)\\S*$" }
-            }
+            "properties": { "label": { "$ref": "#/$defs/text" }, "prompt": { "$ref": "#/$defs/text" }, "href": { "$ref": "#/$defs/href" } }
           }
         },
-        "summary": { "type": "string", "minLength": 1 },
-        "proof": {
-          "type": "array",
-          "minItems": 1,
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["title", "text", "href"],
-            "properties": {
-              "title": { "type": "string", "minLength": 1 },
-              "text": { "type": "string", "minLength": 1 },
-              "href": { "type": "string", "pattern": "^(https://[^/\\s]|/(?!/)|#)\\S*$" }
-            }
-          }
-        },
-        "work": {
-          "type": "array",
-          "minItems": 1,
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["title", "text", "href"],
-            "properties": {
-              "title": { "type": "string", "minLength": 1 },
-              "text": { "type": "string", "minLength": 1 },
-              "href": { "type": "string", "pattern": "^(https://[^/\\s]|/(?!/)|#)\\S*$" }
-            }
-          }
-        },
+        "summary": { "$ref": "#/$defs/text" },
+        "proof": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/linkedItem" } },
+        "work": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/linkedItem" } },
         "followups": {
           "type": "array",
           "minItems": 1,
@@ -93,8 +63,138 @@
             "type": "object",
             "additionalProperties": false,
             "required": ["label", "prompt"],
-            "properties": { "label": { "type": "string", "minLength": 1 }, "prompt": { "type": "string", "minLength": 1 } }
+            "properties": { "label": { "$ref": "#/$defs/text" }, "prompt": { "$ref": "#/$defs/text" } }
           }
+        }
+      }
+    },
+    "pages": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["about", "experience", "projects", "cv", "contact", "privacy"],
+      "properties": {
+        "about": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["description", "eyebrow", "heading", "deck", "body"],
+          "properties": {
+            "description": { "$ref": "#/$defs/text" },
+            "eyebrow": { "$ref": "#/$defs/text" },
+            "heading": { "$ref": "#/$defs/text" },
+            "deck": { "$ref": "#/$defs/text" },
+            "body": { "$ref": "#/$defs/blocks" }
+          }
+        },
+        "experience": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["description", "eyebrow", "heading", "deck", "timeline"],
+          "properties": {
+            "description": { "$ref": "#/$defs/text" },
+            "eyebrow": { "$ref": "#/$defs/text" },
+            "heading": { "$ref": "#/$defs/text" },
+            "deck": { "$ref": "#/$defs/text" },
+            "timeline": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["date", "title", "text"],
+                "properties": { "date": { "$ref": "#/$defs/text" }, "title": { "$ref": "#/$defs/text" }, "text": { "$ref": "#/$defs/text" } }
+              }
+            }
+          }
+        },
+        "projects": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["description", "eyebrow", "heading", "deck", "items"],
+          "properties": {
+            "description": { "$ref": "#/$defs/text" },
+            "eyebrow": { "$ref": "#/$defs/text" },
+            "heading": { "$ref": "#/$defs/text" },
+            "deck": { "$ref": "#/$defs/text" },
+            "items": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["title", "summary", "meta", "sources", "prompt"],
+                "properties": {
+                  "title": { "$ref": "#/$defs/text" },
+                  "summary": { "$ref": "#/$defs/text" },
+                  "meta": { "$ref": "#/$defs/text" },
+                  "sources": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": ["label", "href"],
+                      "properties": {
+                        "label": { "$ref": "#/$defs/text" },
+                        "href": { "type": "string", "pattern": "^https://[^/\\s]\\S*$" },
+                        "me": { "const": true }
+                      }
+                    }
+                  },
+                  "prompt": { "$ref": "#/$defs/text" }
+                }
+              }
+            }
+          }
+        },
+        "cv": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["description", "body", "footer"],
+          "properties": { "description": { "$ref": "#/$defs/text" }, "body": { "$ref": "#/$defs/blocks" }, "footer": { "$ref": "#/$defs/text" } }
+        },
+        "contact": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["description", "eyebrow", "heading", "deck", "note", "footer"],
+          "properties": {
+            "description": { "$ref": "#/$defs/text" },
+            "eyebrow": { "$ref": "#/$defs/text" },
+            "heading": { "$ref": "#/$defs/text" },
+            "deck": { "$ref": "#/$defs/text" },
+            "note": { "$ref": "#/$defs/text" },
+            "footer": { "$ref": "#/$defs/text" }
+          }
+        },
+        "privacy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sections"],
+          "properties": { "sections": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/blocks" } } }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "text": { "type": "string", "minLength": 1 },
+    "href": { "type": "string", "pattern": "^(https://[^/\\s]|/(?!/)|#)\\S*$" },
+    "linkedItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "text", "href"],
+      "properties": { "title": { "$ref": "#/$defs/text" }, "text": { "$ref": "#/$defs/text" }, "href": { "$ref": "#/$defs/href" } }
+    },
+    "blocks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "p": { "$ref": "#/$defs/text" },
+          "h2": { "$ref": "#/$defs/text" },
+          "h3": { "$ref": "#/$defs/text" },
+          "kicker": { "$ref": "#/$defs/text" },
+          "quote": { "$ref": "#/$defs/text" },
+          "list": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/text" } }
         }
       }
     }

@@ -63,5 +63,122 @@
         "prompt": "What platform work has Ada led?"
       }
     ]
+  },
+  "pages": {
+    "about": {
+      "description": "About Ada Example, a fictional staff engineer used to test this engine.",
+      "eyebrow": "ENGINEER · EXAMPLE",
+      "heading": "Close to the systems.",
+      "deck": "A fictional profile for testing.",
+      "body": [
+        {
+          "p": "Ada is a fictional engineer. Her work is **invented** for this example."
+        },
+        {
+          "h2": "How she works"
+        },
+        {
+          "list": [
+            "Designs for failure",
+            "Reviews with care"
+          ]
+        },
+        {
+          "quote": "Measure, then decide."
+        }
+      ]
+    },
+    "experience": {
+      "description": "Ada Example's fictional career.",
+      "eyebrow": "2010—PRESENT",
+      "heading": "An example path.",
+      "deck": "Fictional roles only.",
+      "timeline": [
+        {
+          "date": "2020—PRESENT",
+          "title": "Example Co · Staff engineer",
+          "text": "Runs a fictional platform."
+        }
+      ]
+    },
+    "projects": {
+      "description": "Ada Example's fictional projects.",
+      "eyebrow": "SELECTED WORK",
+      "heading": "Example projects.",
+      "deck": "Fictional work for testing.",
+      "items": [
+        {
+          "title": "Example mesh",
+          "summary": "A fictional service mesh.",
+          "meta": "Go · Example",
+          "sources": [
+            {
+              "label": "View source",
+              "href": "https://github.com/ada-example",
+              "me": true
+            }
+          ],
+          "prompt": "What is Example mesh?"
+        },
+        {
+          "title": "Example tool",
+          "summary": "A fictional internal tool.",
+          "meta": "Internal",
+          "sources": [],
+          "prompt": "What is Example tool?"
+        }
+      ]
+    },
+    "cv": {
+      "description": "The fictional CV of Ada Example.",
+      "body": [
+        {
+          "kicker": "Staff engineer · Lisbon"
+        },
+        {
+          "h2": "Profile"
+        },
+        {
+          "p": "Fictional staff engineer."
+        },
+        {
+          "h3": "Example Co · Staff engineer"
+        },
+        {
+          "list": [
+            "Ran a fictional platform."
+          ]
+        }
+      ],
+      "footer": "Data updated 18 Oct 2026"
+    },
+    "contact": {
+      "description": "Contact Ada Example about fictional opportunities.",
+      "eyebrow": "GET IN TOUCH",
+      "heading": "Say hello.",
+      "deck": "For fictional opportunities.",
+      "note": "Ada answers on GitHub.",
+      "footer": "Lisbon, Portugal"
+    },
+    "privacy": {
+      "sections": [
+        [
+          {
+            "h2": "What is saved"
+          },
+          {
+            "p": "This fictional site saves questions for 90 days. See [the source](https://github.com/ada-example)."
+          }
+        ],
+        [
+          {
+            "h2": "Contact"
+          },
+          {
+            "p": "Ask Ada about a record."
+          }
+        ]
+      ]
+    }
   }
 }

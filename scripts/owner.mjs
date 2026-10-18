@@ -32,9 +32,14 @@ export function resolveOwnerRoot({ env = process.env, deploy = false, engineRoot
   return root;
 }
 
-// A JSON Schema subset: type, const, pattern, minLength, minItems, items, required,
-// properties and additionalProperties. Throws on the first error with the file and field path.
-export function validate(schema, value, file, path = "") {
+// A JSON Schema subset: type, const, pattern, minLength, minItems, items, required, properties,
+// additionalProperties and "#/$defs/<name>" references. Throws on the first error with the file and field path.
+export function validate(schema, value, file, path = "", root = schema) {
+  if (schema.$ref) {
+    const name = schema.$ref.replace(/^#\/\$defs\//, "");
+    if (!Object.hasOwn(root.$defs ?? {}, name)) throw new Error(`${file}: schema reference ${schema.$ref} is unknown`);
+    return validate(root.$defs[name], value, file, path, root);
+  }
   const fail = (message) => {
     throw new Error(`${file}: ${path || "(root)"} ${message}`);
   };
@@ -48,7 +53,7 @@ export function validate(schema, value, file, path = "") {
   }
   if (Array.isArray(value)) {
     if (schema.minItems && value.length < schema.minItems) fail(`must have at least ${schema.minItems} item(s)`);
-    value.forEach((item, index) => schema.items && validate(schema.items, item, file, `${path}[${index}]`));
+    value.forEach((item, index) => schema.items && validate(schema.items, item, file, `${path}[${index}]`, root));
   }
   if (typeOf(value) === "object") {
     const join = (key) => (path ? `${path}.${key}` : key);
@@ -60,7 +65,7 @@ export function validate(schema, value, file, path = "") {
       if (property === false || (property === undefined && schema.properties)) {
         throw new Error(`${file}: ${join(key)} is not allowed`);
       }
-      if (property && property !== true) validate(property, item, file, join(key));
+      if (property && property !== true) validate(property, item, file, join(key), root);
     }
   }
   return value;

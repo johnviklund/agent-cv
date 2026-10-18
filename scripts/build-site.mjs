@@ -1,11 +1,14 @@
 import { createHash } from "node:crypto";
-import { mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { loadOwner } from "./owner.mjs";
+import { publicFiles } from "./sync-public-data.mjs";
 import { renderHeaders } from "../site/templates/headers.mjs";
+import { renderDiscovery } from "../site/templates/discovery.mjs";
 import { renderHome } from "../site/templates/home.mjs";
+import * as pages from "../site/templates/pages.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -16,22 +19,39 @@ function inlineScriptHashes(html) {
 
 // Renders every generated page for a validated owner; keys are paths inside the site directory.
 export function renderSite({ owner, site }) {
-  const index = renderHome({ owner, site });
-  return {
-    "index.html": index,
-    "_headers": renderHeaders({ owner, scriptHashes: inlineScriptHashes(index) }),
+  const content = { owner, site };
+  const html = {
+    "index.html": renderHome(content),
+    "about/index.html": pages.renderAbout(content),
+    "experience/index.html": pages.renderExperience(content),
+    "projects/index.html": pages.renderProjects(content),
+    "cv/index.html": pages.renderCv(content),
+    "contact/index.html": pages.renderContact(content),
+    "privacy/index.html": pages.renderPrivacy(content),
+    "application/index.html": pages.renderApplication(content),
+    "admin/index.html": pages.renderAdmin(content),
+    "404.html": pages.renderNotFound(content),
   };
+  const scriptHashes = [...new Set(Object.values(html).flatMap(inlineScriptHashes))];
+  return { ...html, ...renderDiscovery(content), "_headers": renderHeaders({ owner, scriptHashes }) };
 }
 
-async function main() {
-  const out = resolve(root, "build/site");
-  const pages = renderSite(await loadOwner());
+// Replaces out with the rendered pages plus the public Markdown from dataRoot.
+export async function buildSite({ owner, site, out = resolve(root, "build/site"), dataRoot = resolve(root, "data") }) {
+  const files = renderSite({ owner, site });
+  // Only the four public Markdown sources are published; the private data files never are.
+  for (const file of publicFiles) files[file] = await readFile(resolve(dataRoot, file));
   await rm(out, { recursive: true, force: true });
-  for (const [path, content] of Object.entries(pages)) {
+  for (const [path, content] of Object.entries(files)) {
     await mkdir(dirname(resolve(out, path)), { recursive: true });
     await writeFile(resolve(out, path), content);
   }
-  console.log(`Rendered ${Object.keys(pages).length} files into ${out}.`);
+  return Object.keys(files);
+}
+
+async function main() {
+  const files = await buildSite(await loadOwner());
+  console.log(`Rendered ${files.length} files into build/site.`);
 }
 
 if (process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.meta.url) {

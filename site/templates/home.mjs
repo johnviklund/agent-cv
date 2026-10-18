@@ -1,4 +1,4 @@
-import { escapeHtml as e, escapeSingleQuoted, profileLinks, scriptJson as j } from "./html.mjs";
+import { beacon, escapeHtml as e, profileLinks, scriptJson as j, updatedMonth, xHandle } from "./html.mjs";
 
 const item = (indent, { title, text, href }) => {
   const external = href.startsWith("https://");
@@ -13,9 +13,7 @@ export function renderHome({ owner, site }) {
   const origin = owner.site.origin;
   const title = `${full} — Agent CV`;
   const links = profileLinks(owner);
-  const handle = owner.links?.x && new URL(owner.links.x).pathname.split("/").filter(Boolean)[0];
-  const updatedMonth = new Date(`${site.updatedAt}T00:00:00Z`)
-    .toLocaleDateString("en-US", { month: "short", year: "numeric", timeZone: "UTC" });
+  const handle = xHandle(owner);
   const linkList = (items) => items.map((entry) => item("              ", entry)).join("\n");
 
   const head = `  <title>${e(title)}</title>
@@ -70,10 +68,6 @@ ${person.worksFor ? `      "worksFor": { "@type": "Organization", "name": ${j(pe
     `            <button type="button" data-followup="${e(prompt)}">${e(label)}</button>`).join("\n");
   const repository = owner.site.sourceRepository;
   const source = repository ? `      <a href="${e(repository)}" rel="me noopener noreferrer" target="_blank">Source ↗</a>\n` : "";
-  const token = owner.analytics?.cloudflareBeaconToken;
-  const beacon = token
-    ? `  <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='${escapeSingleQuoted(`{"token": ${JSON.stringify(token)}}`)}'></script>\n`
-    : "";
 
   return `<!doctype html>
 <html lang="${e(owner.site.lang)}">
@@ -274,14 +268,14 @@ ${followups}
     </div>
 
     <footer class="home-footer">
-      <span>Grounded in ${e(short)}'s CV · Updated ${e(updatedMonth)}</span>
+      <span>Grounded in ${e(short)}'s CV · Updated ${e(updatedMonth(site))}</span>
       <span class="footer-separator" aria-hidden="true">|</span>
       <span>Conversations may be reviewed · Logs delete after 90 days</span>
       <span class="footer-separator" aria-hidden="true">|</span>
       <a href="/privacy/">Privacy</a>
 ${source}    </footer>
   </main>
-${beacon}</body>
+${beacon(owner)}</body>
 </html>
 `;
 }

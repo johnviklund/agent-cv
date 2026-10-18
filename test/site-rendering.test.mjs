@@ -1,13 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { cp, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { cp, mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { loadOwner } from "../scripts/owner.mjs";
-import { renderSite } from "../scripts/build-site.mjs";
+import { buildSite, renderSite } from "../scripts/build-site.mjs";
+import { privateDataFiles } from "../scripts/sync-owner.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const example = resolve(root, "examples/owner");
@@ -21,12 +22,21 @@ async function tempDir(context) {
   return dir;
 }
 
-test("John's home renders the published page byte for byte", {
+// Published copies of the generated pages; experience/ wrote raw "&" where the renderer escapes it.
+const PUBLISHED_PAGES = ["index.html", "about/index.html", "experience/index.html", "projects/index.html",
+  "cv/index.html", "contact/index.html", "privacy/index.html", "application/index.html", "admin/index.html",
+  "404.html", "robots.txt", "sitemap.xml", "llms.txt", "AGENTS.md", "_headers"];
+
+test("John's pages and discovery files render the published files byte for byte", {
   skip: current.owner.slug !== "john-viklund" && "needs John's owner root",
 }, async () => {
   const pages = renderSite(current);
-  assert.equal(pages["index.html"], await published("index.html"));
-  assert.equal(pages["_headers"], await published("_headers"));
+  assert.deepEqual(Object.keys(pages).sort(), [...PUBLISHED_PAGES].sort());
+  for (const path of PUBLISHED_PAGES) {
+    const expected = await published(path);
+    const actual = path === "experience/index.html" ? pages[path].replaceAll(" &amp; ", " & ") : pages[path];
+    assert.equal(actual, expected, path);
+  }
 });
 
 test("a fictional home renders Ada from structured data", async () => {
@@ -106,4 +116,79 @@ test("rendered home keeps its CSP hash and the controller contracts", async () =
   assert.deepEqual(actual.data, expected.data);
   assert.deepEqual(actual.scripts, expected.scripts);
   assert.deepEqual(actual.nav.slice(0, 2), expected.nav.slice(0, 2));
+});
+
+test("every fictional page renders Ada's own identity and copy", async () => {
+  const pages = renderSite(await ada());
+  for (const [path, text] of Object.entries(pages)) {
+    assert.doesNotMatch(text, /John|Viklund|johnviklund|Volvo|c7d9e434/, path);
+  }
+  for (const [path, pattern] of [
+    ["about/index.html", /<h1>Close to the systems\.<\/h1>[\s\S]*Her work is <strong>invented<\/strong>/],
+    ["experience/index.html", /<h2>Example Co · Staff engineer<\/h2><p>Runs a fictional platform\.<\/p>/],
+    ["projects/index.html", /href="https:\/\/github\.com\/ada-example" rel="me noopener noreferrer" target="_blank">View source ↗/],
+    ["cv/index.html", /href="\/ada-example-cv\.pdf"[\s\S]*<p class="cv-kicker">Staff engineer · Lisbon<\/p>/],
+    ["contact/index.html", /<p>Ada answers on GitHub\.<\/p>\n      <p class="contact-value" data-contact-value><\/p>/],
+    ["privacy/index.html", /<a href="https:\/\/github\.com\/ada-example" rel="me noopener noreferrer" target="_blank">the source<\/a>/],
+    ["application/index.html", /map the supplied job description to Ada's documented experience/],
+    ["404.html", /<a href="\/">Ask Ada's agent →<\/a>/],
+  ]) {
+    assert.match(pages[path], pattern, path);
+    assert.match(pages[path], /aria-label="Ada Example, home">ADA EXAMPLE<\/a>/, path);
+  }
+});
+
+test("unsafe inline links in page prose fail with their site.json field", async () => {
+  const { owner, site } = await ada();
+  for (const href of ["javascript:alert", "//evil.example", "http://ada.example", "data:text/html,x"]) {
+    const about = { ...site.pages.about, body: [{ p: "fine" }, { p: `see [this](${href})` }] };
+    assert.throws(() => renderSite({ owner, site: { ...site, pages: { ...site.pages, about } } }),
+      { message: `site.json: pages.about.body[1].p has an unsafe link ${href}` });
+  }
+});
+
+test("discovery files keep the engine contract and follow the owner's origin, slug and updatedAt", async () => {
+  const { owner, site } = await ada();
+  const pages = renderSite({ owner, site: { ...site, updatedAt: "2027-02-03" } });
+
+  for (const name of ["llms.txt", "AGENTS.md"]) {
+    const engine = await published(name);
+    for (const contract of [...engine.matchAll(/`((?:POST|GET) \/api\/[a-z/:]+|[a-z]+_[a-z_]+)`/g)].map((match) => match[1])) {
+      assert.ok(pages[name].includes(contract), `${name}: ${contract}`);
+    }
+  }
+  assert.match(pages["AGENTS.md"], /At most 16 requirements per role may be assessed in rows, and up to 96 extracted requirements/);
+  assert.match(pages["llms.txt"], /Data last updated: 2027-02-03\n$/);
+  assert.match(pages["AGENTS.md"], /Public data last updated: 3 February 2027\./);
+  assert.match(pages["index.html"], /"dateModified": "2027-02-03"[\s\S]*Updated Feb 2027/);
+  assert.equal([...pages["sitemap.xml"].matchAll(/<lastmod>2027-02-03<\/lastmod>/g)].length, 13);
+  assert.match(pages["sitemap.xml"], /<loc>https:\/\/ada\.example\/privacy\/<\/loc>/);
+  assert.match(pages["robots.txt"], /^Sitemap: https:\/\/ada\.example\/sitemap\.xml$/m);
+  assert.match(pages["cv/index.html"], /<link rel="canonical" href="https:\/\/ada\.example\/cv\/">/);
+  assert.match(pages["llms.txt"], /\[CV PDF\]\(\/ada-example-cv\.pdf\)/);
+  assert.match(pages["llms.txt"], /returns `null`\. Never infer or guess another address\./);
+  assert.doesNotMatch(pages["llms.txt"], /\[Public source\]/);
+});
+
+test("the built site publishes four Markdown sources and no private material", async (context) => {
+  const out = resolve(await tempDir(context), "site");
+  const files = await buildSite({ ...(await ada()), out });
+  const listed = (await readdir(out, { recursive: true, withFileTypes: true }))
+    .filter((entry) => entry.isFile()).map((entry) => resolve(entry.parentPath, entry.name).slice(out.length + 1)).sort();
+
+  assert.deepEqual(listed, [...files].sort());
+  assert.deepEqual(listed.filter((file) => file.endsWith(".md")).sort(),
+    ["AGENTS.md", "cv.md", "overview.md", "projects.md", "repositories.md"]);
+  for (const file of privateDataFiles) assert.equal(listed.includes(file), false, file);
+  const text = (await Promise.all(listed.map((file) => readFile(resolve(out, file), "utf8")))).join("\n");
+  const { owner } = await ada();
+  for (const secret of [owner.deploy.workerName, owner.deploy.archiveNamespaceId, ...Object.keys(owner.deploy.vars), "ADMIN_TOKEN"]) {
+    assert.equal(text.includes(secret), false, secret);
+  }
+  // The private sources sit beside the public ones in data/; no line of theirs is published.
+  for (const file of privateDataFiles) {
+    const lines = (await readFile(resolve(root, "data", file), "utf8")).split("\n").filter((line) => line.length > 40);
+    assert.ok(lines.length > 0, file);
+    for (const line of lines) assert.equal(text.includes(line), false, `${file}: ${line}`);
+  }
 });

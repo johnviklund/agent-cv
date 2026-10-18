@@ -6,7 +6,7 @@ import { writeComparisonEvidence } from "./build-comparison-evidence.mjs";
 import { writeComparisonContract } from "./build-comparison-contract.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const publicFiles = ["cv.md", "projects.md", "overview.md", "repositories.md"];
+export const publicFiles = ["cv.md", "projects.md", "overview.md", "repositories.md"];
 const workerFiles = ["meta.md", "cv.md", "overview.md", "experience.md", "projects.md", "repositories.md", "skills.md", "personal.md", "interests.md", "faq.md"];
 
 // The Worker gets identity, site, links, contact and the site's updatedAt; deploy settings and analytics stay build-only.

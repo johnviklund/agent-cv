@@ -1,7 +1,7 @@
 import { mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { registerHooks } from "node:module";
-import { dirname, relative, resolve, sep } from "node:path";
+import { basename, dirname, relative, resolve, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { resolveOwnerRoot } from "./owner.mjs";
@@ -66,9 +66,44 @@ export async function diffGolden(dir, outputs) {
   };
 }
 
-async function main([command, ...args]) {
-  const flag = args.indexOf("--golden");
-  const dir = resolve(flag === -1 ? resolve(resolveOwnerRoot(), "golden") : args[flag + 1] ?? "");
+function parseArguments([command, ...args]) {
+  if (command !== "capture" && command !== "diff") throw new Error("Usage: golden.mjs capture|diff [--golden <dir>]");
+  let dir;
+  for (let index = 0; index < args.length; index += 1) {
+    if (args[index] !== "--golden") throw new Error(`Unknown argument: ${args[index]}`);
+    dir = args[index + 1];
+    if (!dir) throw new Error("--golden requires a path.");
+    index += 1;
+  }
+  return { command, dir };
+}
+
+// The real path of `path`, or of its nearest existing ancestor joined with the rest.
+function canonical(path) {
+  const rest = [];
+  let current = resolve(path);
+  while (!existsSync(current) && current !== dirname(current)) {
+    rest.unshift(basename(current));
+    current = dirname(current);
+  }
+  return resolve(realpathSync(current), ...rest);
+}
+
+// Capture replaces its directory, so it must never be a checkout or hold one.
+function refuseRoots(dir, roots) {
+  const target = canonical(dir);
+  const prefix = target.endsWith(sep) ? target : target + sep;
+  for (const root of roots) {
+    const real = canonical(root);
+    if (real === target || real.startsWith(prefix)) throw new Error(`Refusing to replace ${dir}: it holds ${root}`);
+  }
+}
+
+async function main(argv) {
+  const { command, dir: requested } = parseArguments(argv);
+  const ownerRoot = resolveOwnerRoot();
+  const dir = resolve(requested ?? resolve(ownerRoot, "golden"));
+  if (command === "capture") refuseRoots(dir, [engineRoot, ownerRoot]);
   const outputs = await collectOutputs();
 
   if (command === "capture") {
@@ -76,7 +111,6 @@ async function main([command, ...args]) {
     console.log(`Golden snapshot: ${Object.keys(outputs).length} files in ${dir}`);
     return 0;
   }
-  if (command !== "diff") throw new Error("Usage: golden.mjs capture|diff [--golden <dir>]");
 
   if (!(await stat(dir).catch(() => null))?.isDirectory()) {
     console.error(`No golden snapshot at ${dir}; run npm run golden:capture`);

@@ -12,13 +12,13 @@ A fork cannot build its own card, PDF or deploy config. The OG card, PDF filenam
 
 ## Behaviours
 - B1 — `build-og-image` with John's owner → PNG byte-identical to today's committed card; with Ada → her name, headline and domain, no "John".
-- B2 — `build:og-image` writes `<owner>/assets/og-image.png`; `build:site` copies it to `build/site/`; a missing card fails with a message naming `npm run build:og-image`.
+- B2 — `build:og-image` run for an owner → `<owner>/assets/og-image.png` exists, and `build:site` copies it to `build/site/`; a missing card fails with a message naming `npm run build:og-image`.
 - B3 — `build:cv-pdf` writes `build/site/<slug>-cv.pdf` (John: `john-viklund-cv.pdf`) with the header email from `contact.email`; a null email → no email in the header.
-- B4 — Generated `wrangler.jsonc` for John equals today's file in content; routes are `site.hosts` as `custom_domain` entries, skipping `*.workers.dev`; `CONTACT_EMAIL` comes from `contact.email` and is absent when null.
-- B5 — Every Wrangler script, `check-worker-package` and the config-reading tests use the generated, gitignored `wrangler.jsonc`; the tracked engine file is `wrangler.base.jsonc`.
+- B4 — Wrangler config generated for John → equals today's file in content; routes are `site.hosts` as `custom_domain` entries, skipping `*.workers.dev`; `CONTACT_EMAIL` comes from `contact.email` and is absent when null.
+- B5 — Any Wrangler script, `check-worker-package` or config-reading test run → uses the generated, gitignored `wrangler.jsonc`; the tracked engine file is `wrangler.base.jsonc`.
 - B6 — Admin scripts take the trusted origin from `owner.json` `site.origin`; `config/admin-origin.json` is gone; an owner with no origin → the existing "not configured" error.
-- B7 — `sync:repositories` and the comparison-evidence build read `repositories.json` and `comparison-evidence.json` from the owner root; the engine `config/` copies are deleted; John's files are committed in `agent-cv-private`; Ada has a minimal valid pair.
-- B8 — `golden:diff` covers the PNG bytes and the Wrangler config, with no unlisted differences for John.
+- B7 — `sync:repositories` and the comparison-evidence build run → they read `repositories.json` and `comparison-evidence.json` from the owner root; the engine `config/` copies are deleted; John's files are committed in `agent-cv-private`; Ada has a minimal valid pair.
+- B8 — `golden:diff` run for John → covers the PNG bytes and the Wrangler config, with no unlisted differences for John.
 
 ## Decisions
 - D1 — New optional `owner.json` `tagline` is the card's top line ("<tagline> · <location>", or location alone) — keeps John's card identical (product call)

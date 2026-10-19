@@ -9,8 +9,8 @@ Size: code 1,329 · tests 743 · ratio 0.56 · largest touched pages.mjs 453, bu
 Decisions: 1a drop CI git-diff step, accept dirty public/ locally until U8 · 2a admin and 404 get a credit-only footer · 3a leak scan runs only for examples/owner, else prints skipped · 4a tickets approved
 
 ## Execution state
-T1–T4 done; both repos pushed. Corrected engine CI passed; next workflow review.
-Pending: none. CI success at 83fbf99; final records checkpoint must also pass CI before handoff.
+T1–T4 done; patch C1-T1 done. Next: C1-T2 at high effort, then review.
+Pending: C1-T1 push and CI receipt before handoff.
 T1 @ 023e92f · private source copy @ 5699413
 T2 @ 95eae04 · private golden exceptions @ ae5d654
 T3 @ 28d4fc6
@@ -20,8 +20,8 @@ writer: GPT-6.1 Sol · T1 xhigh; T2–T4 high
 Session 1: T1
 Session 2: T2, T3, T4 handoff
 Session 3: T4
-Verification: receipts/t1-verification.md, receipts/t2-verification.md, receipts/t3-verification.md.
-T4 receipt: receipts/t4-push-ci.md. Private main ae5d654; its faq.md edit remains unstaged.
+Session 4: C1-T1
+Verification receipts: t1-verification.md, t2-verification.md, t3-verification.md, t4-push-ci.md, c1-t1-verification.md. Private repo untouched in Session 4.
 
 ## Findings
 | # | What is true | What it changes |

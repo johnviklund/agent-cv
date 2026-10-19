@@ -105,13 +105,21 @@ For a manual release check, clone your branch into a new directory, run `npm ci`
    npx wrangler kv namespace create ARCHIVE
    ```
 
-3. Configure the OpenAI secret:
+3. Generate the Wrangler config for your owner, so the secret commands below target your Worker and not one from an earlier `wrangler.jsonc`:
+
+   ```sh
+   npm run build:wrangler-config -- --deploy
+   ```
+
+   This validates your `owner.json` and refuses the example owner. `npm run setup:admin` regenerates it too.
+
+4. Configure the OpenAI secret:
 
    ```sh
    npx wrangler secret put OPENAI_API_KEY
    ```
 
-4. Generate and configure the private admin token:
+5. Generate and configure the private admin token:
 
    ```sh
    npm run setup:admin
@@ -119,10 +127,10 @@ For a manual release check, clone your branch into a new directory, run `npm ci`
 
    This writes the same token to ignored `.dev.vars` with private file permissions and to Cloudflare without printing it.
 
-5. Review `OPENAI_MODEL`, reasoning effort, request cap, retention and contact email in your `owner.json` (`deploy.vars` overrides the engine defaults in `wrangler.base.jsonc`), and the rate limit and binding values in `wrangler.base.jsonc`. `npm run build:wrangler-config` writes the merged, ignored `wrangler.jsonc`; every npm script that reads it regenerates it first.
-6. Run `npm run build` for the Worker packaging dry run. In the two-repository setup, run `npm run sync:private-data` first so this dry run uses the reviewed private sources.
-7. Deploy with `npm run deploy`. Deployment automatically imports the six reviewed files from the sibling private repository and stops if that source is missing or incomplete.
-8. Set your custom domain, then update canonical metadata, discovery resources, export URL, and static checks together. Run `npm run check` again.
+6. Review `OPENAI_MODEL`, reasoning effort, request cap, retention and contact email in your `owner.json` (`deploy.vars` overrides the engine defaults in `wrangler.base.jsonc`), and the rate limit and binding values in `wrangler.base.jsonc`. `npm run build:wrangler-config` writes the merged, ignored `wrangler.jsonc`; every npm script that reads it regenerates it first.
+7. Run `npm run build` for the Worker packaging dry run. In the two-repository setup, run `npm run sync:private-data` first so this dry run uses the reviewed private sources.
+8. Deploy with `npm run deploy`. Deployment automatically imports the six reviewed files from the sibling private repository and stops if that source is missing or incomplete.
+9. Set your custom domain, then update canonical metadata, discovery resources, export URL, and static checks together. Run `npm run check` again.
 
 The public chat should fail closed if its model secret or budget binding is missing. Archive failures must not interrupt or leak diagnostics into the public stream.
 

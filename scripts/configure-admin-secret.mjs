@@ -3,8 +3,14 @@ import { randomBytes } from "node:crypto";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { writeLocalAdminToken } from "./admin-secret-file.mjs";
+import { writeWranglerConfig } from "./wrangler-config.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+// Wrangler must target the selected owner's Worker; this also refuses the example owner before any token exists.
+await writeWranglerConfig({ engineRoot: root, deploy: true }).catch((error) => {
+  console.error(error.message);
+  process.exit(1);
+});
 const envFile = resolve(root, ".dev.vars");
 const token = randomBytes(32).toString("hex");
 await writeLocalAdminToken(envFile, token);

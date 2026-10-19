@@ -2,7 +2,7 @@ Command: workflow brainstorm forkable-maintenance-tooling
 Created: 2026-10-19
 Base:    6375073
 Inputs:  none
-Status:  complete
+Status:  done
 
 ## Problem
 Maintenance tooling and both repo-local skills assume John owns the repo and that content lives in it. Content now lives in the owner repo, so "update the site" spans two repos and a fork's owner must never see "John".

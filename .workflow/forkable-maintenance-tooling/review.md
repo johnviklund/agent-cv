@@ -2,7 +2,7 @@ Command: workflow review forkable-maintenance-tooling
 Created: 2026-10-19
 Base:    55f333a
 Inputs:  .workflow/forkable-maintenance-tooling/plan.md @ e32329f
-Status:  complete
+Status:  done
 
 ## Coverage
 - [x] T1 — acceptance 4/4 tested and passing; mutations (UA, manifest default, folder base, packet name) each go red

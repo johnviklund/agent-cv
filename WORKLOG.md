@@ -30,3 +30,13 @@ Rolling index of recent work; git is the source of truth.
 - Seats: 0 none · 2 Opus 5.5 · 3 Opus 5.5 · 4 GPT-6 Astra
 - Skills: workflow@unversioned
 - Why: owner identity must come from a directory before the engine can be forked; the golden diff proves John's output is unchanged.
+
+## 2026-10-19 · forkable-maintenance-tooling · review scripts, admin brief, GitHub sync agent, refusal guards and skills use the selected owner · Opus 5.5
+- Project review, conversation packet and brief name the owner; refusal guards drop John literals; AGENTS.md and both skills describe the two-repo flow.
+- Patch cycle fixed a John-literal refusal test that was red on CI's example-owner bundle.
+- Commits: 7e1febe 5d296b4 bab16db 10bff27 539d45c
+- Review: ship as-is @ 7024e58
+- Run: 4 tickets · 2 sessions · 2 review cycles · 2 deviations · 0 findings overturned
+- Seats: 0 none · 2 GPT-6.1 Sol · 3 Opus 5.5 · 4 GPT-6.1 Sol
+- Skills: workflow@unversioned
+- Why: a fork's maintenance output must never name John, with John's published bytes unchanged.

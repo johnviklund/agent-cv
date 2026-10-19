@@ -398,7 +398,7 @@ test("provider conclusions fail closed without rejecting ordinary role terminolo
   for (const conclusion of prohibited) {
     const labelDraft = validDraft();
     labelDraft.rows[0].label = conclusion;
-    assert.throws(() => canonicalizeComparisonDraft(labelDraft, roles, evidenceCatalog));
+    assert.throws(() => canonicalizeComparisonDraft(labelDraft, roles, evidenceCatalog, undefined, JOHN));
 
   }
 

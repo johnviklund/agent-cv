@@ -9,11 +9,12 @@ Size: code 1833 · tests 2354 · ratio 1.28 · largest touched test/comparison-c
 Decisions: brief D1–D6 retained; John approved all five tickets on 2026-10-19. Public-code Opus 5.5 audit complete; findings verified by main session GPT-6 Astra.
 
 ## Execution state
-T1 @ 90cba12 (private 739738e) · T2 @ d11fca9 · T4 @ 6c5e5b2 · next T3 (contract) ready · writer: Opus 5.5 (human-approved swap; review → GPT-6.1 Sol xhigh)
-Baseline 249 pass/1 skip → T1 252/2 → T2 254/3 → T4 258/3; Chromium card test opt-in (AGENT_CV_CHROMIUM_TESTS=1). Never stage private data/faq.md. Compare Buffers with .equals (deepEqual OOMs this 7.7 GB host).
-In flight: owner.json tagline; buildSite needs root/assets/og-image.png; scripts/chromium.mjs findChromium(artifact).
+T1 @ 90cba12 (private 739738e) · T2 @ d11fca9 · T4 @ 6c5e5b2 · T3 @ c6a1a04 · next T5 (contract) ready · writer: Opus 5.5 (human-approved swap; review → GPT-6.1 Sol xhigh)
+Baseline 249/1 skip → T1 252/2 → T2 254/3 → T4 258/3 → T3 269/3. Chromium card test opt-in (AGENT_CV_CHROMIUM_TESTS=1). Never stage private data/faq.md. Compare Buffers with .equals (deepEqual OOMs this host).
+In flight: scripts/wrangler-config.mjs buildWranglerConfig(owner, base) / writeWranglerConfig({engineRoot, deploy}); root wrangler.jsonc ignored.
 Session 1: T1
 Session 2: T2, T4
+Session 3: T3
 
 ## Findings
 | # | What is true | What it changes |
@@ -70,13 +71,15 @@ Delivers: B4, B5, B8 · Blocked by: T2 · Lane: contract
 Budget: code +120 · tests +110
 Seam: validated owner + wrangler.base.jsonc → ignored root wrangler.jsonc → npm entry points, package checker and golden diff.
 Accept:
-- [ ] John's generated config equals today's config in content; golden:diff has zero unlisted differences without recapturing the baseline. (B4, B8)
-- [ ] Ada config uses her worker name, ARCHIVE namespace and vars over engine defaults; routes exclude *.workers.dev; binding/security settings remain equal. (B4)
-- [ ] CONTACT_EMAIL equals contact.email despite deploy.vars overrides; null removes it even when deploy.vars supplies a value. (B4)
-- [ ] For absent and other-owner config cases, dev/build/deploy/check/test/check:worker-package/golden commands generate selected-owner config; only wrangler.base.jsonc is tracked. (B5)
+- [x] John's generated config equals today's config in content; golden:diff has zero unlisted differences without recapturing the baseline. (B4, B8)
+- [x] Ada config uses her worker name, ARCHIVE namespace and vars over engine defaults; routes exclude *.workers.dev; binding/security settings remain equal. (B4)
+- [x] CONTACT_EMAIL equals contact.email despite deploy.vars overrides; null removes it even when deploy.vars supplies a value. (B4)
+- [x] For absent and other-owner config cases, dev/build/deploy/check/test/check:worker-package/golden commands generate selected-owner config; only wrangler.base.jsonc is tracked. (B5)
 Verify: `node --test test/wrangler-config.test.mjs test/contact.test.mjs test/comparison-fixtures.test.mjs test/static-contract.test.mjs test/golden.test.mjs` (pre: 28 passed; new wrangler-config file absent, Node 26 skipped its unmatched path)
 Skills: none
-Status: todo
+Status: done @ c6a1a04
+Writer: Opus 5.5
+Receipt: receipts/t3-verification.md
 
 ### T4 — Resolve the trusted admin origin from the owner
 Delivers: B6 · Blocked by: none · Lane: logic
@@ -114,6 +117,9 @@ Status: todo
 - T2: the PDF header keeps John's profile set (x, LinkedIn); a GitHub link is not printed, as before, so John's text stays identical.
 - T2: existing test "the CV PDF is built from the public CV…" and "…keeps every role bullet…" now pass an owner instead of `{ email }`; assertions unchanged (12 and 4 before and after).
 - T4: test/admin-origin.test.mjs rewritten for the owner-file reader; its 6 assertions (valid origin, http, credentialed, path, missing) are kept as cases, plus query, fragment, malformed and example cases. The example refusal reuses resolveOwnerRoot's message ("Refusing to deploy the example owner").
+- T3: test/contact.test.mjs "deployment config publishes the selected contact email" now asserts CONTACT_EMAIL equals the selected owner's contact.email (absent when null) instead of John's literal; 1 assertion before and after. comparison-fixtures and static-contract read the generated config; assertions unchanged.
+- T3: golden collects the config through writeWranglerConfig (writes the root file too); dev/deploy regenerate via npm run build:wrangler-config; build relies on check → check:worker-package.
+- Ratio waived: T3 — tests +101 sit inside the +110 budget; code came in near +60 against +120 because the base config is a rename.
 - Ratio waived: T4 — tests +62 sit at the planned +60 (two callers, destination and pre-request rejection cases); code came in at +24 against a +45 budget.
 
 ## Coverage

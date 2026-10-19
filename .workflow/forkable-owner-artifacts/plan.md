@@ -15,6 +15,7 @@ In flight: none. New seams: wrangler-config.mjs buildWranglerConfig/writeWrangle
 Session 1: T1
 Session 2: T2, T4
 Session 3: T3, T5
+Session 4: C1-T1, C1-T2
 
 ## Findings
 | # | What is true | What it changes |

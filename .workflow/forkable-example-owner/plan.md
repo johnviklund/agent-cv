@@ -10,18 +10,18 @@ Decisions: 1a drop CI git-diff step, accept dirty public/ locally until U8 · 2a
 
 ## Execution state
 T1–T3 done; next T4 push approval. Owner approved T2 UI and commit on 2026-10-20.
-Pending: none. Pushes remain T4's operator step.
+Pending: owner approval of receipts/t4-push-handoff.md. No pushes performed.
 T1 @ 023e92f · private source copy @ 5699413
 T2 @ 95eae04 · private golden exceptions @ ae5d654
 T3 @ 28d4fc6
 writer: GPT-6.1 Sol · T1 xhigh; T2–T3 high
 Session 1: T1
-Session 2: T2, T3
+Session 2: T2, T3, T4 handoff
 Baseline: npm run check passed outside sandbox; sandbox loses child-process output.
 Contract: syncPublicData({ root, ownerRoot }); writeComparisonEvidence adds optional sourceRoot.
 Verification: receipts/t1-verification.md, receipts/t2-verification.md, receipts/t3-verification.md.
 Uncommitted: none after checkpoint. Private faq.md remains untouched.
-Pushes deferred to T4's approved operator step; both commits remain on local main.
+T4 handoff: receipts/t4-push-handoff.md. Both repositories remain on local main, unpushed.
 
 ## Findings
 | # | What is true | What it changes |
@@ -92,7 +92,7 @@ Accept:
 - [ ] receipt shows both pushed shas, `agent-cv-private` diff names no `faq.md`, and the CI run on the engine sha is `success` (B7)
 Verify: receipt: receipts/t4-push-ci.md — CI conclusion success · faq.md absent (pre: no receipt)
 Skills: none
-Status: todo
+Status: awaiting-human
 
 ## Coverage
 - Outcome: Ada builds complete → T1 · leak check fails on John → T3 · footer on every page → T2 · CI on Ada → T3, T4

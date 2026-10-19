@@ -9,19 +9,20 @@ Size: code 1,329 · tests 743 · ratio 0.56 · largest touched pages.mjs 453, bu
 Decisions: 1a drop CI git-diff step, accept dirty public/ locally until U8 · 2a admin and 404 get a credit-only footer · 3a leak scan runs only for examples/owner, else prints skipped · 4a tickets approved
 
 ## Execution state
-T1–T3 done; next T4 push approval. Owner approved T2 UI and commit on 2026-10-20.
-Pending: owner approval of receipts/t4-push-handoff.md. No pushes performed.
+T1–T3 done; T4 approved and both repos pushed. Initial CI failed; fixture correction verified locally.
+Pending: CI after correction 150b701 and records. Owner explicitly approved the additional push.
 T1 @ 023e92f · private source copy @ 5699413
 T2 @ 95eae04 · private golden exceptions @ ae5d654
 T3 @ 28d4fc6
+T3 @ 150b701 · CI privacy-fixture correction
 writer: GPT-6.1 Sol · T1 xhigh; T2–T3 high
 Session 1: T1
 Session 2: T2, T3, T4 handoff
+Session 3: T4
 Baseline: npm run check passed outside sandbox; sandbox loses child-process output.
-Contract: syncPublicData({ root, ownerRoot }); writeComparisonEvidence adds optional sourceRoot.
 Verification: receipts/t1-verification.md, receipts/t2-verification.md, receipts/t3-verification.md.
 Uncommitted: none after checkpoint. Private faq.md remains untouched.
-T4 handoff: receipts/t4-push-handoff.md. Both repositories remain on local main, unpushed.
+T4 receipt: receipts/t4-push-ci.md. Private main ae5d654; engine initial push 4fcdb59.
 
 ## Findings
 | # | What is true | What it changes |
@@ -92,7 +93,7 @@ Accept:
 - [ ] receipt shows both pushed shas, `agent-cv-private` diff names no `faq.md`, and the CI run on the engine sha is `success` (B7)
 Verify: receipt: receipts/t4-push-ci.md — CI conclusion success · faq.md absent (pre: no receipt)
 Skills: none
-Status: awaiting-human
+Status: todo
 
 ## Coverage
 - Outcome: Ada builds complete → T1 · leak check fails on John → T3 · footer on every page → T2 · CI on Ada → T3, T4
@@ -116,3 +117,4 @@ design.md — no changes (the credit fits Ft2 "inline credits and links") · PRO
 - T2: two existing identity assertions strip only UPSTREAM_URL before checking for owner leaks; their patterns remain unchanged. Assertion count 56 to 58 includes two new footer-test assertions.
 - T2: owner approved adding target="_blank" and rel="noopener noreferrer" to the acceptance tag. Existing external-link assertions remain unchanged.
 - T3: added yaml@2.9.1 as a pinned dev dependency to parse CI configuration. Reused buildSite's file lister for scanning; no existing assertions changed.
+- T4 CI correction 150b701: the privacy test reads Ada's owner data instead of ignored engine copies. Assertions remain 58; clean-checkout Ada build and John check pass.

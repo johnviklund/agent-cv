@@ -11,10 +11,11 @@ test("maintenance instructions use the owner and the two-repo shipping flow", as
   )));
   for (const text of [agents, ...skills]) assert.doesNotMatch(text, /John|Viklund|johnviklund/i);
   for (const text of skills) {
-    for (const phrase of ["commit and push the owner repo's main", "engine PR only for engine files", "AGENT_CV_OWNER_ROOT", "currently engine `data/`"]) {
+    for (const phrase of ["commit and push the owner repo's main", "engine PR only for engine files", "AGENT_CV_OWNER_ROOT"]) {
       assert.ok(text.includes(phrase), phrase);
     }
   }
+  assert.ok(skills[0].includes("<owner root>/data/"));
   assert.ok(agents.includes("<owner root>/project-sources.json"));
   assert.doesNotMatch(agents, /config\/project-sources\.private\.json/);
 });

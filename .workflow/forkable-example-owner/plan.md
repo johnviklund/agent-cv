@@ -9,16 +9,17 @@ Size: code 1,329 · tests 743 · ratio 0.56 · largest touched pages.mjs 453, bu
 Decisions: 1a drop CI git-diff step, accept dirty public/ locally until U8 · 2a admin and 404 get a credit-only footer · 3a leak scan runs only for examples/owner, else prints skipped · 4a tickets approved
 
 ## Execution state
-T1 and T2 done; next T3, ready. Owner approved T2 UI and commit on 2026-10-20.
+T1–T3 done; next T4 push approval. Owner approved T2 UI and commit on 2026-10-20.
 Pending: none. Pushes remain T4's operator step.
 T1 @ 023e92f · private source copy @ 5699413
 T2 @ 95eae04 · private golden exceptions @ ae5d654
-writer: GPT-6.1 Sol · T1 xhigh; T2 high
+T3 @ 28d4fc6
+writer: GPT-6.1 Sol · T1 xhigh; T2–T3 high
 Session 1: T1
 Session 2: T2, T3
 Baseline: npm run check passed outside sandbox; sandbox loses child-process output.
 Contract: syncPublicData({ root, ownerRoot }); writeComparisonEvidence adds optional sourceRoot.
-Verification: receipts/t1-verification.md; receipts/t2-verification.md records T2 verification and owner approval of the link attributes.
+Verification: receipts/t1-verification.md, receipts/t2-verification.md, receipts/t3-verification.md.
 Uncommitted: none after checkpoint. Private faq.md remains untouched.
 Pushes deferred to T4's approved operator step; both commits remain on local main.
 
@@ -73,14 +74,15 @@ Delivers: B3, B4, B7, B8 · Blocked by: T1, T2 · Lane: logic
 Budget: code +60 · tests +60 · why: one injected-leak case per scanned folder
 Seam: `scanForLeaks(dirs)` in `scripts/check-leaks.mjs`; its CLI step in `npm run check`
 Accept:
-- [ ] Ada's real `build/site/`, `public/`, `src/data/` → `scanForLeaks` returns `[]`; `UPSTREAM_URL` is stripped before matching (B3)
-- [ ] "John" injected into one file in each of the three folders → one finding naming that file; the CLI exits 1 (B4)
-- [ ] `AGENT_CV_OWNER_ROOT=examples/owner npm run check` → exits 0 and prints "Leak scan: 0 findings" (B3)
-- [ ] `ci.yml` parsed → the build step env sets `AGENT_CV_OWNER_ROOT: examples/owner`; no `bootstrap:data` step and no `git diff` step (B7)
-- [ ] `deploy` refusal tests in `test/owner.test.mjs` → 7 passed, unchanged (B8)
+- [x] Ada's real `build/site/`, `public/`, `src/data/` → `scanForLeaks` returns `[]`; `UPSTREAM_URL` is stripped before matching (B3)
+- [x] "John" injected into one file in each of the three folders → one finding naming that file; the CLI exits 1 (B4)
+- [x] `AGENT_CV_OWNER_ROOT=examples/owner npm run check` → exits 0 and prints "Leak scan: 0 findings" (B3)
+- [x] `ci.yml` parsed → the build step env sets `AGENT_CV_OWNER_ROOT: examples/owner`; no `bootstrap:data` step and no `git diff` step (B7)
+- [x] `deploy` refusal tests in `test/owner.test.mjs` → 7 passed, unchanged (B8)
 Verify: `node --test test/check-leaks.test.mjs test/ci-workflow.test.mjs test/owner.test.mjs` (pre: new file; owner.test 7 passed)
 Skills: none
-Status: todo
+Status: done @ 28d4fc6
+Writer: GPT-6.1 Sol
 
 ### T4 — push both repos and read CI
 Delivers: B7 · Blocked by: T3 · Lane: operator · Runner: agent after approval · Risk: cheap
@@ -113,3 +115,4 @@ design.md — no changes (the credit fits Ft2 "inline credits and links") · PRO
 - Ratio waived: T1 — three regression tests need temporary owner and engine roots; +64 test lines cover all ten files, evidence, missing-source refusal, and the site default. Code adds 25 lines; no new abstraction.
 - T2: two existing identity assertions strip only UPSTREAM_URL before checking for owner leaks; their patterns remain unchanged. Assertion count 56 to 58 includes two new footer-test assertions.
 - T2: owner approved adding target="_blank" and rel="noopener noreferrer" to the acceptance tag. Existing external-link assertions remain unchanged.
+- T3: added yaml@2.9.1 as a pinned dev dependency to parse CI configuration. Reused buildSite's file lister for scanning; no existing assertions changed.

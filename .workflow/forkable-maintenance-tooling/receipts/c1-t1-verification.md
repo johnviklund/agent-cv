@@ -2,7 +2,7 @@ Command: workflow execute forkable-maintenance-tooling
 Created: 2026-10-19
 Base: 3d2a653
 Inputs: .workflow/forkable-maintenance-tooling/patch_plan.md @ 8a30e36
-Status: drafting
+Status: complete
 
 C1-T1 fixes the existing refusal test in commit 539d45c. Search found the imported JOHN fixture; no helper or production change needed.
 
@@ -16,5 +16,6 @@ C1-T1 fixes the existing refusal test in commit 539d45c. Search found the import
 - `src/comparison-core.js` has no diff and zero case-insensitive `john` matches. No new runtime code or screen changes.
 - Sandbox-only baseline failures affect subprocess output in bootstrap-example-data, golden, project-review and setup-admin. The full check outside the sandbox passes.
 - Temporary logs: `/tmp/forkable-maintenance-{baseline-unsandboxed,example-red,example-green,mutation,check}.log`.
-- Pushed-commit CI: pending.
-- Publication: automatic approval review rejected the combined receipt commit and `git push origin main` before execution. Its reason is that a default-branch push is a high-impact mutation without explicit authorization for these exact commits. No push occurred. Await approval to publish the fix and execution record, then verify CI before marking C1-T1 done.
+- Pushed-commit CI: [run 39275011156](https://github.com/johnviklund/agent-cv/actions/runs/39275011156) succeeded on fe3c8762dac512ca889c8f38badf41223987b1db, which contains fix 539d45c. The verify job passed npm ci, bootstrap:data, the full npm run build, and the generated public Markdown diff check.
+- Publication: automatic approval review initially rejected the main push. The user then replied "1a, I approve", explicitly approving publication of 539d45c and fe3c876 and CI verification. The approved push advanced origin/main from 3d2a653 to fe3c876. C1-T1 now meets all four acceptance lines.
+- Completion record: automatic approval review rejected the additional documentation-only push because the approval named the prior two commits. The final record is committed locally; its publication needs separate approval. The published fix and passing CI are unaffected.

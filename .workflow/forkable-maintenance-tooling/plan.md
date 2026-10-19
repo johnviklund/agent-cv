@@ -9,14 +9,14 @@ Size: code 2558 · tests 1610 · ratio 0.63 · largest touched site/templates/pa
 Decisions: 1a (skills say "the owner's public sources, currently engine `data/`"; U8 drops the clause) · 2a ticket list approved
 
 ## Execution state
-Current: C1-T1 committed; local checks pass; push approval and CI pending · writer: GPT-6.1 Sol
+Current: all patch tickets done; ready for cycle 2 review · writer: GPT-6.1 Sol
 T1 @ 7e1febe
 T2 @ 5d296b4; owner golden exceptions @ bab16db
 T3 @ 10bff27
 Session 1: T1, T2, T3
 Session 2: C1-T1
 Baseline: no code failures; sandbox broke subprocess output. Unsandboxed checks pass; see receipts/t1-verification.md.
-Patch state: patch_plan.md · proof: receipts/c1-t1-verification.md · pending: approve C1-T1 publication to origin/main.
+Patch state: patch_plan.md · proof: receipts/c1-t1-verification.md · completion-record push awaits approval.
 
 ## Findings
 | # | What is true | What it changes |

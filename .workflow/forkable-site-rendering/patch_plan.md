@@ -5,8 +5,8 @@ Inputs: review.md @ 0835333de21e5385e3b5d8a423c95b4254976122
 Status: complete
 
 ## Execution state
-C1-T1 @ 65a0eaa (red test 6c7dc2b) · writer: Opus 5.5 (approved execute-seat deviation, plan.md) · next C1-T2
-Baseline 246 passed, 1 skipped; after C1-T1 248 passed, 1 skipped; golden:diff 9 accepted, none unlisted.
+C1-T1 @ 65a0eaa (red test 6c7dc2b) · C1-T2 @ 0cec7b1 · writer: Opus 5.5 (approved execute-seat deviation, plan.md) · next review
+Baseline 246 passed, 1 skipped; now 249 passed, 1 skipped; golden:diff 9 accepted, none unlisted. Receipt: receipts/c1-patch-verification.md.
 
 ## Patch cycle 1
 Fix C1-1 and C1-2. Keep the frozen snapshot and John's content unchanged.
@@ -31,9 +31,10 @@ Delivers: B1 · Blocked by: none · Lane: logic
 Budget: code +0 · tests +35
 Seam: test/golden.test.mjs and reviewGolden's existing path/before/after predicate.
 Accept:
-- [ ] Wrong-path exceptions with matching digests leave changed, added and removed paths unlisted; matching paths are accepted.
-- [ ] Independently removing path, before and after comparisons makes the relevant tests fail; removing prompt rejection also fails.
+- [x] Wrong-path exceptions with matching digests leave changed, added and removed paths unlisted; matching paths are accepted.
+- [x] Independently removing path, before and after comparisons makes the relevant tests fail; removing prompt rejection also fails.
 Verify: `node --test test/golden.test.mjs && npm run check` (pre: seven golden tests pass; path-removal mutation passes all seven)
 Mutation: repeat in a throwaway worktree; keep the production predicate unchanged. This ticket fixes test coverage, not runtime behaviour.
 Skills: none
-Status: todo
+Status: done @ 0cec7b1
+Writer: Opus 5.5

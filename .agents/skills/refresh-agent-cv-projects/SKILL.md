@@ -15,7 +15,7 @@ Make this a conversation. Run repository commands and maintenance scripts yourse
 
 ## Gather approved evidence
 
-1. Resolve the owner root with `scripts/owner.mjs` and set `AGENT_CV_OWNER_ROOT` for maintenance commands. Read the engine's `AGENTS.md`, the owner's committed `project-sources.json`, public sources, `repositories.json` allowlist, `site.json`, and the current Projects page. The four public sources are `cv.md`, `overview.md`, `projects.md` and `repositories.md`, currently engine `data/`.
+1. Resolve the owner root with `scripts/owner.mjs` and set `AGENT_CV_OWNER_ROOT` for maintenance commands. Read the engine's `AGENTS.md`, the owner's committed `project-sources.json`, public sources, `repositories.json` allowlist, `site.json`, and the current Projects page. The four public sources are `cv.md`, `overview.md`, `projects.md` and `repositories.md` in `<owner root>/data/`.
 2. Inspect both working trees before gathering evidence. Treat dirty canonical files as pending user work, not approved claims. Review pushed default branches by default; include local or uncommitted evidence only when the user explicitly asks.
 3. Confirm review packets stay ignored under the engine checkout's `project-reviews/`; the maintenance manifest belongs in the owner repo. If the manifest is missing or incomplete, reuse only sources already approved in the allowlist or repository instructions. Ask before adding any other repository, folder, document, or chat-provided URL.
 4. Regenerate the private packet for the current request with the locally authenticated GitHub token; never rely on an older packet. Never print or persist the token.
@@ -23,7 +23,7 @@ Make this a conversation. Run repository commands and maintenance scripts yourse
 6. Keep private repository names, absolute paths, and unnecessary source excerpts out of user-facing summaries. Refer to a private source by its project label unless the user asks for the detail.
 7. Keep these concepts separate:
    - The owner repo's `repositories.json` controls which public repositories may appear as repository evidence.
-   - `data/projects.md` and the Projects page control which projects are presented.
+   - `<owner root>/data/projects.md` and the Projects page control which projects are presented.
    - Removing or privatizing repository evidence does not remove the corresponding project. Remove a project only when the user explicitly asks.
 
 ## Ask for decisions
@@ -36,7 +36,7 @@ Make this a conversation. Run repository commands and maintenance scripts yourse
 
 ## Apply approved updates
 
-1. Update canonical facts in `data/projects.md`, `data/cv.md`, or the other tracked public sources only as supported by the answers and approved evidence.
+1. Update canonical facts in `<owner root>/data/projects.md`, `<owner root>/data/cv.md`, or the other owner public sources only as supported by the answers and approved evidence.
 2. Keep both generated `public/projects.md` and the human Projects page, rendered from `pages.projects` in the owner's `site.json`, consistent with the canonical project list. A project without approved public repository evidence may remain listed without a source link.
 3. Refresh the bounded public repository snapshots only from the owner repo's `repositories.json`, then synchronize generated public and Worker resources.
 4. Advance `lastReviewedAt` only for sources the user actually reviewed and approved. Record the timestamp in the owner repo's `project-sources.json`; keep the private packet out of Git.

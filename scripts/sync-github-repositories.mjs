@@ -29,7 +29,7 @@ export async function syncRepositories({
   for (const entry of manifest) {
     repositories.push(await fetchRepository(entry, github));
   }
-  await writeFile(resolve(engineRoot, "data", "repositories.md"), renderRepositoryKnowledge(repositories));
+  await writeFile(resolve(ownerRoot, "data", "repositories.md"), renderRepositoryKnowledge(repositories));
   return repositories;
 }
 

@@ -52,7 +52,7 @@ Extraction rules, test fixtures, verification records, and the demo script are i
 
 ## Run it locally
 
-Requires Node.js 24, an OpenAI API key, and (for deployment) a Cloudflare account plus Chromium, which prints `/john-viklund-cv.pdf` from `data/cv.md` on every deploy.
+Requires Node.js 24, an OpenAI API key, and (for deployment) a Cloudflare account plus Chromium, which prints `/<slug>-cv.pdf` from `<owner root>/data/cv.md` on every deploy.
 
 ```sh
 npm ci
@@ -74,14 +74,14 @@ Deploying a fork needs its own Cloudflare setup: a KV namespace, OpenAI and admi
 | `public/` | Synchronized public Markdown and comparison evidence, copied into the built site |
 | `build/site/` | Generated, ignored site that Wrangler serves; built by `npm run build:site` |
 | `wrangler.jsonc` | Generated, ignored Worker config: `wrangler.base.jsonc` plus the owner's `deploy`, `site.hosts` and `contact.email`; built by `npm run build:wrangler-config` |
-| `data/` | Canonical Markdown sources; public files are tracked, private ones are ignored |
+| `<owner root>/data/` | Canonical Markdown sources; engine `data/` retains legacy public copies and ignored private imports |
 | `config/` | Repository allowlist, comparison evidence, and admin origin |
 | `scripts/` | Data synchronization, checks, and maintenance tools |
 | `test/` | Node test suite |
 
 ## Data boundaries
 
-`data/cv.md`, `data/overview.md`, `data/projects.md`, and `data/repositories.md` are the tracked public sources. The six other `data/*.md` knowledge files and the generated `src/data/` bundle are ignored because a real deployment may contain private material. After editing a canonical source, run `npm run sync:data` to regenerate the published copies.
+Edit the four public sources in `<owner root>/data/`: `cv.md`, `overview.md`, `projects.md`, and `repositories.md`. The owner root also holds six private knowledge files. Their engine `data/` imports and the generated `src/data/` bundle are ignored because a real deployment may contain private material. After editing a canonical source, run `npm run sync:data` to regenerate the published copies.
 
 Public repository evidence comes only from the allowlist in the owner repo's `repositories.json` and is refreshed deliberately with `npm run sync:repositories`. The public chat never fetches a repository or URL supplied by a visitor.
 

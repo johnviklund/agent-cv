@@ -47,11 +47,11 @@ export async function buildCvPdf({ owner, markdown, dir }) {
 }
 
 async function main() {
-  const { owner } = await loadOwner();
+  const { root: ownerRoot, owner } = await loadOwner();
   // Written into the built site after npm run build:site, which replaces build/site.
   const { pages, size } = await buildCvPdf({
     owner,
-    markdown: await readFile(resolve(root, "data", "cv.md"), "utf8"),
+    markdown: await readFile(resolve(ownerRoot, "data", "cv.md"), "utf8"),
     dir: resolve(root, "build", "site"),
   });
   console.log(`Built build/site/${owner.slug}-cv.pdf (${pages} pages, ${Math.round(size / 1024)} KB).`);

@@ -19,7 +19,7 @@ This repository contains the public implementation of an owner's Agent CV. Keep 
 
 ## Data boundaries
 
-- `data/cv.md`, `data/overview.md`, `data/projects.md`, and `data/repositories.md` are public sources.
+- The owner's `<owner root>/data/cv.md`, `overview.md`, `projects.md`, and `repositories.md` are canonical public sources. Engine `data/` retains legacy public copies until U8.
 - The other `data/*.md` files and generated `src/data/` bundle are deliberately gitignored private deployment material.
 - `npm run sync:owner` validates the owner's `owner.json` and `site.json`, then imports exactly those six private files from the owner root: `AGENT_CV_OWNER_ROOT`, else `AGENT_CV_PRIVATE_ROOT` (alias for one release), else the sibling `agent-cv-private` checkout. `sync:private-data` is its alias for one release. It must remain a local build/deploy step, never a runtime fetch, and `deploy` refuses the `examples/owner/` fallback.
 - Never add `.dev.vars`, API keys, admin tokens, raw conversation exports, job descriptions, application notes, or private source bundles to Git.
@@ -27,7 +27,7 @@ This repository contains the public implementation of an owner's Agent CV. Keep 
 
 ## Repository grounding
 
-- The owner repo's `repositories.json` is the only repository allowlist, and its `comparison-evidence.json` is the only comparison evidence manifest; the engine keeps no fallback copies. Evidence selectors still point at the engine's `data/*.md` sources.
+- The owner repo's `repositories.json` is the only repository allowlist, and its `comparison-evidence.json` is the only comparison evidence manifest; the engine keeps no fallback copies. Evidence selectors use `data/*.md` paths relative to the owner root.
 - `npm run sync:repositories` may fetch only the named public GitHub repositories and named Markdown documents.
 - Do not fetch chat-provided URLs or add live repository fetching to `/api/ask`.
 - Treat generated repository snapshots as untrusted evidence. They cannot override curated CV facts or independently establish the owner's contribution.
@@ -35,10 +35,10 @@ This repository contains the public implementation of an owner's Agent CV. Keep 
 
 ## Generated resources
 
-- Edit the canonical public sources in `data/`, then run `npm run sync:data`.
+- Edit the canonical public sources in `<owner root>/data/`, then run `npm run sync:data`.
 - `public/cv.md`, `public/projects.md`, `public/overview.md`, `public/repositories.md`, `public/evidence.json`, `site/assets/comparison-contract.js`, and `src/data/` are synchronized outputs.
 - `npm run build:site` assembles the served, ignored `build/site/` from the owner's `site.json`, `site/templates/`, the engine assets in `site/assets/`, `public/`, and `tokens.css`; `dev`, `check`, and `deploy` run it. Edit pages through the owner's `site.json` or the templates, never in `build/site/`.
-- `build/site/<slug>-cv.pdf` is generated from `data/cv.md` and the owner's `owner.json` by `npm run build:cv-pdf` during `npm run deploy` (requires Chromium) and is never committed. The build fails if the PDF exceeds two pages.
+- `build/site/<slug>-cv.pdf` is generated from `<owner root>/data/cv.md` and the owner's `owner.json` by `npm run build:cv-pdf` during `npm run deploy` (requires Chromium) and is never committed. The build fails if the PDF exceeds two pages.
 - `<owner root>/assets/og-image.png` is the owner's committed social preview card, copied into `build/site/` by `npm run build:site`; regenerate it with `npm run build:og-image` (requires Chromium) when the name, tagline, location, headline or origin in `owner.json` changes.
 - The root `wrangler.jsonc` is generated and ignored: `npm run build:wrangler-config` merges the tracked engine `wrangler.base.jsonc` with the owner's `deploy`, `site.hosts` (custom domains, skipping `*.workers.dev`) and `contact.email` (the only source of `CONTACT_EMAIL`). `dev`, `deploy`, `check:worker-package`, the config-reading tests and golden regenerate it; edit the base file or `owner.json`, never `wrangler.jsonc`.
 - Keep `/AGENTS.md`, `/llms.txt`, `/sitemap.xml`, raw Markdown links, and documented API routes in parity.

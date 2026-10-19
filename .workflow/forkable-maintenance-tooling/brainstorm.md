@@ -16,8 +16,8 @@ Review scripts, the admin conversation-review brief, the GitHub sync user agent,
 - B3 — repository sync → user agent is `<owner slug>-agent-cv-repository-sync`
 - B4 — `comparison-core` refusal guards for owner short name X → "X scores 85%" is refused; John still refused (golden)
 - B5 — `<owner root>/project-sources.json` exists → project review reads it; missing → error names that path
-- B6 — packets, briefs, cursor are still written under the engine checkout and stay gitignored
-- B7 — `AGENTS.md` + both skills carry no "John"/"Viklund"; skills say: edit owner repo, commit+push to its main, engine PR only for engine files, deploy with `AGENT_CV_OWNER_ROOT`
+- B6 — a review run writes packets, briefs and cursor → files land under the engine checkout and `git check-ignore` confirms each is ignored
+- B7 — static grep of `AGENTS.md` and `.agents/skills/*/SKILL.md` → no "John"/"Viklund", and skills name: edit owner repo, commit+push its main, engine PR only for engine files, deploy with `AGENT_CV_OWNER_ROOT`
 
 ## Decisions
 - D1 — manifest moves to owner root (committed); packets/briefs/cursor stay ignored in engine — packets hold visitor transcripts, deleted after review (product call)

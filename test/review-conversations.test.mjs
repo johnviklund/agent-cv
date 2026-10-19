@@ -252,3 +252,22 @@ test("refuses a symlinked private review directory", async (context) => {
     fetchImpl: async () => new Response(""),
   }), /real directory/);
 });
+
+test("review sends its token only to the owner's origin by default", async (context) => {
+  const root = await mkdtemp(join(tmpdir(), "agent-cv-conversation-owner-"));
+  context.after(() => rm(root, { recursive: true, force: true }));
+  await writeFile(join(root, ".dev.vars"), "ADMIN_API_TOKEN=private-token\n", { mode: 0o600 });
+  const hosts = [];
+  const fetchImpl = async (url) => {
+    hosts.push(new URL(url).origin);
+    return new URL(url).pathname === "/api/admin/applications" ? Response.json({ applications: [] }) : new Response("");
+  };
+  await writeFile(join(root, "owner.json"), JSON.stringify({ site: { origin: "https://fork.example" } }));
+  await runConversationReview({ root, env: { AGENT_CV_OWNER_ROOT: root }, fetchImpl });
+  assert.deepEqual([...new Set(hosts)], ["https://fork.example"]);
+
+  hosts.length = 0;
+  await writeFile(join(root, "owner.json"), JSON.stringify({ site: { origin: "http://fork.example" } }));
+  await assert.rejects(() => runConversationReview({ root, env: { AGENT_CV_OWNER_ROOT: root }, fetchImpl }), /valid HTTPS origin/);
+  assert.deepEqual(hosts, []);
+});

@@ -6,7 +6,7 @@ import {
   escapeXml,
   groupConversationCandidates,
 } from "../site/assets/conversation-review.js";
-import { readAdminOrigin, validateAdminOrigin } from "./admin-origin.mjs";
+import { adminOrigin as resolveAdminOrigin, validateAdminOrigin } from "./admin-origin.mjs";
 import { readLocalAdminToken } from "./admin-secret-file.mjs";
 
 const DEFAULT_MAX_RECORDS = 1_000;
@@ -138,12 +138,11 @@ export async function runConversationReview({
   maxRecords = DEFAULT_MAX_RECORDS,
   maxPages = DEFAULT_MAX_PAGES,
   token,
+  env = process.env,
 } = {}) {
   const localToken = await readLocalAdminToken(resolve(root, ".dev.vars"));
   const adminToken = token || localToken || process.env.ADMIN_API_TOKEN;
-  const adminOrigin = baseUrl
-    ? validateAdminOrigin(baseUrl)
-    : await readAdminOrigin(resolve(root, "config", "admin-origin.json"));
+  const adminOrigin = await resolveAdminOrigin(baseUrl, { env });
   const inbox = await ensureReviewDirectory(root);
   const cursorPath = resolve(inbox, CURSOR_FILE);
   const cursor = await readSavedCursor(cursorPath);

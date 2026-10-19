@@ -1,7 +1,7 @@
 import { mkdir, open } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { readAdminOrigin, validateAdminOrigin } from "./admin-origin.mjs";
+import { adminOrigin as resolveAdminOrigin } from "./admin-origin.mjs";
 import { readLocalAdminToken } from "./admin-secret-file.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -11,9 +11,7 @@ if (!token) {
   console.error("Set ADMIN_API_TOKEN in the command environment before exporting.");
   process.exit(1);
 }
-const adminOrigin = options.url
-  ? validateAdminOrigin(options.url)
-  : await readAdminOrigin(resolve(root, "config", "admin-origin.json"));
+const adminOrigin = await resolveAdminOrigin(options.url);
 
 const output = resolve(root, options.output || `exports/agent-cv-conversations-${new Date().toISOString().slice(0, 10)}.jsonl`);
 await mkdir(dirname(output), { recursive: true });

@@ -70,7 +70,7 @@ Use a feature branch and make these changes as one reviewed identity migration:
 3. Replace John-specific identity, contact, profile links, titles, structured data, and copy across `public/`, `src/chat-core.js`, `AGENTS.md`, and machine-readable resources.
 4. Replace canonical URLs in HTML, `public/robots.txt`, `public/sitemap.xml`, and the matching assertions in `scripts/check-static.mjs`.
 5. Change the Worker `name`, public `CONTACT_EMAIL`, and KV namespace ID in `wrangler.jsonc`. Remove the public email value if you prefer the contact page's profile-only fallback.
-6. Set your deployed HTTPS origin in `config/admin-origin.json`. Both private conversation scripts use this code-controlled destination; `conversations:export` may still take an explicit `--url` override.
+6. Set your deployed HTTPS origin as `site.origin` in your owner repo's `owner.json`. Both private conversation scripts use this code-controlled destination and refuse the example owner; `conversations:export` may still take an explicit `--url` override.
 7. Replace `config/repositories.json` with only public repositories and named Markdown or text documents you approve. An empty array is valid if you do not want repository evidence yet.
 8. Run `npm run sync:repositories` only after reviewing that allowlist. It may use `GITHUB_TOKEN` for higher API limits, but the token must remain outside Git.
 9. Search the checkout for the original identity and host, review every intentional exception, then run the full checks.

@@ -2,7 +2,7 @@ Command: workflow execute forkable-example-owner
 Created: 2026-10-20
 Base: 150b701
 Inputs: .workflow/forkable-example-owner/plan.md @ e1a571b
-Status: drafting
+Status: complete
 
 ## Approval and pushes
 The owner approved the exact T4 handoff with "1a, push both" on 2026-10-20.
@@ -20,8 +20,10 @@ Clean-clone `AGENT_CV_OWNER_ROOT=examples/owner npm run build`: exit 0, 291 pass
 John's `npm run check`: exit 0, 300 passed, three skipped, ten static pages checked.
 Local logs remain under /tmp/forkable-example-owner-t4-*; no private data is copied into this receipt.
 
-## Pending
+## Approval review and completion
 Automatic approval review rejected the combined checkpoint commit and push. Its stated reason: the original approval covered the earlier T4 push scope, not an additional post-failure change to protected main.
-The fixture correction 150b701 is committed locally; this receipt and plan remain uncommitted. Neither the correction nor the pending records were pushed.
+At the rejection checkpoint, correction 150b701 was local and its records were uncommitted. The owner subsequently approved this exact additional scope.
 The owner then explicitly approved: "Push the CI fix and records (Recommended)". This approval covers correction 150b701, its verification receipt and plan checkpoints.
-Push the approved fix and records, wait for CI on the pushed SHA, then mark T4 done only on success.
+Correction and records pushed successfully to engine main at 83fbf99fd4af84d9c478e9c760b7517882f4fae7.
+CI https://github.com/johnviklund/agent-cv/actions/runs/39342439868 completed with conclusion success on exactly that SHA. T4 acceptance passes.
+This final receipt and plan checkpoint contain no code changes. Their push is covered by the owner's explicit approval; verify CI for that final pushed SHA before handing off.

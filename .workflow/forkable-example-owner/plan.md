@@ -9,20 +9,19 @@ Size: code 1,329 · tests 743 · ratio 0.56 · largest touched pages.mjs 453, bu
 Decisions: 1a drop CI git-diff step, accept dirty public/ locally until U8 · 2a admin and 404 get a credit-only footer · 3a leak scan runs only for examples/owner, else prints skipped · 4a tickets approved
 
 ## Execution state
-T1–T3 done; T4 approved and both repos pushed. Initial CI failed; fixture correction verified locally.
-Pending: CI after correction 150b701 and records. Owner explicitly approved the additional push.
+T1–T4 done; both repos pushed. Corrected engine CI passed; next workflow review.
+Pending: none. CI success at 83fbf99; final records checkpoint must also pass CI before handoff.
 T1 @ 023e92f · private source copy @ 5699413
 T2 @ 95eae04 · private golden exceptions @ ae5d654
 T3 @ 28d4fc6
 T3 @ 150b701 · CI privacy-fixture correction
-writer: GPT-6.1 Sol · T1 xhigh; T2–T3 high
+T4 @ 83fbf99
+writer: GPT-6.1 Sol · T1 xhigh; T2–T4 high
 Session 1: T1
 Session 2: T2, T3, T4 handoff
 Session 3: T4
-Baseline: npm run check passed outside sandbox; sandbox loses child-process output.
 Verification: receipts/t1-verification.md, receipts/t2-verification.md, receipts/t3-verification.md.
-Uncommitted: none after checkpoint. Private faq.md remains untouched.
-T4 receipt: receipts/t4-push-ci.md. Private main ae5d654; engine initial push 4fcdb59.
+T4 receipt: receipts/t4-push-ci.md. Private main ae5d654; its faq.md edit remains unstaged.
 
 ## Findings
 | # | What is true | What it changes |
@@ -90,10 +89,11 @@ Delivers: B7 · Blocked by: T3 · Lane: operator · Runner: agent after approval
 Budget: code +0 · tests +0
 Seam: `git push` of engine `main` and `agent-cv-private` (four sources + 10 exceptions, never `data/faq.md`)
 Accept:
-- [ ] receipt shows both pushed shas, `agent-cv-private` diff names no `faq.md`, and the CI run on the engine sha is `success` (B7)
+- [x] receipt shows both pushed shas, `agent-cv-private` diff names no `faq.md`, and the CI run on the engine sha is `success` (B7)
 Verify: receipt: receipts/t4-push-ci.md — CI conclusion success · faq.md absent (pre: no receipt)
 Skills: none
-Status: todo
+Status: done @ 83fbf99
+Writer: GPT-6.1 Sol
 
 ## Coverage
 - Outcome: Ada builds complete → T1 · leak check fails on John → T3 · footer on every page → T2 · CI on Ada → T3, T4

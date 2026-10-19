@@ -1,6 +1,16 @@
 # Worklog
 Rolling index of recent work; git is the source of truth.
 
+## 2026-10-19 · forkable-owner-artifacts · social card, CV PDF, Wrangler config, admin origin and manifests come from the owner · Opus 5.5
+- Card and PDF build from owner.json; Wrangler config and the repository and evidence manifests are generated from or read at the owner root.
+- Patch cycle fixed admin setup using another owner's config and config formatting that altered owner variable strings.
+- Commits: 90cba12 d11fca9 6c5e5b2 c6a1a04 b739df7 1ae2871 59faacd
+- Review: ship as-is @ e94df1f
+- Run: 5 tickets · 4 sessions · 2 review cycles · 12 deviations · 0 findings overturned
+- Seats: 0 none · 2 Opus 5.5 · 3 Opus 5.5 · 4 GPT-6.1 Sol
+- Skills: workflow@unversioned
+- Why: a fork must build its own card, PDF and deploy config, with John's published bytes proven unchanged.
+
 ## 2026-10-19 · forkable-site-rendering · site pages, discovery files and browser copy render from owner content · Opus 5.5
 - Worker prompts, redirects and browser labels read the selected owner; every page and discovery file builds from site.json into build/site.
 - Golden diff accepts only recorded technical exceptions; cycle 1 closed empty-block validation and exact-path exceptions.

@@ -2,20 +2,11 @@ Command: workflow plan forkable-owner-artifacts
 Created: 2026-10-19
 Base: c3d344a0c79dcfb368db6ecda7bd4ddbc3c2f6f2
 Inputs: .workflow/forkable-owner-artifacts/brainstorm.md @ 23da4d9a078faa14c10ec64e4d5aa71c896b1571
-Status: complete
+Status: done
 
 Docs read: design.md §System, §Typography and spacing, §CTA voice and states, §Motion stance, §Notes; original forkable plan §Goal Capsule, §Decisions, §U5. PRODUCT.md absent.
 Size: code 1833 · tests 2354 · ratio 1.28 · largest touched test/comparison-core.test.mjs 591, scripts/review-conversations.mjs 300, scripts/build-comparison-evidence.mjs 294 · over 1,000: none
 Decisions: brief D1–D6 retained; John approved all five tickets on 2026-10-19. Public-code Opus 5.5 audit complete; findings verified by main session GPT-6 Astra.
-
-## Execution state
-T1 @ 90cba12 (private 739738e) · T2 @ d11fca9 · T4 @ 6c5e5b2 · T3 @ c6a1a04 · T5 @ b739df7 (private f2bdbf7) · all tickets done; next review · writer: Opus 5.5 (human-approved swap; review → GPT-6.1 Sol xhigh)
-Baseline 249/1 skip → T1 252/2 → T2 254/3 → T4 258/3 → T3 269/3 → T5 276/3. Chromium card test opt-in (AGENT_CV_CHROMIUM_TESTS=1). Never stage private data/faq.md. Compare Buffers with .equals (deepEqual OOMs this host).
-In flight: none. New seams: wrangler-config.mjs buildWranglerConfig/writeWranglerConfig; syncRepositories({engineRoot, ownerRoot, fetchImpl}); writeComparisonEvidence({root, ownerRoot}); handleRequest/handleCompare catalog option.
-Session 1: T1
-Session 2: T2, T4
-Session 3: T3, T5
-Session 4: C1-T1, C1-T2
 
 ## Findings
 | # | What is true | What it changes |

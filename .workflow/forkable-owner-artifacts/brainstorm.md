@@ -2,7 +2,7 @@ Command: workflow brainstorm forkable-owner-artifacts
 Created: 2026-10-19
 Base:    23da4d9a078faa14c10ec64e4d5aa71c896b1571
 Inputs:  none
-Status:  complete
+Status: done
 
 ## Problem
 A fork cannot build its own card, PDF or deploy config. The OG card, PDF filename and CV header email, `wrangler.jsonc`, and three `config/` files still hold John's details in the engine repo. This is unit U5 of docs/plans/2026-10-18-1358-feat-forkable-agent-cv-plan.md.

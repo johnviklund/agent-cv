@@ -2,11 +2,11 @@ Command: workflow plan forkable-maintenance-tooling
 Created: 2026-10-19
 Base:    e32329f
 Inputs:  .workflow/forkable-maintenance-tooling/brainstorm.md @ 6375073
-Status:  drafting
+Status:  complete
 
 Docs read: none in scope (PRODUCT.md absent; DESIGN.md untouched); docs/plans/2026-10-18-1358-feat-forkable-agent-cv-plan.md §U6–U8
 Size: code 2558 · tests 1610 · ratio 0.63 · largest touched site/templates/pages.mjs 453, src/comparison-core.js 436, site/assets/admin.js 414 · over 1,000: none
-Decisions: pending — data-location wording (round 1)
+Decisions: 1a (skills say "the owner's public sources, currently engine `data/`"; U8 drops the clause) · 2a ticket list approved
 
 ## Execution state
 <filled by execute>
@@ -17,7 +17,7 @@ Decisions: pending — data-location wording (round 1)
 | F1 | src/comparison-core.js:48 `ownerScreen` already rewrites the owner's full and short name to "the candidate" before the guards; test/owner-runtime.test.mjs:72 refuses "Ada scores 99%". | B4 is delivered except the literal `john` alternatives in 8 regexes (lines 32–44); the ticket deletes them and keeps every existing refusal test green. |
 | F2 | scripts/project-review.mjs:57,185,191 hard-code "John" and "his contribution". | renderProjectReview takes the owner; text uses the short name, no pronoun. |
 | F3 | scripts/review-project-sources.mjs:14 defaults the manifest to `config/project-sources.private.json`; local folder paths resolve against the manifest's folder (line 68). John has no private manifest today. | Default becomes `<owner root>/project-sources.json`; relative folder paths then resolve against the owner root. Nothing of John's to migrate. |
-| F4 | Canonical files (project-review.mjs:3) resolve against the engine root; the four public sources live only in engine `data/` until U8. | The packet still reads engine `data/`; skill wording needs a decision (Decision 1). |
+| F4 | Canonical files (project-review.mjs:3) resolve against the engine root; the four public sources live only in engine `data/` until U8. | The packet still reads engine `data/`; skills name the owner's public sources as currently engine `data/` (decision 1a). |
 | F5 | scripts/review-conversations.mjs:101–102 and site/assets/conversation-review.js:105,108 hard-code "John". | Packet and brief builders take the owner. |
 | F6 | site/templates/pages.mjs:349 `renderAdmin` emits `<html lang>` without the data-owner-* attributes that `readOwner` (site/assets/dom.js:17) reads; site/templates/html.mjs:50 `htmlAttributes` builds them. | Admin page switches to `htmlAttributes(owner)`; admin.js passes `readOwner()` to the brief. |
 | F7 | golden covers built site bytes; `golden:diff` accepts only exact entries in the owner's golden-exceptions.json (precedent: forkable-site-rendering, approved 1a). | Changed site/admin/index.html, site/admin.js, site/conversation-review.js need reviewed exceptions committed in agent-cv-private. Outcome "golden diff empty" reads "0 unlisted". |
@@ -61,6 +61,7 @@ Seam: `test/maintenance-docs.test.mjs` static read of AGENTS.md and `.agents/ski
 Accept:
 - [ ] AGENTS.md and both SKILL.md files → 0 matches of /John|Viklund|johnviklund/i (B7)
 - [ ] both skills contain "commit and push the owner repo's main", "engine PR only for engine files" and "AGENT_CV_OWNER_ROOT" (B7)
+- [ ] both skills contain "currently engine `data/`" for the four public sources (B7, decision 1a)
 - [ ] AGENTS.md names `<owner root>/project-sources.json` and no longer names `config/project-sources.private.json` (B7)
 Verify: `node --test test/maintenance-docs.test.mjs test/codex-conversation-review.test.mjs test/codex-project-refresh.test.mjs` (pre: 2 passed; new maintenance-docs file absent)
 Skills: /home/john/.claude/skills/agent-docs/SKILL.md
@@ -73,7 +74,7 @@ Status: todo
 
 ## Risks
 - T2 is riskiest: it changes John's admin page bytes and needs a commit in agent-cv-private for the golden exceptions.
-- F4: skill text written for the owner repo while public sources still sit in engine `data/` can send an agent to a missing file before U8.
+- F4: U8 must delete the "currently engine `data/`" clause from both skills when the sources move.
 - agent-cv-private/conversation-reviews/proposals/ is untracked but not ignored there; left for U8.
 
 ## TODO impacts

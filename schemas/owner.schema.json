@@ -17,6 +17,7 @@
       }
     },
     "headline": { "type": "string", "minLength": 1 },
+    "tagline": { "type": "string", "minLength": 1 },
     "location": { "type": "string" },
     "site": {
       "type": "object",

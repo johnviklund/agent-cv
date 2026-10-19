@@ -46,9 +46,13 @@ export function renderSite({ owner, site }) {
 }
 
 // Replaces out with the engine assets, the synced public resources, the design tokens, the rendered
-// pages and the public Markdown from dataRoot.
-export async function buildSite({ owner, site, out = resolve(root, "build/site"), dataRoot = resolve(root, "data") }) {
+// pages, the public Markdown from dataRoot and the owner's social card.
+export async function buildSite({ root: ownerRoot, owner, site, out = resolve(root, "build/site"), dataRoot = resolve(root, "data") }) {
   const files = renderSite({ owner, site });
+  const card = resolve(ownerRoot, "assets/og-image.png");
+  files["og-image.png"] = await readFile(card).catch((error) => {
+    throw new Error(`${card} is missing; run npm run build:og-image`, { cause: error });
+  });
   // Only the four public Markdown sources are published; the private data files never are.
   for (const file of publicFiles) files[file] = await readFile(resolve(dataRoot, file));
   await rm(out, { recursive: true, force: true });

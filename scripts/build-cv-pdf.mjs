@@ -3,25 +3,13 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { findChromium } from "./chromium.mjs";
 import { buildCvPrintHtml, countPdfPages } from "./cv-pdf.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 // Written into the built site after npm run build:site, which replaces build/site.
 const output = resolve(root, "build", "site", "john-viklund-cv.pdf");
 const MAX_PAGES = 2;
-
-function findChromium() {
-  const candidates = [process.env.CHROME_PATH, "chromium", "chromium-browser", "google-chrome-stable", "google-chrome"].filter(Boolean);
-  for (const candidate of candidates) {
-    try {
-      execFileSync(candidate, ["--version"], { stdio: "ignore" });
-      return candidate;
-    } catch {
-      // Try the next browser.
-    }
-  }
-  throw new Error("Chromium is required to build /john-viklund-cv.pdf. Install it or set CHROME_PATH.");
-}
 
 const [markdown, workerConfig] = await Promise.all([
   readFile(resolve(root, "data", "cv.md"), "utf8"),
@@ -36,7 +24,7 @@ try {
   // Static system fonts embed as real text fonts; the site's variable web font prints as Type 3 glyphs.
   await writeFile(htmlPath, buildCvPrintHtml(markdown, { email }));
   await mkdir(dirname(output), { recursive: true });
-  execFileSync(findChromium(), [
+  execFileSync(findChromium("/john-viklund-cv.pdf"), [
     "--headless=new",
     "--disable-gpu",
     "--no-pdf-header-footer",

@@ -42,6 +42,8 @@ test("golden outputs cover the site, both prompts and the Worker config", async 
     assert.ok(keys.includes(key), key);
   }
   assert.equal(keys.some((key) => key.endsWith(".pdf")), false);
+  // Buffer.equals, not deepEqual: a failing deepEqual diffs every byte and exhausts memory.
+  assert.ok(outputs["site/og-image.png"].equals(await readFile(resolve(resolveOwnerRoot(), "assets/og-image.png"))), "site/og-image.png");
 
   const system = outputs["prompts/system.txt"].toString("utf8");
   for (const file of ["cv.md", "faq.md"]) {
@@ -142,7 +144,8 @@ async function driftedSnapshot(context) {
   const ownerRoot = resolve(workspace, "owner");
   await mkdir(ownerRoot);
   // The diff builds the site again, so its owner root carries the same owner configuration.
-  for (const file of ["owner.json", "site.json"]) await copyFile(resolve(resolveOwnerRoot(), file), resolve(ownerRoot, file));
+  await mkdir(resolve(ownerRoot, "assets"));
+  for (const file of ["owner.json", "site.json", "assets/og-image.png"]) await copyFile(resolve(resolveOwnerRoot(), file), resolve(ownerRoot, file));
   assert.equal((await golden("capture", "--golden", dir)).code, 0);
   const current = {};
   for (const file of ["llms.txt", "sitemap.xml"]) {

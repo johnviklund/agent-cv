@@ -1,31 +1,31 @@
 import { execFileSync } from "node:child_process";
-import { mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { readFileSync } from "node:fs";
+import { mkdir, mkdtemp, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-// Renders the 1200×630 social preview card used by og:image and twitter:image.
+import { findChromium } from "./chromium.mjs";
+import { loadOwner } from "./owner.mjs";
+import { escapeHtml as e } from "../site/templates/html.mjs";
+
+// Renders the owner's 1200×630 social preview card used by og:image and twitter:image.
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const output = resolve(root, "site", "assets", "og-image.png");
 const WIDTH = 1200;
 const HEIGHT = 630;
 
-function findChromium() {
-  const candidates = [process.env.CHROME_PATH, "chromium", "chromium-browser", "google-chrome-stable", "google-chrome"].filter(Boolean);
-  for (const candidate of candidates) {
-    try {
-      execFileSync(candidate, ["--version"], { stdio: "ignore" });
-      return candidate;
-    } catch {
-      // Try the next browser.
-    }
-  }
-  throw new Error("Chromium is required to build /og-image.png. Install it or set CHROME_PATH.");
-}
-
-const tokens = await readFile(resolve(root, "tokens.css"), "utf8");
+const tokens = readFileSync(resolve(root, "tokens.css"), "utf8");
 const font = (name) => pathToFileURL(resolve(root, "site", "assets", "fonts", name)).href;
-const html = `<!doctype html>
+
+// The card's HTML: "<tagline> · <location>", the name with its last part accented, the headline and
+// the site's host.
+export function buildCardHtml(owner) {
+  const eyebrow = [owner.tagline, owner.location].filter(Boolean).map(e).join(" · ");
+  const full = owner.name.full;
+  const space = full.indexOf(" ");
+  const name = space < 0 ? `<span>${e(full)}.</span>` : `${e(full.slice(0, space))} <span>${e(full.slice(space + 1))}.</span>`;
+  const deck = /[.!?]$/.test(owner.headline) ? owner.headline : `${owner.headline}.`;
+  return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><style>
 ${tokens}
 @font-face { font-family: "Archivo"; font-weight: 700 900; src: url("${font("archivo-latin.woff2")}") format("woff2"); }
@@ -47,29 +47,46 @@ footer { display: flex; justify-content: space-between; align-items: baseline; p
 .cta { color: var(--color-accent); font-weight: 600; }
 </style></head><body>
 <div>
-  <p class="eyebrow">CX AI Lead at Volvo Cars · Gothenburg, Sweden</p>
-  <h1>John <span>Viklund.</span></h1>
-  <p class="deck">Applied-AI builder and product leader.</p>
+  <p class="eyebrow">${eyebrow}</p>
+  <h1>${name}</h1>
+  <p class="deck">${e(deck)}</p>
 </div>
-<footer><span class="url">johnviklund.com</span><span class="cta">Ask my agent →</span></footer>
+<footer><span class="url">${e(new URL(owner.site.origin).host)}</span><span class="cta">Ask my agent →</span></footer>
 </body></html>`;
-
-const workDir = await mkdtemp(join(tmpdir(), "agent-cv-og-"));
-try {
-  const htmlPath = join(workDir, "og.html");
-  await writeFile(htmlPath, html);
-  execFileSync(findChromium(), [
-    "--headless=new",
-    "--disable-gpu",
-    "--hide-scrollbars",
-    "--force-device-scale-factor=1",
-    `--window-size=${WIDTH},${HEIGHT}`,
-    `--user-data-dir=${join(workDir, "profile")}`,
-    `--screenshot=${output}`,
-    pathToFileURL(htmlPath).href,
-  ], { stdio: "ignore" });
-} finally {
-  await rm(workDir, { recursive: true, force: true });
 }
 
-console.log(`Built site/assets/og-image.png (${Math.round((await stat(output)).size / 1024)} KB).`);
+// Writes <owner root>/assets/og-image.png, the card npm run build:site publishes.
+export async function buildCard({ root: ownerRoot, owner }) {
+  const output = resolve(ownerRoot, "assets", "og-image.png");
+  const workDir = await mkdtemp(join(tmpdir(), "agent-cv-og-"));
+  try {
+    const htmlPath = join(workDir, "og.html");
+    await writeFile(htmlPath, buildCardHtml(owner));
+    await mkdir(dirname(output), { recursive: true });
+    execFileSync(findChromium("/og-image.png"), [
+      "--headless=new",
+      "--disable-gpu",
+      "--hide-scrollbars",
+      "--force-device-scale-factor=1",
+      `--window-size=${WIDTH},${HEIGHT}`,
+      `--user-data-dir=${join(workDir, "profile")}`,
+      `--screenshot=${output}`,
+      pathToFileURL(htmlPath).href,
+    ], { stdio: "ignore" });
+  } finally {
+    await rm(workDir, { recursive: true, force: true });
+  }
+  return output;
+}
+
+async function main() {
+  const output = await buildCard(await loadOwner());
+  console.log(`Built ${output} (${Math.round((await stat(output)).size / 1024)} KB).`);
+}
+
+if (process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.meta.url) {
+  main().catch((error) => {
+    console.error(error.message);
+    process.exitCode = 1;
+  });
+}

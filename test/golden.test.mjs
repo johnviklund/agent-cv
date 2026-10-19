@@ -8,7 +8,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 
-import { collectOutputs, diffGolden, writeGolden } from "../scripts/golden.mjs";
+import { collectOutputs, diffGolden, reviewGolden, writeGolden } from "../scripts/golden.mjs";
 import { buildComparisonInstructions } from "../src/comparison-core.js";
 import { resolveOwnerRoot } from "../scripts/owner.mjs";
 
@@ -178,6 +178,25 @@ test("golden diff accepts each exactly recorded technical change and fails every
     assert.match(result.stdout, /^accepted changed site\/llms\.txt: /m, name);
     assert.match(result.stdout, /^changed site\/sitemap\.xml$/m, name);
   }
+});
+
+test("an exception accepts only its own path when another file has the same bytes", async (context) => {
+  const dir = await tempDir(context);
+  const bytes = (text) => Buffer.from(text);
+  await writeGolden(dir, { "site/a.txt": bytes("old"), "site/b.txt": bytes("old"), "site/gone-a.txt": bytes("x"), "site/gone-b.txt": bytes("x") });
+  const outputs = { "site/a.txt": bytes("new"), "site/b.txt": bytes("new"), "site/new-a.txt": bytes("y"), "site/new-b.txt": bytes("y") };
+  const entry = (path, before, after) => ({ path, before: before && digest(before), after: after && digest(after), reason: `reviewed ${path}` });
+
+  assert.deepEqual(await reviewGolden(dir, outputs, [
+    entry("site/a.txt", "old", "new"), entry("site/new-a.txt", null, "y"), entry("site/gone-a.txt", "x", null),
+  ]), {
+    accepted: [
+      { kind: "changed", path: "site/a.txt", reason: "reviewed site/a.txt" },
+      { kind: "added", path: "site/new-a.txt", reason: "reviewed site/new-a.txt" },
+      { kind: "removed", path: "site/gone-a.txt", reason: "reviewed site/gone-a.txt" },
+    ],
+    unlisted: [{ kind: "changed", path: "site/b.txt" }, { kind: "added", path: "site/new-b.txt" }, { kind: "removed", path: "site/gone-b.txt" }],
+  });
 });
 
 test("golden diff rejects prompt exceptions and exceptions without a reason or reviewed diff", async (context) => {

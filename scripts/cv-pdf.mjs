@@ -1,28 +1,33 @@
-// Builds the print-only HTML for /john-viklund-cv.pdf from the canonical public CV.
+// Builds the print-only HTML for /<slug>-cv.pdf from the canonical public CV and the owner.
 // Kept free of filesystem and browser access so it can be tested directly.
 import { escapeHtml } from "../site/templates/html.mjs";
 
 const OMITTED_SECTIONS = new Set(["Selected transformation case studies", "Selected applied-AI projects"]);
 // Sections whose bullets are joined into one compact paragraph.
 const INLINE_LIST_SECTIONS = new Set(["Capabilities"]);
-const SITE_URL = "https://johnviklund.com";
+// Profile links in header order; labels drop the scheme, "www." and a trailing slash.
+const CONTACT_PROFILES = ["x", "linkedin"];
 
-export function buildCvPrintHtml(markdown, { email }) {
+export function buildCvPrintHtml(markdown, owner) {
   const { body, updated } = parseCv(markdown);
+  const { origin } = owner.site;
+  const site = link(origin, new URL(origin).host);
+  const email = owner.contact?.email;
   const contacts = [
-    link(SITE_URL, "johnviklund.com"),
-    link(`mailto:${email}`, email),
-    link("https://x.com/johnviklund", "x.com/johnviklund"),
-    link("https://www.linkedin.com/in/johnviklund/", "linkedin.com/in/johnviklund"),
-  ].join(" · ");
-  const footer = `Generated automatically from John's approved CV data at ${link(SITE_URL, "johnviklund.com")}, where you can also find case studies and an AI agent grounded in this CV.${updated ? ` Updated ${escapeHtml(updated)}.` : ""}`;
+    site,
+    email && link(`mailto:${email}`, email),
+    ...CONTACT_PROFILES.map((key) => owner.links?.[key]).filter(Boolean)
+      .map((href) => link(href, href.replace(/^https:\/\/(www\.)?/, "").replace(/\/$/, ""))),
+  ].filter(Boolean).join(" · ");
+  const footer = `Generated automatically from ${escapeHtml(owner.name.short)}'s approved CV data at ${site}, where you can also find case studies and an AI agent grounded in this CV.${updated ? ` Updated ${escapeHtml(updated)}.` : ""}`;
+  const name = escapeHtml(owner.name.full);
 
   return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>John Viklund — CV</title>
-<meta name="author" content="John Viklund">
+<title>${name} — CV</title>
+<meta name="author" content="${name}">
 <style>
 @page { size: Letter; margin: 0.45in 0.55in; }
 * { box-sizing: border-box; }

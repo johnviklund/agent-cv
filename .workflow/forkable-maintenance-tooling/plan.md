@@ -9,12 +9,13 @@ Size: code 2558 · tests 1610 · ratio 0.63 · largest touched site/templates/pa
 Decisions: 1a (skills say "the owner's public sources, currently engine `data/`"; U8 drops the clause) · 2a ticket list approved
 
 ## Execution state
-Current: T3 in progress · writer: GPT-6.1 Sol
+Current: all tickets done; push awaiting explicit approval · writer: GPT-6.1 Sol
 T1 @ 7e1febe
 T2 @ 5d296b4; owner golden exceptions @ bab16db
+T3 @ 10bff27
 Session 1: T1, T2, T3
 Baseline: no code failures; sandbox broke subprocess output. Unsandboxed checks pass; see receipts/t1-verification.md.
-Uncommitted: T3 docs, tests and receipt; no pending decision.
+Uncommitted: plan execution state only; pending approval to push engine and owner main.
 
 ## Findings
 | # | What is true | What it changes |
@@ -66,13 +67,14 @@ Delivers: B7 · Blocked by: T1 · Lane: logic
 Budget: code +40 · tests +30
 Seam: `test/maintenance-docs.test.mjs` static read of AGENTS.md and `.agents/skills/*/SKILL.md`
 Accept:
-- [ ] AGENTS.md and both SKILL.md files → 0 matches of /John|Viklund|johnviklund/i (B7)
-- [ ] both skills contain "commit and push the owner repo's main", "engine PR only for engine files" and "AGENT_CV_OWNER_ROOT" (B7)
-- [ ] both skills contain "currently engine `data/`" for the four public sources (B7, decision 1a)
-- [ ] AGENTS.md names `<owner root>/project-sources.json` and no longer names `config/project-sources.private.json` (B7)
+- [x] AGENTS.md and both SKILL.md files → 0 matches of /John|Viklund|johnviklund/i (B7)
+- [x] both skills contain "commit and push the owner repo's main", "engine PR only for engine files" and "AGENT_CV_OWNER_ROOT" (B7)
+- [x] both skills contain "currently engine `data/`" for the four public sources (B7, decision 1a)
+- [x] AGENTS.md names `<owner root>/project-sources.json` and no longer names `config/project-sources.private.json` (B7)
 Verify: `node --test test/maintenance-docs.test.mjs test/codex-conversation-review.test.mjs test/codex-project-refresh.test.mjs` (pre: 2 passed; new maintenance-docs file absent)
 Skills: /home/john/.claude/skills/agent-docs/SKILL.md
-Status: todo
+Status: done @ 10bff27
+Writer: GPT-6.1 Sol
 
 ## Coverage
 - Outcome → T1, T2 (Ada output with no John), T2 golden line (John's bytes), T3 (docs)
@@ -92,3 +94,4 @@ none
 
 ## Deviations
 - T3: two existing wording assertions change from the original owner name to owner-neutral text; assertion count stays 23. Supplementary Copilot discovery and live trigger trials unavailable; see receipts/t3-verification.md.
+- Handoff push: automatic approval review rejected direct default-branch push as a durable shared-repository side effect without explicit authorization. No push ran; awaiting approval for engine and owner main.

@@ -1,9 +1,10 @@
 """Record exact golden exceptions for reviewed technical differences.
 
-Usage: python3 record_golden_exceptions.py <owner-root> "<reason>" site/<path> [site/<path> ...]
+Usage: python3 record_golden_exceptions.py <owner-root> "<reason>" <path> [<path> ...]
 
 Each path's before digest comes from <owner-root>/golden/, its after digest and unified diff from the
-engine's public/ copy. An existing entry for the same path is replaced; other entries are kept.
+engine: site/<p> from build/site/<p> (run npm run build:site first), anything else from the engine
+root, such as wrangler.jsonc. An existing entry for the same path is replaced; other entries are kept.
 """
 import hashlib
 import json
@@ -23,10 +24,10 @@ def main(owner_root, reason, paths):
     manifest = owner_root / "golden-exceptions.json"
     entries = json.loads(manifest.read_text())["exceptions"] if manifest.exists() else []
     for path in paths:
-        if not path.startswith("site/"):
-            sys.exit(f"{path}: only site/ paths are recorded here")
+        if path.startswith("prompts/"):
+            sys.exit(f"{path}: prompts never take an exception")
         before = owner_root / "golden" / path
-        after = ENGINE / "public" / path.removeprefix("site/")
+        after = ENGINE / "build" / path if path.startswith("site/") else ENGINE / path
         diff = subprocess.run(
             ["diff", "-u", "--label", f"golden/{path}", "--label", path, str(before), str(after)],
             capture_output=True, text=True,

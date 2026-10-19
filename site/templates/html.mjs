@@ -70,6 +70,12 @@ export function sourceLink(owner, label, rel = "noopener noreferrer") {
   return repository ? `<a href="${escapeHtml(repository)}" rel="${rel}" target="_blank">${label}</a>` : "";
 }
 
+export const UPSTREAM_URL = "https://github.com/johnviklund/agent-cv";
+
+export function credit() {
+  return `<a href="${UPSTREAM_URL}" target="_blank" rel="noopener noreferrer">Built with Agent CV</a>`;
+}
+
 const SAFE_HREF = /^(https:\/\/[^/\s]|\/(?!\/)|#)\S*$/;
 
 // Plain text with **bold**, `code` and [label](href); everything else is escaped. Links to the owner's

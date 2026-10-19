@@ -1,5 +1,5 @@
 import {
-  beacon, blocks, escapeHtml as e, htmlAttributes, profileLinks, sourceLink, updatedMonth, wordmark, xHandle,
+  beacon, blocks, credit, escapeHtml as e, htmlAttributes, profileLinks, sourceLink, updatedMonth, wordmark, xHandle,
 } from "./html.mjs";
 
 // Generated from the published pages, then reviewed: owner.json supplies identity, links and analytics;
@@ -65,7 +65,7 @@ ${blocks(page.body, "      ", owner, "pages.about.body")}
     </article>
     <section class="subpage-chat" aria-label="Ask about ${e(owner.name.short)}'s working style"><form action="/" method="get" data-subpage-form><label class="sr-only" for="about-question">Ask about ${e(owner.name.short)}'s working style</label><div class="composer"><input id="about-question" maxlength="1200" placeholder="Ask about working style or role preferences…" required><button class="send-button" type="submit" aria-label="Start a conversation"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div></form><p>Personal details are shared only when relevant and requested.</p></section>
   </main>
-  <footer class="site-footer"><span>Grounded in ${e(owner.name.short)}'s CV · Updated ${e(updatedMonth(site))}</span><span class="footer-separator" aria-hidden="true">|</span><a href="/contact/">Contact ${e(owner.name.short)}</a><a href="/privacy/">Privacy</a>${sourceLink(owner, "Source ↗")}</footer>
+  <footer class="site-footer"><span>Grounded in ${e(owner.name.short)}'s CV · Updated ${e(updatedMonth(site))}</span><span class="footer-separator" aria-hidden="true">|</span><a href="/contact/">Contact ${e(owner.name.short)}</a><a href="/privacy/">Privacy</a>${sourceLink(owner, "Source ↗")}${credit()}</footer>
 ${beacon(owner)}</body>
 </html>
 `;
@@ -106,7 +106,7 @@ ${page.timeline.map(({ date, title, text }) => `      <article class="timeline-i
     </section>
     <section class="subpage-chat" aria-label="Ask about ${e(owner.name.short)}'s experience"><form action="/" method="get" data-subpage-form><label class="sr-only" for="experience-question">Ask about ${e(owner.name.short)}'s experience</label><div class="composer"><input id="experience-question" maxlength="1200" placeholder="Ask about a role or career transition…" required><button class="send-button" type="submit" aria-label="Start an experience conversation"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div></form><p>The agent distinguishes verified dates from approximate role chronology.</p></section>
   </main>
-  <footer class="site-footer"><span>Grounded in ${e(owner.name.short)}'s CV · Updated ${e(updatedMonth(site))}</span><span class="footer-separator" aria-hidden="true">|</span><a href="/cv/">Read the full CV</a><a href="/privacy/">Privacy</a>${sourceLink(owner, "Source ↗")}</footer>
+  <footer class="site-footer"><span>Grounded in ${e(owner.name.short)}'s CV · Updated ${e(updatedMonth(site))}</span><span class="footer-separator" aria-hidden="true">|</span><a href="/cv/">Read the full CV</a><a href="/privacy/">Privacy</a>${sourceLink(owner, "Source ↗")}${credit()}</footer>
 ${beacon(owner)}</body>
 </html>
 `;
@@ -168,7 +168,7 @@ ${page.items.map(projectRow).join("\n")}
       <p>Questions stay grounded in ${e(owner.name.short)}'s project data.</p>
     </section>
   </main>
-  <footer class="site-footer"><span>Grounded answers only · Updated ${e(updatedMonth(site))}</span><span class="footer-separator" aria-hidden="true">|</span><a href="/projects.md">Raw projects.md</a><a href="/privacy/">Privacy</a>${sourceLink(owner, "Source ↗")}</footer>
+  <footer class="site-footer"><span>Grounded answers only · Updated ${e(updatedMonth(site))}</span><span class="footer-separator" aria-hidden="true">|</span><a href="/projects.md">Raw projects.md</a><a href="/privacy/">Privacy</a>${sourceLink(owner, "Source ↗")}${credit()}</footer>
 ${beacon(owner)}</body>
 </html>
 `;
@@ -208,7 +208,7 @@ ${twitterLine(owner)}  <link rel="canonical" href="${e(owner.site.origin)}/cv/">
 ${blocks(page.body, "      ", owner, "pages.cv.body")}
     </article>
   </main>
-  <footer class="site-footer"><span>${e(page.footer)}</span><span class="footer-separator" aria-hidden="true">|</span><a href="/cv.md">Raw Markdown</a><a href="/privacy/">Privacy</a>${sourceLink(owner, "Source ↗")}</footer>
+  <footer class="site-footer"><span>${e(page.footer)}</span><span class="footer-separator" aria-hidden="true">|</span><a href="/cv.md">Raw Markdown</a><a href="/privacy/">Privacy</a>${sourceLink(owner, "Source ↗")}${credit()}</footer>
 ${beacon(owner)}</body>
 </html>
 `;
@@ -250,7 +250,7 @@ ${contactLines(owner)}
     </section>
     <div class="machine-links" aria-label="Machine-readable resources"><a href="/AGENTS.md">AGENTS.md</a><a href="/llms.txt">llms.txt</a><a href="/cv.md">cv.md</a><a href="/projects.md">projects.md</a><a href="/repositories.md">repositories.md</a></div>
   </main>
-  <footer class="site-footer"><span>${e(page.footer)}</span><span class="footer-separator" aria-hidden="true">|</span><a href="/privacy/">Privacy</a><a href="/">Ask ${e(owner.name.short)}'s agent</a></footer>
+  <footer class="site-footer"><span>${e(page.footer)}</span><span class="footer-separator" aria-hidden="true">|</span><a href="/privacy/">Privacy</a><a href="/">Ask ${e(owner.name.short)}'s agent</a>${credit()}</footer>
 ${beacon(owner)}</body>
 </html>
 `;
@@ -291,7 +291,7 @@ ${twitterLine(owner)}  <link rel="canonical" href="${e(owner.site.origin)}/priva
 ${page.sections.map((section, index) => blocks(section, "      ", owner, `pages.privacy.sections[${index}]`)).join("\n\n")}
     </article>
   </main>
-  <footer class="site-footer"><a href="/">Ask ${e(owner.name.short)}'s agent</a><span class="footer-separator" aria-hidden="true">|</span>${sourceLink(owner, "View source ↗")}</footer>
+  <footer class="site-footer"><a href="/">Ask ${e(owner.name.short)}'s agent</a><span class="footer-separator" aria-hidden="true">|</span>${sourceLink(owner, "View source ↗")}${credit()}</footer>
 ${beacon(owner)}</body>
 </html>
 `;
@@ -338,7 +338,7 @@ export function renderApplication({ owner, site }) {
       <p>This expiring link adds the supplied job description to the private prompt context.</p>
     </section>
   </main>
-  <footer class="site-footer"><a href="/privacy/">Privacy</a><span class="footer-separator" aria-hidden="true">|</span><a href="/cv/">Full CV</a></footer>
+  <footer class="site-footer"><a href="/privacy/">Privacy</a><span class="footer-separator" aria-hidden="true">|</span><a href="/cv/">Full CV</a>${credit()}</footer>
 ${beacon(owner)}</body>
 </html>
 `;
@@ -429,6 +429,7 @@ export function renderAdmin({ owner, site }) {
       </section>
     </section>
   </main>
+  <footer class="site-footer">${credit()}</footer>
 </body>
 </html>
 `;
@@ -447,6 +448,7 @@ export function renderNotFound({ owner, site }) {
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header"><div class="header-inner">${wordmark(owner)}<nav class="desktop-nav" aria-label="Primary navigation"><a href="/experience/">Experience</a><a href="/projects/">Projects</a><a href="/about/">About</a><a href="/cv/">Full CV</a><a href="/contact/">Contact</a></nav><details class="mobile-nav"><summary aria-label="Open navigation">Menu</summary><nav aria-label="Mobile navigation"><a href="/experience/">Experience</a><a href="/projects/">Projects</a><a href="/about/">About</a><a href="/cv/">Full CV</a><a href="/contact/">Contact</a></nav></details></div></header>
   <main id="main" class="page-main"><header class="page-header"><p class="eyebrow accent-label">404 · NOT FOUND</p><h1>This path ends here.</h1><p class="deck">The conversation can continue from the homepage, or you can use the traditional CV.</p><div class="machine-links"><a href="/">Ask ${e(owner.name.short)}'s agent →</a><a href="/cv/">Read the full CV →</a></div></header></main>
+  <footer class="site-footer">${credit()}</footer>
 ${beacon(owner)}</body>
 </html>
 `;

@@ -1,4 +1,4 @@
-import { beacon, escapeHtml as e, htmlAttributes, profileLinks, scriptJson as j, updatedMonth, xHandle } from "./html.mjs";
+import { beacon, credit, escapeHtml as e, htmlAttributes, profileLinks, scriptJson as j, updatedMonth, xHandle } from "./html.mjs";
 
 const item = (indent, { title, text, href }) => {
   const external = href.startsWith("https://");
@@ -273,7 +273,8 @@ ${followups}
       <span>Conversations may be reviewed · Logs delete after 90 days</span>
       <span class="footer-separator" aria-hidden="true">|</span>
       <a href="/privacy/">Privacy</a>
-${source}    </footer>
+${source}      ${credit()}
+    </footer>
   </main>
 ${beacon(owner)}</body>
 </html>

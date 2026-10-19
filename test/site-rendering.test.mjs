@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 import { loadOwner, resolveOwnerRoot } from "../scripts/owner.mjs";
 import { buildSite, renderSite } from "../scripts/build-site.mjs";
 import { privateDataFiles } from "../scripts/sync-owner.mjs";
-import { escapeHtml } from "../site/templates/html.mjs";
+import { escapeHtml, UPSTREAM_URL } from "../site/templates/html.mjs";
 import { spawnSync } from "node:child_process";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -25,6 +25,18 @@ async function tempDir(context) {
   return dir;
 }
 
+test("every page credits Agent CV in its last footer for each owner", async () => {
+  for (const ownerRoot of new Set([example, resolveOwnerRoot()])) {
+    const pages = Object.entries(renderSite(await loadOwner({ root: ownerRoot })))
+      .filter(([path]) => path.endsWith(".html"));
+    assert.equal(pages.length, 10);
+    for (const [path, page] of pages) {
+      const footer = [...page.matchAll(/<footer\b[^>]*>([\s\S]*?)<\/footer>/g)].at(-1)?.[1] ?? "";
+      assert.ok(footer.includes(`<a href="${UPSTREAM_URL}" target="_blank" rel="noopener noreferrer">Built with Agent CV</a>`), `${ownerRoot}: ${path}`);
+    }
+  }
+});
+
 test("a fictional home renders Ada from structured data", async () => {
   const html = renderSite(await ada())["index.html"];
 
@@ -33,7 +45,7 @@ test("a fictional home renders Ada from structured data", async () => {
   assert.match(html, /data-prompt="What systems has Ada built\?"><span>Explore projects<\/span>/);
   assert.match(html, /<a href="\/ada-example-cv\.pdf">PDF ↓<\/a>/);
   assert.match(html, /<a href="https:\/\/github\.com\/ada-example" rel="noopener noreferrer" target="_blank"><strong>Example library ↗<\/strong>/);
-  assert.doesNotMatch(html, /John|Viklund|johnviklund|Volvo|cloudflareinsights/);
+  assert.doesNotMatch(html.replaceAll(UPSTREAM_URL, ""), /John|Viklund|johnviklund|Volvo|cloudflareinsights/);
 });
 
 test("invalid site sections name site.json and the field", async (context) => {
@@ -141,7 +153,7 @@ test("every fictional page renders Ada's own identity and copy", async () => {
   const pages = renderSite(await ada());
   assert.match(pages["admin/index.html"], /<html[^>]+data-owner-short-name="Ada"/);
   for (const [path, text] of Object.entries(pages)) {
-    assert.doesNotMatch(text, /John|Viklund|johnviklund|Volvo|c7d9e434/, path);
+    assert.doesNotMatch(text.replaceAll(UPSTREAM_URL, ""), /John|Viklund|johnviklund|Volvo|c7d9e434/, path);
   }
   for (const [path, pattern] of [
     ["about/index.html", /<h1>Close to the systems\.<\/h1>[\s\S]*Her work is <strong>invented<\/strong>/],

@@ -9,10 +9,11 @@ Size: code 1833 · tests 2354 · ratio 1.28 · largest touched test/comparison-c
 Decisions: brief D1–D6 retained; John approved all five tickets on 2026-10-19. Public-code Opus 5.5 audit complete; findings verified by main session GPT-6 Astra.
 
 ## Execution state
-T1 @ 90cba12 (private 739738e) · next T2, T4 ready · writer: Opus 5.5 (human-approved swap; review → GPT-6.1 Sol xhigh)
-Baseline 249 pass/1 skip → after T1 252 pass/2 skip; Chromium card test opt-in (AGENT_CV_CHROMIUM_TESTS=1). Never stage private data/faq.md. Compare Buffers with .equals (deepEqual OOMs this 7.7 GB host).
+T1 @ 90cba12 (private 739738e) · T2 @ d11fca9 · next T4, T3 ready · writer: Opus 5.5 (human-approved swap; review → GPT-6.1 Sol xhigh)
+Baseline 249 pass/1 skip → T1 252/2 → T2 254/3; Chromium card test opt-in (AGENT_CV_CHROMIUM_TESTS=1). Never stage private data/faq.md. Compare Buffers with .equals (deepEqual OOMs this 7.7 GB host).
 In flight: owner.json tagline; buildSite needs root/assets/og-image.png; scripts/chromium.mjs findChromium(artifact).
 Session 1: T1
+Session 2: T2
 
 ## Findings
 | # | What is true | What it changes |
@@ -55,12 +56,14 @@ Delivers: B3 · Blocked by: T1 · Lane: logic
 Budget: code +65 · tests +65
 Seam: selected owner + canonical CV Markdown → print HTML → real Chromium PDF → existing download URL.
 Accept:
-- [ ] John produces john-viklund-cv.pdf with unchanged text and contact order; Ada's fictional CV produces ada-example-cv.pdf containing Ada Example and no John identity. (B3)
-- [ ] Header email equals contact.email; null removes its link and separator; metadata, footer, origin and profile links use the owner. (B3)
-- [ ] Real PDFs have 1–2 pages, extractable owner text, zero Type 3 fonts and zero local file paths; existing download links resolve. (B3)
+- [x] John produces john-viklund-cv.pdf with unchanged text and contact order; Ada's fictional CV produces ada-example-cv.pdf containing Ada Example and no John identity. (B3)
+- [x] Header email equals contact.email; null removes its link and separator; metadata, footer, origin and profile links use the owner. (B3)
+- [x] Real PDFs have 1–2 pages, extractable owner text, zero Type 3 fonts and zero local file paths; existing download links resolve. (B3)
 Verify: `node --test test/cv-pdf.test.mjs` (pre: 4 passed; real PDF verification added during execution)
 Skills: /home/john/.codex/plugins/cache/openai-primary-runtime/pdf/26.1011.11113/skills/pdf/SKILL.md
-Status: todo
+Status: done @ d11fca9
+Writer: Opus 5.5
+Receipt: receipts/t2-verification.md
 
 ### T3 — Generate and consume the owner's Wrangler config
 Delivers: B4, B5, B8 · Blocked by: T2 · Lane: contract
@@ -105,6 +108,9 @@ Status: todo
 ## Deviations
 - T1: plan note says the card uses the headline verbatim; John's card shows "…product leader." while owner.json headline has no period. The card appends "." unless the headline ends in . ! or ?, which keeps John's bytes identical (acceptance line 1 wins).
 - T1: the real-Chromium John parity test is opt-in (AGENT_CV_CHROMIUM_TESTS=1) because npm test runs inside npm run check, which must launch zero Chromium.
+
+- T2: the PDF header keeps John's profile set (x, LinkedIn); a GitHub link is not printed, as before, so John's text stays identical.
+- T2: existing test "the CV PDF is built from the public CV…" and "…keeps every role bullet…" now pass an owner instead of `{ email }`; assertions unchanged (12 and 4 before and after).
 
 ## Coverage
 - Outcome → T1 card bytes, T2 PDF pages/text/path, T3 config parity, T5 manifest migration; final npm run check, npm run build and npm run golden:diff.

@@ -2,11 +2,11 @@ Command: workflow plan forkable-example-owner
 Created: 2026-10-19
 Base:    e1a571b
 Inputs:  .workflow/forkable-example-owner/brainstorm.md @ 7c1c018
-Status:  drafting
+Status:  complete
 
 Docs read: design.md §System (footer Ft2: inline credits and links) · PRODUCT.md absent
 Size: code 1,329 · tests 743 · ratio 0.56 · largest touched pages.mjs 453, build-comparison-evidence.mjs 299, home.mjs 281 · over 1,000: none
-Decisions: pending — 1 dirty public/ · 2 admin/404 footer · 3 leak-scan gate
+Decisions: 1a drop CI git-diff step, accept dirty public/ locally until U8 · 2a admin and 404 get a credit-only footer · 3a leak scan runs only for examples/owner, else prints skipped · 4a tickets approved
 
 ## Execution state
 <filled by execute>

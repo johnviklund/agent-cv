@@ -13,7 +13,7 @@ import * as pages from "../site/templates/pages.mjs";
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 // Every file under dir as a sorted, slash-separated relative path.
-async function listFiles(dir) {
+export async function listFiles(dir) {
   const entries = await readdir(dir, { recursive: true, withFileTypes: true });
   return entries
     .filter((entry) => entry.isFile())

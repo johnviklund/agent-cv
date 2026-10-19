@@ -47,6 +47,17 @@ test("CONTACT_EMAIL follows contact.email, whatever deploy.vars says", async (t)
   }
 });
 
+test("owner var strings that look like arrays survive formatting unchanged", async (t) => {
+  for (const text of ["[ 1 ]", "The [ 1, 2 ] cases", "[ null ]", "[ 1. ]", 'say "[ 1 ]"', String.raw`back\slash [ "a" ]`]) {
+    await t.test(text, () => {
+      const owner = { ...ADA, deploy: { ...ADA.deploy, vars: { CUSTOM: text } } };
+      const config = buildWranglerConfig(owner, base);
+      assert.equal(JSON.parse(config).vars.CUSTOM, text);
+      assert.match(config, /"new_sqlite_classes": \["BudgetCounter"\]\n/);
+    });
+  }
+});
+
 // An engine copy whose root wrangler.jsonc the entry points rewrite, so this checkout stays untouched.
 async function engineCopy(context) {
   const engine = await mkdtemp(resolve(tmpdir(), "agent-cv-wrangler-"));

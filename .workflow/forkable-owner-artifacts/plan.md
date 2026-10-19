@@ -9,11 +9,11 @@ Size: code 1833 · tests 2354 · ratio 1.28 · largest touched test/comparison-c
 Decisions: brief D1–D6 retained; John approved all five tickets on 2026-10-19. Public-code Opus 5.5 audit complete; findings verified by main session GPT-6 Astra.
 
 ## Execution state
-T1 @ 90cba12 (private 739738e) · T2 @ d11fca9 · next T4, T3 ready · writer: Opus 5.5 (human-approved swap; review → GPT-6.1 Sol xhigh)
-Baseline 249 pass/1 skip → T1 252/2 → T2 254/3; Chromium card test opt-in (AGENT_CV_CHROMIUM_TESTS=1). Never stage private data/faq.md. Compare Buffers with .equals (deepEqual OOMs this 7.7 GB host).
+T1 @ 90cba12 (private 739738e) · T2 @ d11fca9 · T4 @ 6c5e5b2 · next T3 (contract) ready · writer: Opus 5.5 (human-approved swap; review → GPT-6.1 Sol xhigh)
+Baseline 249 pass/1 skip → T1 252/2 → T2 254/3 → T4 258/3; Chromium card test opt-in (AGENT_CV_CHROMIUM_TESTS=1). Never stage private data/faq.md. Compare Buffers with .equals (deepEqual OOMs this 7.7 GB host).
 In flight: owner.json tagline; buildSite needs root/assets/og-image.png; scripts/chromium.mjs findChromium(artifact).
 Session 1: T1
-Session 2: T2
+Session 2: T2, T4
 
 ## Findings
 | # | What is true | What it changes |
@@ -83,13 +83,15 @@ Delivers: B6 · Blocked by: none · Lane: logic
 Budget: code +45 · tests +60 · why: both admin callers need request-destination and rejection coverage
 Seam: readAdminOrigin and export/review callers with synthetic tokens and stubbed requests; no live admin calls.
 Accept:
-- [ ] Export and review use owner.site.origin as their default request origin; config/admin-origin.json is deleted. (B6)
-- [ ] Missing origin reports not configured; malformed JSON and non-HTTPS, credentialed, path, query, fragment origins fail before requests. (B6)
-- [ ] Explicit export --url and review baseUrl keep their validated override behavior; token handling remains unchanged. (B6)
-- [ ] Default admin origin resolution rejects examples/owner, including its symlink, before any authenticated request. (B6)
+- [x] Export and review use owner.site.origin as their default request origin; config/admin-origin.json is deleted. (B6)
+- [x] Missing origin reports not configured; malformed JSON and non-HTTPS, credentialed, path, query, fragment origins fail before requests. (B6)
+- [x] Explicit export --url and review baseUrl keep their validated override behavior; token handling remains unchanged. (B6)
+- [x] Default admin origin resolution rejects examples/owner, including its symlink, before any authenticated request. (B6)
 Verify: `node --test test/admin-origin.test.mjs test/review-conversations.test.mjs` (pre: 12 passed)
 Skills: none
-Status: todo
+Status: done @ 6c5e5b2
+Writer: Opus 5.5
+Receipt: receipts/t4-verification.md
 
 ### T5 — Read repository and evidence manifests from the owner
 Delivers: B7 · Blocked by: T3 · Lane: contract
@@ -111,6 +113,8 @@ Status: todo
 
 - T2: the PDF header keeps John's profile set (x, LinkedIn); a GitHub link is not printed, as before, so John's text stays identical.
 - T2: existing test "the CV PDF is built from the public CV…" and "…keeps every role bullet…" now pass an owner instead of `{ email }`; assertions unchanged (12 and 4 before and after).
+- T4: test/admin-origin.test.mjs rewritten for the owner-file reader; its 6 assertions (valid origin, http, credentialed, path, missing) are kept as cases, plus query, fragment, malformed and example cases. The example refusal reuses resolveOwnerRoot's message ("Refusing to deploy the example owner").
+- Ratio waived: T4 — tests +62 sit at the planned +60 (two callers, destination and pre-request rejection cases); code came in at +24 against a +45 budget.
 
 ## Coverage
 - Outcome → T1 card bytes, T2 PDF pages/text/path, T3 config parity, T5 manifest migration; final npm run check, npm run build and npm run golden:diff.

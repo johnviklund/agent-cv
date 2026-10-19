@@ -40,5 +40,5 @@ Red: pending
 Search: current formatter is local to scripts/wrangler-config.mjs. Replace its string-blind regex; avoid a general formatting package or a second config serializer.
 
 ## Deviations
-- Ratio waived: C1-T1 — tests +63 against code +6: the fix is one guarded call, while the plan's +60 test budget buys two config states and two example-root spellings through a real subprocess with a fake Wrangler.
-- Budget waived: C1-T1 — tests +63 against +60: the three extra lines are the shared fixture's file list wrapping.
+- Ratio waived: C1-T1 — tests +70 against code +6: the fix is one guarded call, while the plan's +60 test budget buys two config states and two example-root spellings through a real subprocess with a fake Wrangler.
+- Budget waived: C1-T1 — tests +70 against +60: the extra lines are the shared engine-copy fixture and fake npx.

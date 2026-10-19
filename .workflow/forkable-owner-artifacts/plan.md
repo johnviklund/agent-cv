@@ -9,13 +9,9 @@ Size: code 1833 · tests 2354 · ratio 1.28 · largest touched test/comparison-c
 Decisions: brief D1–D6 retained; John approved all five tickets on 2026-10-19. Public-code Opus 5.5 audit complete; findings verified by main session GPT-6 Astra.
 
 ## Execution state
-Current: T2 next (logic, blocked by T1 → ready). T4 ready.
-T1 @ 90cba12 (private: agent-cv-private 739738e)
-writer: Opus 5.5 (human-approved swap from GPT-6.1 Sol, 2026-10-19; review goes to GPT-6.1 Sol xhigh)
-Baseline: npm run check 249 passed, 1 skipped; after T1 254 tests, 252 passed, 2 skipped (real-Chromium card test opt-in via AGENT_CV_CHROMIUM_TESTS=1).
-Contract in flight: owner.json optional tagline (string, minLength 1); buildSite({ root, owner, site, out, dataRoot }) needs root/assets/og-image.png; scripts/chromium.mjs findChromium(artifact).
-Uncommitted: agent-cv-private data/faq.md is John's own edit; never stage it.
-Host: 7.7 GB RAM; compare Buffers with .equals, never deepEqual (OOM on failure).
+T1 @ 90cba12 (private 739738e) · next T2, T4 ready · writer: Opus 5.5 (human-approved swap; review → GPT-6.1 Sol xhigh)
+Baseline 249 pass/1 skip → after T1 252 pass/2 skip; Chromium card test opt-in (AGENT_CV_CHROMIUM_TESTS=1). Never stage private data/faq.md. Compare Buffers with .equals (deepEqual OOMs this 7.7 GB host).
+In flight: owner.json tagline; buildSite needs root/assets/og-image.png; scripts/chromium.mjs findChromium(artifact).
 Session 1: T1
 
 ## Findings
@@ -35,7 +31,6 @@ Session 1: T1
 | F12 | Admin callers send bearer tokens; resolveOwnerRoot defaults to examples/owner. | T4 refuses the example root before any request; env selects the trusted file, never an origin value. |
 | F13 | CI has no owner repo; test/contact.test.mjs:70 hardcodes John; comparison tests import nonempty generated evidence. | T3 tests owner-derived contact and base defaults; T5 uses explicit evidence fixtures and proves empty Ada builds without importing John's evidence. |
 | F14 | Golden compares raw config bytes; short arrays in the current config use compact formatting. | Preserve its serialization; no baseline recapture. Merge base vars then owner vars safely, with contact.email authoritative. |
-
 Execution details: agent commits John's tagline/card in T1 and identical manifests in T5 before engine deletions. Copy only the owner card asset. Correct affected README/USERGUIDE/AGENTS/skill paths; leave historical .hallmark/preflight.json unchanged. Do not refresh John's repository snapshot during parity checks. Card name splits at its first space, keeps the existing final period, and uses headline verbatim; verify John's input parity before changing it.
 
 ## Tickets

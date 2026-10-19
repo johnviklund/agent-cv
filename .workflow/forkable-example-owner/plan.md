@@ -9,14 +9,17 @@ Size: code 1,329 · tests 743 · ratio 0.56 · largest touched pages.mjs 453, bu
 Decisions: 1a drop CI git-diff step, accept dirty public/ locally until U8 · 2a admin and 404 get a credit-only footer · 3a leak scan runs only for examples/owner, else prints skipped · 4a tickets approved
 
 ## Execution state
-T1 done; next T2, ready. No pending decision.
+T1 and T2 done; next T3, ready. Owner approved T2 UI and commit on 2026-10-20.
+Pending: none. Pushes remain T4's operator step.
 T1 @ 023e92f · private source copy @ 5699413
-writer: GPT-6.1 Sol · T1 xhigh
+T2 @ 95eae04 · private golden exceptions @ ae5d654
+writer: GPT-6.1 Sol · T1 xhigh; T2 high
 Session 1: T1
+Session 2: T2, T3
 Baseline: npm run check passed outside sandbox; sandbox loses child-process output.
 Contract: syncPublicData({ root, ownerRoot }); writeComparisonEvidence adds optional sourceRoot.
-Verification: receipts/t1-verification.md; John's generated outputs restored.
-Uncommitted engine files: none after this checkpoint; private data/faq.md remains the owner's edit.
+Verification: receipts/t1-verification.md; receipts/t2-verification.md records T2 verification and owner approval of the link attributes.
+Uncommitted: none after checkpoint. Private faq.md remains untouched.
 Pushes deferred to T4's approved operator step; both commits remain on local main.
 
 ## Findings
@@ -57,12 +60,13 @@ Delivers: B5 · Blocked by: T1 · Lane: logic (UI: human tries it before commit)
 Budget: code +35 · tests +30
 Seam: `renderSite({ owner, site })` for Ada and John
 Accept:
-- [ ] every `*.html` key of `renderSite` for Ada and for John → its last `<footer>` holds `<a href="${UPSTREAM_URL}">Built with Agent CV</a>` (B5)
-- [ ] `UPSTREAM_URL` is defined once: `grep -rn "github.com/johnviklund/agent-cv" site/templates scripts` → 1 hit (B5)
-- [ ] John's root → `npm run golden:diff` exits 0, with exactly 10 accepted footer exceptions (B5, D6)
+- [x] every `*.html` key of `renderSite` for Ada and for John → its last `<footer>` holds `<a href="${UPSTREAM_URL}" target="_blank" rel="noopener noreferrer">Built with Agent CV</a>` (B5)
+- [x] `UPSTREAM_URL` is defined once: `grep -rn "github.com/johnviklund/agent-cv" site/templates scripts` → 1 hit (B5)
+- [x] John's root → `npm run golden:diff` exits 0, with exactly 10 accepted footer exceptions (B5, D6)
 Verify: `node --test test/site-rendering.test.mjs && npm run golden:diff` (pre: 15 passed; golden:diff exit 0)
 Skills: none
-Status: todo
+Status: done @ 95eae04
+Writer: GPT-6.1 Sol
 
 ### T3 — CI builds Ada and fails on any trace of John
 Delivers: B3, B4, B7, B8 · Blocked by: T1, T2 · Lane: logic
@@ -107,3 +111,5 @@ design.md — no changes (the credit fits Ft2 "inline credits and links") · PRO
 ## Deviations
 - T1: golden and OG-image test owners now carry public sources. Empty-manifest coverage uses an explicit empty fixture; Ada now has three evidence items. Assertions remain 33, 13, and 14 respectively. No assertion removed or weakened.
 - Ratio waived: T1 — three regression tests need temporary owner and engine roots; +64 test lines cover all ten files, evidence, missing-source refusal, and the site default. Code adds 25 lines; no new abstraction.
+- T2: two existing identity assertions strip only UPSTREAM_URL before checking for owner leaks; their patterns remain unchanged. Assertion count 56 to 58 includes two new footer-test assertions.
+- T2: owner approved adding target="_blank" and rel="noopener noreferrer" to the acceptance tag. Existing external-link assertions remain unchanged.

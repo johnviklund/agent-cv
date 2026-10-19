@@ -9,12 +9,12 @@ Size: code 1833 · tests 2354 · ratio 1.28 · largest touched test/comparison-c
 Decisions: brief D1–D6 retained; John approved all five tickets on 2026-10-19. Public-code Opus 5.5 audit complete; findings verified by main session GPT-6 Astra.
 
 ## Execution state
-T1 @ 90cba12 (private 739738e) · T2 @ d11fca9 · T4 @ 6c5e5b2 · T3 @ c6a1a04 · next T5 (contract) ready · writer: Opus 5.5 (human-approved swap; review → GPT-6.1 Sol xhigh)
-Baseline 249/1 skip → T1 252/2 → T2 254/3 → T4 258/3 → T3 269/3. Chromium card test opt-in (AGENT_CV_CHROMIUM_TESTS=1). Never stage private data/faq.md. Compare Buffers with .equals (deepEqual OOMs this host).
-In flight: scripts/wrangler-config.mjs buildWranglerConfig(owner, base) / writeWranglerConfig({engineRoot, deploy}); root wrangler.jsonc ignored.
+T1 @ 90cba12 (private 739738e) · T2 @ d11fca9 · T4 @ 6c5e5b2 · T3 @ c6a1a04 · T5 @ b739df7 (private f2bdbf7) · all tickets done; next review · writer: Opus 5.5 (human-approved swap; review → GPT-6.1 Sol xhigh)
+Baseline 249/1 skip → T1 252/2 → T2 254/3 → T4 258/3 → T3 269/3 → T5 276/3. Chromium card test opt-in (AGENT_CV_CHROMIUM_TESTS=1). Never stage private data/faq.md. Compare Buffers with .equals (deepEqual OOMs this host).
+In flight: none. New seams: wrangler-config.mjs buildWranglerConfig/writeWranglerConfig; syncRepositories({engineRoot, ownerRoot, fetchImpl}); writeComparisonEvidence({root, ownerRoot}); handleRequest/handleCompare catalog option.
 Session 1: T1
 Session 2: T2, T4
-Session 3: T3
+Session 3: T3, T5
 
 ## Findings
 | # | What is true | What it changes |
@@ -101,25 +101,30 @@ Delivers: B7 · Blocked by: T3 · Lane: contract
 Budget: code +100 · tests +130 · why: two consumers need owner-selection coverage; comparison tests need explicit evidence fixtures
 Seam: sync:repositories and build:evidence/sync:data → existing manifest validators → generated evidence.
 Accept:
-- [ ] John's identical manifests are committed in agent-cv-private before engine copies are deleted; generated comparison evidence is unchanged. (B7)
-- [ ] Ada's repositories.json is []; comparison-evidence.json is {"schemaVersion":1,"items":[]}; consumers produce zero entries without network calls. (B7)
-- [ ] Missing and invalid selected-owner manifests fail; engine config files never supply fallback content. (B7)
-- [ ] Nonempty fixture manifests fetch only named public repositories/documents and resolve approved evidence selectors; existing safety rejections still pass. (B7)
-- [ ] A disposable checkout without John's owner repo passes npm run build using Ada's empty manifests; comparison tests use explicit catalogs. (B7)
+- [x] John's identical manifests are committed in agent-cv-private before engine copies are deleted; generated comparison evidence is unchanged. (B7)
+- [x] Ada's repositories.json is []; comparison-evidence.json is {"schemaVersion":1,"items":[]}; consumers produce zero entries without network calls. (B7)
+- [x] Missing and invalid selected-owner manifests fail; engine config files never supply fallback content. (B7)
+- [x] Nonempty fixture manifests fetch only named public repositories/documents and resolve approved evidence selectors; existing safety rejections still pass. (B7)
+- [x] A disposable checkout without John's owner repo passes npm run build using Ada's empty manifests; comparison tests use explicit catalogs. (B7)
 Verify: `node --test test/repository-grounding.test.mjs test/comparison-evidence.test.mjs test/owner-manifests.test.mjs test/comparison-core.test.mjs test/owner-runtime.test.mjs` (pre: 37 passed, 1 skipped; new owner-manifests file absent, Node 26 skipped its unmatched path)
 Skills: none
-Status: todo
+Status: done @ b739df7
+Writer: Opus 5.5
+Receipt: receipts/t5-verification.md
 
 ## Deviations
 - T1: plan note says the card uses the headline verbatim; John's card shows "…product leader." while owner.json headline has no period. The card appends "." unless the headline ends in . ! or ?, which keeps John's bytes identical (acceptance line 1 wins).
 - T1: the real-Chromium John parity test is opt-in (AGENT_CV_CHROMIUM_TESTS=1) because npm test runs inside npm run check, which must launch zero Chromium.
-
 - T2: the PDF header keeps John's profile set (x, LinkedIn); a GitHub link is not printed, as before, so John's text stays identical.
 - T2: existing test "the CV PDF is built from the public CV…" and "…keeps every role bullet…" now pass an owner instead of `{ email }`; assertions unchanged (12 and 4 before and after).
 - T4: test/admin-origin.test.mjs rewritten for the owner-file reader; its 6 assertions (valid origin, http, credentialed, path, missing) are kept as cases, plus query, fragment, malformed and example cases. The example refusal reuses resolveOwnerRoot's message ("Refusing to deploy the example owner").
 - T3: test/contact.test.mjs "deployment config publishes the selected contact email" now asserts CONTACT_EMAIL equals the selected owner's contact.email (absent when null) instead of John's literal; 1 assertion before and after. comparison-fixtures and static-contract read the generated config; assertions unchanged.
 - T3: golden collects the config through writeWranglerConfig (writes the root file too); dev/deploy regenerate via npm run build:wrangler-config; build relies on check → check:worker-package.
-- Ratio waived: T3 — tests +101 sit inside the +110 budget; code came in near +60 against +120 because the base config is a rename.
+- T5: handleRequest/handleCompare gain a `catalog` option (default: generated evidence) beside owner/fetchImpl, so Worker comparison tests use the fixture catalog; needed for acceptance line 5. worker.test wraps handleRequest with it; assertions unchanged.
+- T5: comparison-core "new career subroles…" now skips unless the generated owner is John (it checks John's evidence IDs); its first test passes the fixture catalog to validateComparisonPayload. repository-grounding reads the owner's repositories.json; comparison-evidence fixtures put the manifest at the owner root. Assertion counts unchanged.
+- T5: data/repositories.md still quotes the old config/ path inside John's README snapshot; left unrefreshed per the plan.
+- Ratio waived: T3 — tests +103 sit inside the +110 budget; code came in at +67 against +120 because the base config is a rename.
+- Ratio waived: T5 — tests +112 sit inside the planned +130 (two consumers need owner-selection coverage; comparison tests need an explicit evidence fixture); code came in at +55 against +100.
 - Ratio waived: T4 — tests +62 sit at the planned +60 (two callers, destination and pre-request rejection cases); code came in at +24 against a +45 budget.
 
 ## Coverage

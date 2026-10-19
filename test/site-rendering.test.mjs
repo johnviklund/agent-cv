@@ -225,7 +225,7 @@ test("the built site publishes four Markdown sources and no private material", a
   // Short lines are too generic to prove a leak; the example owner's skills.md has only short ones.
   let checked = 0;
   for (const file of privateDataFiles) {
-    const lines = (await readFile(resolve(root, "data", file), "utf8")).split("\n").filter((line) => line.length > 40);
+    const lines = (await readFile(resolve(example, "data", file), "utf8")).split("\n").filter((line) => line.length > 40);
     checked += lines.length;
     for (const line of lines) assert.equal(text.includes(line), false, `${file}: ${line}`);
   }

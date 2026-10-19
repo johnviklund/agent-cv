@@ -5,7 +5,7 @@ import {
   REVIEW_REASON_OPTIONS,
   escapeXml,
   groupConversationCandidates,
-} from "../public/conversation-review.js";
+} from "../site/assets/conversation-review.js";
 import { readAdminOrigin, validateAdminOrigin } from "./admin-origin.mjs";
 import { readLocalAdminToken } from "./admin-secret-file.mjs";
 

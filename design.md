@@ -1,7 +1,7 @@
 <!-- Hallmark · pre-emit critique: P4 H4 E4 S5 R5 V4 · studied: yes · DNA-source: url -->
 # Design — Agent CV
 
-Locked design system for John Viklund's CV. `tokens.css` is canonical; `npm run sync:data` publishes its identical copy to `public/tokens.css`. Amend this system intentionally.
+Locked design system for John Viklund's CV. `tokens.css` is canonical; `npm run build:site` publishes its identical copy to `build/site/tokens.css`. Amend this system intentionally.
 
 ## System
 - Genre: modern-minimal, with editorial content and a technical tone.

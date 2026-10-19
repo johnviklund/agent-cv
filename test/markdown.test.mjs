@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { isSafeHref, parseInline, parseMarkdown } from "../public/markdown.js";
+import { isSafeHref, parseInline, parseMarkdown } from "../site/assets/markdown.js";
 
 test("parses compact response Markdown into semantic blocks", () => {
   const blocks = parseMarkdown([

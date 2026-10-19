@@ -1,12 +1,13 @@
 import { execFileSync } from "node:child_process";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { buildCvPrintHtml, countPdfPages } from "./cv-pdf.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const output = resolve(root, "public", "john-viklund-cv.pdf");
+// Written into the built site after npm run build:site, which replaces build/site.
+const output = resolve(root, "build", "site", "john-viklund-cv.pdf");
 const MAX_PAGES = 2;
 
 function findChromium() {
@@ -34,6 +35,7 @@ try {
   const htmlPath = join(workDir, "cv.html");
   // Static system fonts embed as real text fonts; the site's variable web font prints as Type 3 glyphs.
   await writeFile(htmlPath, buildCvPrintHtml(markdown, { email }));
+  await mkdir(dirname(output), { recursive: true });
   execFileSync(findChromium(), [
     "--headless=new",
     "--disable-gpu",
@@ -57,4 +59,4 @@ if (/\/Subtype\s*\/Type3/.test(pdf.toString("latin1"))) {
 if (/\/home\/|\/Users\/|file:\/\//.test(pdf.toString("latin1"))) {
   throw new Error("/john-viklund-cv.pdf contains a local file path.");
 }
-console.log(`Built public/john-viklund-cv.pdf (${pages} pages, ${Math.round(pdf.length / 1024)} KB).`);
+console.log(`Built build/site/john-viklund-cv.pdf (${pages} pages, ${Math.round(pdf.length / 1024)} KB).`);

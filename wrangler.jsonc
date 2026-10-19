@@ -22,7 +22,7 @@
     }
   ],
   "assets": {
-    "directory": "./public",
+    "directory": "./build/site",
     "binding": "ASSETS",
     "run_worker_first": true,
     "html_handling": "force-trailing-slash",

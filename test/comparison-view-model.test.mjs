@@ -5,15 +5,15 @@ import {
   buildComparisonViewModel,
   describeComparisonSelection,
   describeRequirementPreview,
-} from "../public/comparison-view.js";
-import { normalizeComparisonRequirementLines } from "../public/comparison-contract.js";
+} from "../site/assets/comparison-view.js";
+import { normalizeComparisonRequirementLines } from "../site/assets/comparison-contract.js";
 import {
   buildRoleRequirementPreview,
   createLatestFileImport,
   parseRoleBatch,
   serializeComparisonExport,
   validateRoleDrafts,
-} from "../public/comparison-transfer.js";
+} from "../site/assets/comparison-transfer.js";
 
 const STATE = {
   status: "ready",

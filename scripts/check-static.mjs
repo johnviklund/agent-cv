@@ -4,11 +4,14 @@ import { dirname, extname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const publicDir = resolve(root, "public");
+const publicDir = resolve(root, "build", "site");
+// The owner the site was built for, as npm run sync:data generated it.
+const { default: owner, updatedAt } = await import(pathToFileURL(resolve(root, "src", "data", "owner.js")).href);
+const origin = owner.site.origin;
 const pages = await collectHtml(publicDir);
 const failures = [];
-// Built during deploy rather than committed, so it is absent from a clean checkout.
-const DEPLOY_GENERATED = new Set(["/john-viklund-cv.pdf"]);
+// The CV PDF is built during deploy, after the site, so a checked build does not hold it yet.
+const DEPLOY_GENERATED = /^\/[a-z0-9-]+-cv\.pdf$/;
 
 await checkApiResourceParity();
 await checkInlineScriptCsp();
@@ -33,7 +36,7 @@ for (const page of pages) {
   }
 
   if (!["/404.html", "/admin/index.html", "/application/index.html"].includes(relative)) {
-    if (!/<link\s+rel="canonical"\s+href="https:\/\/johnviklund\.com\//i.test(html)) {
+    if (!html.includes(`<link rel="canonical" href="${origin}/`)) {
       failures.push(`${relative}: missing canonical URL`);
     }
     if (!/<link\s+rel="describedby"\s+href="\/llms\.txt"/i.test(html)) {
@@ -47,7 +50,7 @@ for (const page of pages) {
 
   for (const match of html.matchAll(/href="(\/[^"]*)"/g)) {
     const href = match[1].split(/[?#]/)[0];
-    if (!href || href.startsWith("/api/") || href === "/" || DEPLOY_GENERATED.has(href)) continue;
+    if (!href || href.startsWith("/api/") || href === "/" || DEPLOY_GENERATED.test(href)) continue;
     const target = extname(href)
       ? resolve(publicDir, `.${href}`)
       : resolve(publicDir, `.${href}`, "index.html");
@@ -123,23 +126,22 @@ async function checkDiscoveryResources() {
   if (!/"@type":\s*"ProfilePage"/.test(home) || !/"mainEntity":\s*\{/.test(home)) {
     failures.push("index.html: missing ProfilePage JSON-LD with mainEntity");
   }
-  if (!/"@id":\s*"https:\/\/johnviklund\.com\/#john-viklund"/.test(home)
-    || !/"name":\s*"John Viklund"/.test(home)) {
+  if (!home.includes(`"@id": ${JSON.stringify(`${origin}/#${owner.slug}`)}`)
+    || !home.includes(`"name": ${JSON.stringify(owner.name.full)}`)) {
     failures.push("index.html: JSON-LD public identity is inconsistent");
   }
-  if (!/Sitemap:\s*https:\/\/johnviklund\.com\/sitemap\.xml/.test(robots)) {
+  if (!robots.includes(`Sitemap: ${origin}/sitemap.xml`)) {
     failures.push("robots.txt: missing canonical sitemap declaration");
   }
   for (const path of ["/", "/projects/", "/cv/", "/privacy/", "/AGENTS.md", "/llms.txt", "/overview.md", "/repositories.md"]) {
-    const url = `https://johnviklund.com${path}`;
+    const url = `${origin}${path}`;
     if (!sitemap.includes(`<loc>${url}</loc>`)) failures.push(`sitemap.xml: missing ${path}`);
   }
 }
 
 async function checkFreshnessParity() {
   // The prompt's date is the generated site.json updatedAt, whatever the builder's signature looks like.
-  const [{ updatedAt }, agents, llms, cv, sitemap] = await Promise.all([
-    import(pathToFileURL(resolve(root, "src", "data", "owner.js")).href),
+  const [agents, llms, cv, sitemap] = await Promise.all([
     readFile(resolve(publicDir, "AGENTS.md"), "utf8"),
     readFile(resolve(publicDir, "llms.txt"), "utf8"),
     readFile(resolve(publicDir, "cv.md"), "utf8"),

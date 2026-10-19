@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { parseRoleBatch, buildRoleRequirementPreview } from "../public/comparison-transfer.js";
+import { parseRoleBatch, buildRoleRequirementPreview } from "../site/assets/comparison-transfer.js";
 import { PLAIN_LINE_BATCH, PLAIN_LINE_REQUIREMENT_COUNTS } from "./fixtures/requirement-sections.mjs";
 import { JOHN } from "./fixtures/owners.mjs";
 import evidenceCatalog from "../src/data/comparison-evidence.js";
@@ -21,7 +21,7 @@ import {
   COMPARISON_CONTRACT as BROWSER_COMPARISON_CONTRACT,
   COMPARISON_RESULT_SCHEMA as BROWSER_COMPARISON_RESULT_SCHEMA,
   validateComparisonResult as validateBrowserComparisonResult,
-} from "../public/comparison-contract.js";
+} from "../site/assets/comparison-contract.js";
 
 const ROLES = [
   {

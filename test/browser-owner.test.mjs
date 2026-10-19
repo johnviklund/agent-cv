@@ -5,10 +5,10 @@ import { fileURLToPath } from "node:url";
 
 import { loadOwner } from "../scripts/owner.mjs";
 import { renderSite } from "../scripts/build-site.mjs";
-import { readOwner } from "../public/dom.js";
-import { agentLabel, applicationTitle, busyChatMessage } from "../public/chat-state.js";
-import { buildComparisonViewModel, comparisonOwnerCopy } from "../public/comparison-view.js";
-import { registerWebMCPTools } from "../public/webmcp.js";
+import { readOwner } from "../site/assets/dom.js";
+import { agentLabel, applicationTitle, busyChatMessage } from "../site/assets/chat-state.js";
+import { buildComparisonViewModel, comparisonOwnerCopy } from "../site/assets/comparison-view.js";
+import { registerWebMCPTools } from "../site/assets/webmcp.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const example = await loadOwner({ root: resolve(root, "examples/owner") });

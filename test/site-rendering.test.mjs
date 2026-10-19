@@ -6,38 +6,24 @@ import { tmpdir } from "node:os";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { loadOwner } from "../scripts/owner.mjs";
+import { loadOwner, resolveOwnerRoot } from "../scripts/owner.mjs";
 import { buildSite, renderSite } from "../scripts/build-site.mjs";
 import { privateDataFiles } from "../scripts/sync-owner.mjs";
+import { escapeHtml } from "../site/templates/html.mjs";
+import { spawnSync } from "node:child_process";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const example = resolve(root, "examples/owner");
-const published = (path) => readFile(resolve(root, "public", path), "utf8");
 const ada = () => loadOwner({ root: example });
-const current = await loadOwner();
+// John's frozen pre-template output (npm run golden:capture) lives in his owner root, never in CI.
+const frozen = (path) => readFile(resolve(resolveOwnerRoot(), "golden/site", path), "utf8").catch(() => null);
+const noFrozen = !(await frozen("index.html")) && "needs John's frozen golden snapshot";
 
 async function tempDir(context) {
   const dir = await mkdtemp(resolve(tmpdir(), "agent-cv-site-"));
   context.after(() => rm(dir, { recursive: true, force: true }));
   return dir;
 }
-
-// Published copies of the generated pages; experience/ wrote raw "&" where the renderer escapes it.
-const PUBLISHED_PAGES = ["index.html", "about/index.html", "experience/index.html", "projects/index.html",
-  "cv/index.html", "contact/index.html", "privacy/index.html", "application/index.html", "admin/index.html",
-  "404.html", "robots.txt", "sitemap.xml", "llms.txt", "AGENTS.md", "_headers"];
-
-test("John's pages and discovery files render the published files byte for byte", {
-  skip: current.owner.slug !== "john-viklund" && "needs John's owner root",
-}, async () => {
-  const pages = renderSite(current);
-  assert.deepEqual(Object.keys(pages).sort(), [...PUBLISHED_PAGES].sort());
-  for (const path of PUBLISHED_PAGES) {
-    const expected = await published(path);
-    const actual = path === "experience/index.html" ? pages[path].replaceAll(" &amp; ", " & ") : pages[path];
-    assert.equal(actual, expected, path);
-  }
-});
 
 test("a fictional home renders Ada from structured data", async () => {
   const html = renderSite(await ada())["index.html"];
@@ -86,7 +72,7 @@ test("owner and site text renders literally and hostile values stay inert", asyn
   };
   const html = renderSite(hostile)["index.html"];
 
-  assert.match(html, /Uses &lt;em&gt;tags&lt;\/em&gt; &amp; &quot;quotes&quot;/);
+  assert.match(html, /Uses &lt;em&gt;tags&lt;\/em&gt; & &quot;quotes&quot;/);
   assert.match(html, /<title>Ada &lt;\/title&gt;&lt;script&gt;alert\(1\)&lt;\/script&gt; — Agent CV<\/title>/);
   assert.match(html, /"name": "Ada \\u003c\/title\\u003e\\u003cscript\\u003ealert\(1\)\\u003c\/script\\u003e"/);
   assert.match(html, /href="mailto:&quot;&gt;&lt;script&gt;alert\(2\)&lt;\/script&gt;@x\.example"/);
@@ -94,14 +80,7 @@ test("owner and site text renders literally and hostile values stay inert", asyn
   assert.doesNotMatch(html, /<script>alert|<em>|<b>/);
 });
 
-test("rendered home keeps its CSP hash and the controller contracts", async () => {
-  const contract = (html) => ({
-    ids: [...html.matchAll(/\sid="([^"]+)"/g)].map((match) => match[1]),
-    // The analytics beacon is configuration, not a controller hook.
-    data: [...new Set([...html.matchAll(/\s(data-[a-z-]+)/g)].map((match) => match[1]))].filter((name) => name !== "data-cf-beacon").sort(),
-    nav: [...html.matchAll(/<nav[^>]*>([\s\S]*?)<\/nav>/g)].map((match) => [...match[1].matchAll(/href="([^"]+)"/g)].length),
-    scripts: [...html.matchAll(/<script[^>]*src="([^"]+)"/g)].map((match) => match[1]).filter((src) => src.startsWith("/")),
-  });
+test("rendered home keeps its CSP hash", async () => {
   const pages = renderSite(await ada());
   const [inline] = [...pages["index.html"].matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)];
   const hash = `sha256-${createHash("sha256").update(inline[1]).digest("base64")}`;
@@ -109,8 +88,20 @@ test("rendered home keeps its CSP hash and the controller contracts", async () =
   assert.match(inline[1], /"@type": "ProfilePage"/);
   assert.ok(pages["_headers"].includes(`'${hash}'`), hash);
   assert.match(pages["_headers"], /^\/ada-example-cv\.pdf\n.*filename="ada-example-cv\.pdf"/ms);
+});
+
+test("rendered home keeps John's published controller contracts", { skip: noFrozen }, async () => {
+  const contract = (html) => ({
+    ids: [...html.matchAll(/\sid="([^"]+)"/g)].map((match) => match[1]),
+    // The analytics beacon is configuration, not a controller hook.
+    // The analytics beacon is configuration and the owner attributes postdate the snapshot (T5).
+    data: [...new Set([...html.matchAll(/\s(data-[a-z-]+)/g)].map((match) => match[1]))].filter((name) => name !== "data-cf-beacon" && !name.startsWith("data-owner-")).sort(),
+    nav: [...html.matchAll(/<nav[^>]*>([\s\S]*?)<\/nav>/g)].map((match) => [...match[1].matchAll(/href="([^"]+)"/g)].length),
+    scripts: [...html.matchAll(/<script[^>]*src="([^"]+)"/g)].map((match) => match[1]).filter((src) => src.startsWith("/")),
+  });
+  const pages = renderSite(await ada());
   // The published page is John's; the fictional page must expose the same hooks to the browser code.
-  const expected = contract(await published("index.html"));
+  const expected = contract(await frozen("index.html"));
   const actual = contract(pages["index.html"]);
   assert.deepEqual(actual.ids, expected.ids);
   assert.deepEqual(actual.data, expected.data);
@@ -147,16 +138,20 @@ test("unsafe inline links in page prose fail with their site.json field", async 
   }
 });
 
-test("discovery files keep the engine contract and follow the owner's origin, slug and updatedAt", async () => {
-  const { owner, site } = await ada();
-  const pages = renderSite({ owner, site: { ...site, updatedAt: "2027-02-03" } });
-
+test("discovery files keep John's published API and tool names", { skip: noFrozen }, async () => {
+  const pages = renderSite(await ada());
   for (const name of ["llms.txt", "AGENTS.md"]) {
-    const engine = await published(name);
+    const engine = await frozen(name);
     for (const contract of [...engine.matchAll(/`((?:POST|GET) \/api\/[a-z/:]+|[a-z]+_[a-z_]+)`/g)].map((match) => match[1])) {
       assert.ok(pages[name].includes(contract), `${name}: ${contract}`);
     }
   }
+});
+
+test("discovery files keep the engine contract and follow the owner's origin, slug and updatedAt", async () => {
+  const { owner, site } = await ada();
+  const pages = renderSite({ owner, site: { ...site, updatedAt: "2027-02-03" } });
+
   assert.match(pages["AGENTS.md"], /At most 16 requirements per role may be assessed in rows, and up to 96 extracted requirements/);
   assert.match(pages["llms.txt"], /Data last updated: 2027-02-03\n$/);
   assert.match(pages["AGENTS.md"], /Public data last updated: 3 February 2027\./);
@@ -178,7 +173,7 @@ test("the built site publishes four Markdown sources and no private material", a
 
   assert.deepEqual(listed, [...files].sort());
   assert.deepEqual(listed.filter((file) => file.endsWith(".md")).sort(),
-    ["AGENTS.md", "cv.md", "overview.md", "projects.md", "repositories.md"]);
+    ["AGENTS.md", "cv.md", "overview.md", "positions-template.md", "projects.md", "repositories.md"]);
   for (const file of privateDataFiles) assert.equal(listed.includes(file), false, file);
   const text = (await Promise.all(listed.map((file) => readFile(resolve(out, file), "utf8")))).join("\n");
   const { owner } = await ada();
@@ -186,9 +181,52 @@ test("the built site publishes four Markdown sources and no private material", a
     assert.equal(text.includes(secret), false, secret);
   }
   // The private sources sit beside the public ones in data/; no line of theirs is published.
+  // Short lines are too generic to prove a leak; the example owner's skills.md has only short ones.
+  let checked = 0;
   for (const file of privateDataFiles) {
     const lines = (await readFile(resolve(root, "data", file), "utf8")).split("\n").filter((line) => line.length > 40);
-    assert.ok(lines.length > 0, file);
+    checked += lines.length;
     for (const line of lines) assert.equal(text.includes(line), false, `${file}: ${line}`);
   }
+  assert.ok(checked > 0);
+});
+
+test("a bare ampersand stays raw and one that could start a character reference is escaped", () => {
+  for (const [text, html] of [
+    ["CRM & AI", "CRM & AI"],
+    ["R&D", "R&amp;D"],
+    ["&amp; literal", "&amp;amp; literal"],
+    ["&#39;", "&amp;#39;"],
+    ["ends with &", "ends with &"],
+    ["<b> \"q\"", "&lt;b&gt; &quot;q&quot;"],
+  ]) assert.equal(escapeHtml(text), html, text);
+});
+
+const ASSETS = ["404.html", "about/index.html", "admin/index.html", "application/index.html", "contact/index.html",
+  "cv/index.html", "experience/index.html", "index.html", "privacy/index.html", "projects/index.html",
+  "fonts/archivo-latin.woff2", "fonts/inter-latin.woff2", "fonts/jetbrains-mono-latin.woff2", "tokens.css", "styles.css",
+  "app.js", "application.js", "admin.js", "navigation.js", "comparison-contract.js", "evidence.json", "og-image.png",
+  "favicon.svg", "positions-template.md"];
+
+test("a clean build holds every page and engine asset, and a rebuild drops stale files but keeps the sources", async (context) => {
+  const out = resolve(await tempDir(context), "site");
+  const sources = async () => (await readdir(resolve(root, "site/assets"), { recursive: true })).sort();
+  const before = await sources();
+
+  await buildSite({ ...(await ada()), out });
+  for (const file of ASSETS) assert.ok((await readFile(resolve(out, file))).length > 0, file);
+  assert.equal(await readFile(resolve(out, "tokens.css"), "utf8"), await readFile(resolve(root, "tokens.css"), "utf8"));
+
+  await writeFile(resolve(out, "stale.txt"), "old");
+  await buildSite({ ...(await ada()), out });
+  await assert.rejects(readFile(resolve(out, "stale.txt")), { code: "ENOENT" });
+  assert.deepEqual(await sources(), before);
+  assert.ok(before.includes("app.js"));
+});
+
+test("generated site output stays out of Git while the engine assets are tracked", () => {
+  const ignored = (path) => spawnSync("git", ["check-ignore", "-q", path], { cwd: root }).status === 0;
+  assert.equal(ignored("build/site/index.html"), true);
+  assert.equal(ignored("build/site/john-viklund-cv.pdf"), true);
+  assert.equal(ignored("site/assets/app.js"), false);
 });

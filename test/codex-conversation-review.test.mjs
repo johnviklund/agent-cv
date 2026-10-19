@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
+import { readSite } from "./fixtures/site.mjs";
+
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("makes conversation learning a private approval-gated Codex workflow", async () => {
@@ -12,8 +14,8 @@ test("makes conversation learning a private approval-gated Codex workflow", asyn
     read(".gitignore"),
     read("README.md"),
     read("USERGUIDE.md"),
-    read("public/AGENTS.md"),
-    read("public/llms.txt"),
+    readSite("AGENTS.md"),
+    readSite("llms.txt"),
   ]);
 
   assert.match(agents, /use the repo-local `review-agent-cv-conversations` skill automatically/i);

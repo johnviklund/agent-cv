@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { buildCvPrintHtml, countPdfPages } from "../scripts/cv-pdf.mjs";
+import { content, readSite } from "./fixtures/site.mjs";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
@@ -45,10 +46,11 @@ test("deploy always regenerates the ignored PDF", async () => {
   const [pkg, gitignore, headers] = await Promise.all([
     read("package.json").then(JSON.parse),
     read(".gitignore"),
-    read("public/_headers"),
+    readSite("_headers"),
   ]);
 
-  assert.match(pkg.scripts.deploy, /npm run sync:data && npm run build:cv-pdf && .*wrangler deploy/);
-  assert.match(gitignore, /^public\/john-viklund-cv\.pdf$/m);
-  assert.match(headers, /\/john-viklund-cv\.pdf\n  Content-Type: application\/pdf\n  Content-Disposition: inline; filename="john-viklund-cv\.pdf"/);
+  assert.match(pkg.scripts.deploy, /npm run sync:data && npm run build:site && npm run build:cv-pdf && .*wrangler deploy/);
+  assert.match(gitignore, /^build\/$/m);
+  const pdf = `${content.owner.slug}-cv.pdf`;
+  assert.ok(headers.includes(`/${pdf}\n  Content-Type: application/pdf\n  Content-Disposition: inline; filename="${pdf}"`));
 });

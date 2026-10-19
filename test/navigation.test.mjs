@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { initializeResponsiveNavigation } from "../public/navigation.js";
+import { initializeResponsiveNavigation } from "../site/assets/navigation.js";
 
 function createNavigationElement() {
   const attributes = new Map();

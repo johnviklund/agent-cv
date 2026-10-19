@@ -10,7 +10,7 @@ import {
   publicErrorMessage,
   validateChatPayload,
 } from "../src/chat-core.js";
-import { consumeEventStream, extractTextDelta } from "../public/stream.js";
+import { consumeEventStream, extractTextDelta } from "../site/assets/stream.js";
 import { JOHN } from "./fixtures/owners.mjs";
 
 test("accepts a short grounded conversation and preserves only role and text", () => {

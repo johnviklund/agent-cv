@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { registerWebMCPTools } from "../public/webmcp.js";
+import { registerWebMCPTools } from "../site/assets/webmcp.js";
 
 const DIGEST = `sha256:${"a".repeat(64)}`;
 const ROLES = [

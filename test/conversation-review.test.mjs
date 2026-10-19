@@ -6,7 +6,7 @@ import {
   conversationReviewReasons,
   groupConversationCandidates,
   settleConversationPageRequest,
-} from "../public/conversation-review.js";
+} from "../site/assets/conversation-review.js";
 
 test("conversation review reasons identify each actionable archive signal", () => {
   assert.deepEqual(conversationReviewReasons({ outcome: "failed", answer: "" }), ["failed", "unanswered"]);

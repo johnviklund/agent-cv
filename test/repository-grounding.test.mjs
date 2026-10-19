@@ -5,12 +5,15 @@ import {
   renderRepositoryKnowledge,
   validateRepositoryManifest,
 } from "../scripts/repository-grounding.mjs";
+import { content, readSite } from "./fixtures/site.mjs";
 
 const publicRepositoryConfig = JSON.parse(await readFile(
   new URL("../config/repositories.json", import.meta.url),
   "utf8",
 ));
-const projectsPage = await readFile(new URL("../public/projects/index.html", import.meta.url), "utf8");
+const projectsPage = await readSite("projects/index.html");
+// John's project list is owner content; the example owner lists its own placeholder project.
+const johnOnly = { skip: content.owner.slug !== "john-viklund" && "needs John's owner root" };
 const projectsMarkdown = await readFile(new URL("../data/projects.md", import.meta.url), "utf8");
 
 test("accepts an explicit public-repository allowlist with bounded documentation paths", () => {
@@ -74,7 +77,7 @@ test("renders repository evidence as explicitly untrusted bounded snapshots", ()
   assert.equal(markdown.endsWith("\n\n"), false);
 });
 
-test("keeps public evidence and project links limited to the approved repositories", () => {
+test("keeps public evidence and project links limited to the approved repositories", johnOnly, () => {
   assert.deepEqual(
     publicRepositoryConfig.map(({ repository }) => repository),
     ["johnviklund/agent-cv", "johnviklund/j-skills", "johnviklund/oma-space-launch"],
@@ -91,8 +94,7 @@ test("keeps public evidence and project links limited to the approved repositori
   assert.doesNotMatch(projectsMarkdown, /github\.com\/[^)]*cx-intelligence/i);
 });
 
-test("keeps source links out of the project action column", async () => {
-  const projectsPage = await readFile(new URL("../public/projects/index.html", import.meta.url), "utf8");
+test("keeps source links out of the project action column", johnOnly, async () => {
   const rows = [...projectsPage.matchAll(/<article class="project-row">([\s\S]*?)<\/article>/g)].map((match) => match[1]);
 
   assert.equal(rows.length, 4);

@@ -9,7 +9,7 @@ import {
   persistComparisonSnapshot,
   resolveSessionStorage,
   restoreComparisonSnapshot,
-} from "../public/comparison-state.js";
+} from "../site/assets/comparison-state.js";
 
 const DIGEST = `sha256:${"a".repeat(64)}`;
 const OTHER_DIGEST = `sha256:${"b".repeat(64)}`;

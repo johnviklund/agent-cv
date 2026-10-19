@@ -70,7 +70,9 @@ Deploying a fork needs its own Cloudflare setup: a KV namespace, OpenAI and admi
 | Path | Contents |
 | --- | --- |
 | `src/` | Cloudflare Worker: chat, comparison, archive, applications, and streaming |
-| `public/` | Static pages, browser scripts, and published Markdown and agent resources |
+| `site/` | Page templates and engine assets: browser scripts, styles, fonts, and images |
+| `public/` | Synchronized public Markdown and comparison evidence, copied into the built site |
+| `build/site/` | Generated, ignored site that Wrangler serves; built by `npm run build:site` |
 | `data/` | Canonical Markdown sources; public files are tracked, private ones are ignored |
 | `config/` | Repository allowlist, comparison evidence, and admin origin |
 | `scripts/` | Data synchronization, checks, and maintenance tools |

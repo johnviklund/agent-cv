@@ -10,6 +10,7 @@ import { promisify } from "node:util";
 
 import { collectOutputs, diffGolden, writeGolden } from "../scripts/golden.mjs";
 import { buildComparisonInstructions } from "../src/comparison-core.js";
+import { resolveOwnerRoot } from "../scripts/owner.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const run = promisify(execFile);
@@ -140,6 +141,8 @@ async function driftedSnapshot(context) {
   const dir = resolve(workspace, "golden");
   const ownerRoot = resolve(workspace, "owner");
   await mkdir(ownerRoot);
+  // The diff builds the site again, so its owner root carries the same owner configuration.
+  for (const file of ["owner.json", "site.json"]) await copyFile(resolve(resolveOwnerRoot(), file), resolve(ownerRoot, file));
   assert.equal((await golden("capture", "--golden", dir)).code, 0);
   const current = {};
   for (const file of ["llms.txt", "sitemap.xml"]) {

@@ -9,7 +9,7 @@ export async function writeComparisonContract({ repositoryRoot = root } = {}) {
   const contract = validateContract(JSON.parse(await readFile(configPath, "utf8")));
   const moduleSource = generatedModule(contract);
   const workerPath = resolve(repositoryRoot, "src/data/comparison-contract.js");
-  const publicPath = resolve(repositoryRoot, "public/comparison-contract.js");
+  const publicPath = resolve(repositoryRoot, "site/assets/comparison-contract.js");
   await Promise.all([mkdir(dirname(workerPath), { recursive: true }), mkdir(dirname(publicPath), { recursive: true })]);
   await Promise.all([writeAtomically(workerPath, moduleSource), writeAtomically(publicPath, moduleSource)]);
   return contract;

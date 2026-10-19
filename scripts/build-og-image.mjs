@@ -6,7 +6,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 // Renders the 1200×630 social preview card used by og:image and twitter:image.
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const output = resolve(root, "public", "og-image.png");
+const output = resolve(root, "site", "assets", "og-image.png");
 const WIDTH = 1200;
 const HEIGHT = 630;
 
@@ -23,8 +23,8 @@ function findChromium() {
   throw new Error("Chromium is required to build /og-image.png. Install it or set CHROME_PATH.");
 }
 
-const tokens = await readFile(resolve(root, "public", "tokens.css"), "utf8");
-const font = (name) => pathToFileURL(resolve(root, "public", "fonts", name)).href;
+const tokens = await readFile(resolve(root, "tokens.css"), "utf8");
+const font = (name) => pathToFileURL(resolve(root, "site", "assets", "fonts", name)).href;
 const html = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><style>
 ${tokens}
@@ -72,4 +72,4 @@ try {
   await rm(workDir, { recursive: true, force: true });
 }
 
-console.log(`Built public/og-image.png (${Math.round((await stat(output)).size / 1024)} KB).`);
+console.log(`Built site/assets/og-image.png (${Math.round((await stat(output)).size / 1024)} KB).`);

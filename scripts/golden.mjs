@@ -1,11 +1,12 @@
 import { createHash } from "node:crypto";
-import { mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { registerHooks } from "node:module";
 import { basename, dirname, relative, resolve, sep } from "node:path";
+import { tmpdir } from "node:os";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-import { resolveOwnerRoot } from "./owner.mjs";
+import { loadOwner, resolveOwnerRoot } from "./owner.mjs";
 
 const engineRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -26,12 +27,17 @@ async function listFiles(dir) {
     .sort();
 }
 
+// The site is built fresh for the selected owner into a temporary directory, so no earlier build leaks in.
 export async function collectOutputs({ root = engineRoot } = {}) {
   const outputs = {};
-  const site = resolve(root, "public");
-  for (const file of await listFiles(site)) {
-    if (file.endsWith(".pdf") || file.endsWith(".DS_Store")) continue;
-    outputs[`site/${file}`] = await readFile(resolve(site, file));
+  const site = await mkdtemp(resolve(tmpdir(), "agent-cv-golden-"));
+  try {
+    // Imported here so the argument checks run without the site templates.
+    const { buildSite } = await import(pathToFileURL(resolve(root, "scripts/build-site.mjs")).href);
+    await buildSite({ ...(await loadOwner()), out: site });
+    for (const file of await listFiles(site)) outputs[`site/${file}`] = await readFile(resolve(site, file));
+  } finally {
+    await rm(site, { recursive: true, force: true });
   }
 
   const module = (path) => import(pathToFileURL(resolve(root, path)).href);

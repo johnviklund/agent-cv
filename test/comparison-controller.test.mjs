@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { COMPARISON_STORAGE_KEY } from "../public/comparison-state.js";
-import { createComparisonController } from "../public/comparison-controller.js";
-import { createWorkspaceController } from "../public/workspace-controller.js";
+import { COMPARISON_STORAGE_KEY } from "../site/assets/comparison-state.js";
+import { createComparisonController } from "../site/assets/comparison-controller.js";
+import { createWorkspaceController } from "../site/assets/workspace-controller.js";
 
 const DIGEST = `sha256:${"a".repeat(64)}`;
 const OTHER_DIGEST = `sha256:${"b".repeat(64)}`;

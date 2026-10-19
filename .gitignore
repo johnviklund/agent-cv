@@ -21,12 +21,9 @@ data/personal.md
 data/skills.md
 src/data/
 
-# Generated at deploy from data/cv.md by npm run build:cv-pdf.
-public/john-viklund-cv.pdf
-
 # Private working material and superseded data exports.
 docs/agent-cv-data.zip
 docs/agent-cv-master-profile.md
 
-# Generated site output (npm run build:site).
+# Generated site output (npm run build:site), including the deploy-time CV PDF.
 build/

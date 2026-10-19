@@ -2,6 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
+import { content, readSite } from "./fixtures/site.mjs";
+
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
 const TOOL_NAMES = [
@@ -13,7 +15,7 @@ const TOOL_NAMES = [
 
 test("evidence and comparison result schemas evolve independently", async () => {
   const [evidence, contract] = await Promise.all([
-    read("public/evidence.json").then(JSON.parse),
+    readSite("evidence.json").then(JSON.parse),
     read("config/comparison-contract.json").then(JSON.parse),
   ]);
 
@@ -24,8 +26,8 @@ test("evidence and comparison result schemas evolve independently", async () => 
 
 test("machine-readable discovery documents the comparison surface without presenting WebMCP tools as endpoints", async () => {
   const [llms, agents, contract] = await Promise.all([
-    read("public/llms.txt"),
-    read("public/AGENTS.md"),
+    readSite("llms.txt"),
+    readSite("AGENTS.md"),
     read("config/comparison-contract.json").then(JSON.parse),
   ]);
 
@@ -55,8 +57,8 @@ test("machine-readable discovery documents the comparison surface without presen
 
 test("batch entry publishes a downloadable Markdown template", async () => {
   const [home, template] = await Promise.all([
-    read("public/index.html"),
-    read("public/positions-template.md"),
+    readSite("index.html"),
+    readSite("positions-template.md"),
   ]);
   assert.match(home, /href="\/positions-template\.md"[^>]*download/i);
   assert.match(template, /^## Role(?: title)?:/m);
@@ -66,7 +68,7 @@ test("batch entry publishes a downloadable Markdown template", async () => {
 
 test("compatibility notes separate native WebMCP validation from portable fallbacks", async () => {
   const [agents, readme, submission] = await Promise.all([
-    read("public/AGENTS.md"),
+    readSite("AGENTS.md"),
     read("README.md"),
     read("docs/webmcp-challenge-submission.md"),
   ]);
@@ -86,8 +88,11 @@ test("compatibility notes separate native WebMCP validation from portable fallba
   assert.match(readme, /pre-existing Agent CV/i);
 });
 
-test("privacy copy explains transient comparison state, processor retention, and separate persistent features", async () => {
-  const privacy = await read("public/privacy/index.html");
+// John's privacy copy is owner content; the example owner's placeholder page does not carry it (U7).
+const johnOnly = { skip: content.owner.slug !== "john-viklund" && "needs John's owner root" };
+
+test("privacy copy explains transient comparison state, processor retention, and separate persistent features", johnOnly, async () => {
+  const privacy = await readSite("privacy/index.html");
   for (const pattern of [
     /same-origin <code>sessionStorage<\/code>/i,
     /tab duplication|duplicat(?:e|ing) a tab/i,
@@ -112,13 +117,13 @@ test("privacy copy explains transient comparison state, processor retention, and
 
 test("every page loads the shared navigation controller and preserves its CSS-only fallback", async () => {
   const pages = [
-    "public/index.html", "public/about/index.html", "public/application/index.html",
-    "public/contact/index.html", "public/cv/index.html", "public/experience/index.html",
-    "public/privacy/index.html", "public/projects/index.html", "public/admin/index.html",
-    "public/404.html",
+    "index.html", "about/index.html", "application/index.html",
+    "contact/index.html", "cv/index.html", "experience/index.html",
+    "privacy/index.html", "projects/index.html", "admin/index.html",
+    "404.html",
   ];
   for (const path of pages) {
-    const html = await read(path);
+    const html = await readSite(path);
     assert.match(html, /<script\s+src="\/navigation\.js"\s+type="module"><\/script>/i, path);
     assert.match(html, /<details\s+class="mobile-nav">/i, path);
     assert.doesNotMatch(
@@ -129,9 +134,9 @@ test("every page loads the shared navigation controller and preserves its CSS-on
   }
 
   const [app, navigation, styles] = await Promise.all([
-    read("public/app.js"),
-    read("public/navigation.js"),
-    read("public/styles.css"),
+    readSite("app.js"),
+    readSite("navigation.js"),
+    readSite("styles.css"),
   ]);
   assert.doesNotMatch(app, /initializeResponsiveNavigation/);
   assert.match(navigation, /\(max-width: 900px\)/);
@@ -145,39 +150,41 @@ test("every page loads the shared navigation controller and preserves its CSS-on
 
 test("public pages share a social preview card and cookieless visit analytics", async () => {
   const sharedPages = [
-    "public/index.html", "public/about/index.html", "public/contact/index.html",
-    "public/cv/index.html", "public/experience/index.html", "public/privacy/index.html",
-    "public/projects/index.html",
+    "index.html", "about/index.html", "contact/index.html",
+    "cv/index.html", "experience/index.html", "privacy/index.html",
+    "projects/index.html",
   ];
   for (const path of sharedPages) {
-    const html = await read(path);
+    const html = await readSite(path);
     const canonical = html.match(/<link rel="canonical" href="([^"]+)">/)?.[1];
     assert.ok(canonical, path);
     assert.match(html, new RegExp(`<meta property="og:url" content="${canonical}">`), path);
     assert.match(html, /<meta property="og:title" content="[^"]+">/, path);
-    assert.match(html, /<meta property="og:image" content="https:\/\/johnviklund\.com\/og-image\.png">/, path);
+    assert.ok(html.includes(`<meta property="og:image" content="${content.owner.site.origin}/og-image.png">`), path);
     assert.match(html, /<meta name="twitter:card" content="summary_large_image">/, path);
   }
 
   const beacon = /<script type="module" src="https:\/\/static\.cloudflareinsights\.com\/beacon\.min\.js" data-cf-beacon='\{"token": "[a-f0-9]{32}"\}'><\/script>/;
-  for (const path of [...sharedPages, "public/application/index.html", "public/404.html"]) {
-    assert.match(await read(path), beacon, path);
+  // An owner without a beacon token gets no analytics script at all.
+  const analytics = Boolean(content.owner.analytics?.cloudflareBeaconToken);
+  for (const path of [...sharedPages, "application/index.html", "404.html"]) {
+    assert[analytics ? "match" : "doesNotMatch"](await readSite(path), analytics ? beacon : /cloudflareinsights/, path);
   }
-  assert.doesNotMatch(await read("public/admin/index.html"), /cloudflareinsights/);
+  assert.doesNotMatch(await readSite("admin/index.html"), /cloudflareinsights/);
 
   const [headers, privacy, image] = await Promise.all([
-    read("public/_headers"),
-    read("public/privacy/index.html"),
-    readFile(new URL("../public/og-image.png", import.meta.url)),
+    readSite("_headers"),
+    readSite("privacy/index.html"),
+    readSite("og-image.png", null),
   ]);
   assert.match(headers, /Content-Security-Policy:[^\n]*script-src 'self' https:\/\/static\.cloudflareinsights\.com /);
   assert.match(headers, /Content-Security-Policy:[^\n]*connect-src 'self' https:\/\/cloudflareinsights\.com;/);
-  assert.match(privacy, /Cloudflare Web Analytics[^<]*no cookies/);
+  if (analytics) assert.match(privacy, /Cloudflare Web Analytics[^<]*no cookies/);
   assert.deepEqual([image.readUInt32BE(16), image.readUInt32BE(20)], [1200, 630]);
 });
 
 test("headers expose evidence JSON safely and keep WebMCP same-origin", async () => {
-  const headers = await read("public/_headers");
+  const headers = await readSite("_headers");
   const evidenceBlock = headers.match(/\/evidence\.json\n([\s\S]*?)(?=\n\/|$)/)?.[1] || "";
   assert.match(evidenceBlock, /Access-Control-Allow-Origin:\s*\*/i);
   assert.match(evidenceBlock, /Content-Type:\s*application\/json; charset=utf-8/i);
@@ -197,16 +204,16 @@ test("evidence resource access uses the same content-free path telemetry", async
 
 test("the published design tokens and self-hosted font assets are deployable under the existing CSP", async () => {
   const [canonical, published, styles, headers] = await Promise.all([
-    read("tokens.css"), read("public/tokens.css"), read("public/styles.css"), read("public/_headers"),
+    read("tokens.css"), readSite("tokens.css"), readSite("styles.css"), readSite("_headers"),
   ]);
   assert.equal(published, canonical, "sync:data must publish the canonical design tokens");
   assert.match(styles, /@import url\("\/tokens\.css"\)/);
   const fontPaths = [...styles.matchAll(/src:\s*url\("(\/fonts\/[^"/]+\.woff2)"\)/g)].map((match) => match[1]);
   assert.equal(fontPaths.length, 3);
   for (const path of fontPaths) {
-    const bytes = await readFile(new URL(`../public${path}`, import.meta.url));
+    const bytes = await readSite(`.${path}`, null);
     assert.equal(bytes.subarray(0, 4).toString(), "wOF2", `${path} must be a real WOFF2 font`);
-    assert.match(await read(`public${path.replace("-latin.woff2", "-OFL.txt")}`), /SIL OPEN FONT LICENSE/);
+    assert.match(await readSite(`.${path.replace("-latin.woff2", "-OFL.txt")}`), /SIL OPEN FONT LICENSE/);
   }
   assert.doesNotMatch(styles, /url\(["']?https?:\/\//);
   assert.match(headers, /font-src 'self'/);
@@ -229,10 +236,10 @@ test("chat knowledge includes the canonical public CV", async () => {
 
 test("external links open in a new tab without exposing the opener", async () => {
   const pages = await Promise.all([
-    "public/index.html", "public/404.html", "public/about/index.html", "public/admin/index.html",
-    "public/application/index.html", "public/contact/index.html", "public/cv/index.html",
-    "public/experience/index.html", "public/privacy/index.html", "public/projects/index.html",
-  ].map(read));
+    "index.html", "404.html", "about/index.html", "admin/index.html",
+    "application/index.html", "contact/index.html", "cv/index.html",
+    "experience/index.html", "privacy/index.html", "projects/index.html",
+  ].map((path) => readSite(path)));
   const links = pages.flatMap((page) => page.match(/<a\s[^>]*href="https?:\/\/[^"]*"[^>]*>/gi) || []);
 
   assert.ok(links.length > 0);

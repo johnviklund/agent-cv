@@ -12,7 +12,7 @@ import {
   takePendingPrompt,
   storePendingApplication,
   takePendingApplication,
-} from "../public/chat-state.js";
+} from "../site/assets/chat-state.js";
 
 const completedConversation = (messageCount) => Array.from({ length: messageCount }, (_, index) => ({
   role: index % 2 === 0 ? "user" : "assistant",

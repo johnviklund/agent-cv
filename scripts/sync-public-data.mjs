@@ -23,7 +23,6 @@ async function main() {
   await mkdir(resolve(root, "public"), { recursive: true });
   await mkdir(resolve(root, "src", "data"), { recursive: true });
   await Promise.all([
-    copyFile(resolve(root, "tokens.css"), resolve(root, "public", "tokens.css")),
     ...publicFiles.map((file) => copyFile(
       resolve(root, "data", file),
       resolve(root, "public", file),

@@ -1,7 +1,8 @@
-// Escapes text for HTML text and double-quoted attributes.
+// Escapes text for HTML text and double-quoted attributes. A bare "&" needs no escape; one that
+// could start a character reference (a letter, digit or # follows) does.
 export function escapeHtml(value) {
   return String(value)
-    .replace(/&/g, "&amp;")
+    .replace(/&(?=[A-Za-z0-9#])/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");

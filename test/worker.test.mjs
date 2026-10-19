@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { BudgetCounter, handleRequest } from "../src/worker.js";
 import { readRecordsWithStatus } from "../src/archive.js";
-import { parseRoleBatch } from "../public/comparison-transfer.js";
+import { parseRoleBatch } from "../site/assets/comparison-transfer.js";
 import { PLAIN_LINE_BATCH, PLAIN_LINE_REQUIREMENT_COUNTS } from "./fixtures/requirement-sections.mjs";
 import { JOHN } from "./fixtures/owners.mjs";
 

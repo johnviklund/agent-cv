@@ -59,6 +59,34 @@ test("invalid site sections name site.json and the field", async (context) => {
   }
 });
 
+test("a prose block without exactly one type fails with its site.json field", async (context) => {
+  const site = JSON.parse(await readFile(resolve(example, "site.json"), "utf8"));
+  const withPage = (name, key, value) => ({ ...site, pages: { ...site.pages, [name]: { ...site.pages[name], [key]: value } } });
+
+  for (const [value, message] of [
+    [withPage("about", "body", [{ p: "fine" }, {}]), "pages.about.body[1] must have at least 1 key(s)"],
+    [withPage("cv", "body", [{}]), "pages.cv.body[0] must have at least 1 key(s)"],
+    [withPage("privacy", "sections", [[{ h2: "Saved" }], [{ p: "fine" }, {}]]), "pages.privacy.sections[1][1] must have at least 1 key(s)"],
+    [withPage("about", "body", [{ p: "one", h2: "two" }]), "pages.about.body[0] must have at most 1 key(s)"],
+  ]) {
+    const dir = await tempDir(context);
+    await cp(example, dir, { recursive: true });
+    await writeFile(resolve(dir, "site.json"), JSON.stringify(value));
+    await assert.rejects(loadOwner({ root: dir }), { message: `site.json: ${message}` });
+  }
+});
+
+test("each prose block type renders its markup", async () => {
+  const { owner, site } = await ada();
+  const body = [{ p: "Para" }, { h2: "Head" }, { h3: "Sub" }, { kicker: "Meta" }, { quote: "Said" }, { list: ["One", "Two"] }];
+  const html = renderSite({ owner, site: { ...site, pages: { ...site.pages, about: { ...site.pages.about, body } } } })["about/index.html"];
+
+  for (const markup of ["<p>Para</p>", "<h2>Head</h2>", "<h3>Sub</h3>", '<p class="cv-kicker">Meta</p>',
+    "<blockquote>Said</blockquote>", "<ul><li>One</li><li>Two</li></ul>"]) {
+    assert.ok(html.includes(`      ${markup}\n`), markup);
+  }
+});
+
 test("owner and site text renders literally and hostile values stay inert", async () => {
   const { owner, site } = await ada();
   const hostile = {

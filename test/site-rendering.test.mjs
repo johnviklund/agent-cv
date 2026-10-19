@@ -139,6 +139,7 @@ test("rendered home keeps John's published controller contracts", { skip: noFroz
 
 test("every fictional page renders Ada's own identity and copy", async () => {
   const pages = renderSite(await ada());
+  assert.match(pages["admin/index.html"], /<html[^>]+data-owner-short-name="Ada"/);
   for (const [path, text] of Object.entries(pages)) {
     assert.doesNotMatch(text, /John|Viklund|johnviklund|Volvo|c7d9e434/, path);
   }

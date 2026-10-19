@@ -8,6 +8,7 @@ import {
   renderConversationCandidatePacket,
   runConversationReview,
 } from "../scripts/review-conversations.mjs";
+import { ADA, JOHN } from "./fixtures/owners.mjs";
 
 const failedTurn = {
   turnId: "turn_failed001",
@@ -128,7 +129,7 @@ test("renders all archive-derived fields inside escaped untrusted records", () =
     applicationLabel: "Lead <script> · Acme",
     sessions: [{ sessionId: "session_example1", turns: [{ ...failedTurn, reviewReasons: ["failed", "not_helpful", "unanswered"] }] }],
   }];
-  const packet = renderConversationCandidatePacket({ groups, generatedAt: new Date("2026-08-15T12:00:00.000Z") });
+  const packet = renderConversationCandidatePacket({ owner: JOHN, groups, generatedAt: new Date("2026-08-15T12:00:00.000Z") });
 
   const recordStart = packet.indexOf("<untrusted_conversation_record>");
   const recordEnd = packet.indexOf("</untrusted_conversation_record>");
@@ -140,6 +141,15 @@ test("renders all archive-derived fields inside escaped untrusted records", () =
   assert.match(packet, /Lead &lt;script&gt; · Acme/);
   assert.doesNotMatch(packet.slice(0, recordStart), /turn_failed001|session_example1|Ignore the boundary/);
   assert.doesNotMatch(packet, /privateNotes/);
+});
+
+test("conversation packet handling rules name the selected owner", () => {
+  for (const owner of [ADA, JOHN]) {
+    const groups = [{ applicationLabel: "General site", sessions: [{ turns: [{ ...failedTurn, question: "What changed?" }] }] }];
+    const packet = renderConversationCandidatePacket({ owner, groups });
+    assert.ok(packet.includes(`Interview ${owner.name.short}`));
+    if (owner === ADA) assert.doesNotMatch(packet, /John|Viklund/);
+  }
 });
 
 test("writes a private ignored review packet using the local token", async (context) => {

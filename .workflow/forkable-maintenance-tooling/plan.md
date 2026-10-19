@@ -9,10 +9,11 @@ Size: code 2558 · tests 1610 · ratio 0.63 · largest touched site/templates/pa
 Decisions: 1a (skills say "the owner's public sources, currently engine `data/`"; U8 drops the clause) · 2a ticket list approved
 
 ## Execution state
-Current: T1 verified; ready to commit · writer: GPT-6.1 Sol
-Session 1: T1
+Current: T2 in progress · writer: GPT-6.1 Sol
+T1 @ 7e1febe
+Session 1: T1, T2
 Baseline: no code failures; sandbox broke subprocess output. Unsandboxed checks pass; see receipts/t1-verification.md.
-Uncommitted: T1 code, tests and receipt; no pending decision.
+Uncommitted: plan execution state; no pending decision.
 
 ## Findings
 | # | What is true | What it changes |
@@ -36,13 +37,14 @@ Delivers: B1, B3, B5, B6 · Blocked by: none · Lane: logic
 Budget: code +35 · tests +45 · why: four seams share one owner-root fixture
 Seam: `runProjectReview({ ownerRoot })`, `renderProjectReview({ owner })`, `syncRepositories` request headers
 Accept:
-- [ ] Ada owner root with a manifest → packet contains "requires Ada's review" and 0 matches of /John|Viklund/ (B1)
-- [ ] `<ada root>/project-sources.json` with one local folder → packet lists that folder; missing file → error message contains `<ada root>/project-sources.json` (B5)
-- [ ] syncRepositories with Ada root → every fetch sends user-agent `ada-example-agent-cv-repository-sync` (B3)
-- [ ] engine paths `project-reviews/x.md` and `conversation-reviews/inbox/x.md` → `git check-ignore` exits 0 for both (B6)
+- [x] Ada owner root with a manifest → packet contains "requires Ada's review" and 0 matches of /John|Viklund/ (B1)
+- [x] `<ada root>/project-sources.json` with one local folder → packet lists that folder; missing file → error message contains `<ada root>/project-sources.json` (B5)
+- [x] syncRepositories with Ada root → every fetch sends user-agent `ada-example-agent-cv-repository-sync` (B3)
+- [x] engine paths `project-reviews/x.md` and `conversation-reviews/inbox/x.md` → `git check-ignore` exits 0 for both (B6)
 Verify: `node --test test/project-review.test.mjs test/owner-manifests.test.mjs` (pre: 17 passed)
 Skills: none
-Status: todo
+Status: done @ 7e1febe
+Writer: GPT-6.1 Sol
 
 ### T2 — Conversation packet, admin brief and comparison guards use the owner
 Delivers: B2, B4 · Blocked by: none · Lane: logic

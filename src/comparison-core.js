@@ -29,19 +29,19 @@ const questionTemplates = (owner) => Object.freeze({
 });
 const PROTECTED_TRAIT_TEXT = /\b(?:age|date of birth|birth date|birth year|born|race|racial|skin colou?r|complexion|ethnicity|ethnic origin|religion|religious beliefs?|faith|creed|disability|disabled|wheelchair|pregnan(?:t|cy)|expecting (?:a )?(?:baby|child)|marital status|married|spouse|sexual orientation|gay|lesbian|bisexual|gender identity|transgender|trans identity|non-?binary|national origin|nationality)\b/i;
 const UNSAFE_PROVIDER_CONCLUSIONS = [
-  /\b(?:john(?:'s)?|candidate(?:'s)?|applicant(?:'s)?)?\s*(?:fit|match|suitability|compatibility|score|rating)(?:\s+(?:score|rating))?\s*(?::|=|-|\bis\b|\bof\b)\s*\d{1,3}(?:\.\d+)?\s*(?:%|\/\s*(?:5|10|100))(?![\d/])/i,
-  /\b(?:john|the candidate|this candidate|the applicant|this applicant)\s+(?:scores?|rates?)\s+\d{1,3}(?:\.\d+)?\s*(?:%|\/\s*(?:5|10|100))(?![\d/])/i,
+  /\b(?:candidate(?:'s)?|applicant(?:'s)?)?\s*(?:fit|match|suitability|compatibility|score|rating)(?:\s+(?:score|rating))?\s*(?::|=|-|\bis\b|\bof\b)\s*\d{1,3}(?:\.\d+)?\s*(?:%|\/\s*(?:5|10|100))(?![\d/])/i,
+  /\b(?:the candidate|this candidate|the applicant|this applicant)\s+(?:scores?|rates?)\s+\d{1,3}(?:\.\d+)?\s*(?:%|\/\s*(?:5|10|100))(?![\d/])/i,
   /\b(?:role|candidate|fit)\s+rank(?:ing|ed)?\s*[:=-]/i,
-  /\brank(?:ed|ing)?\s+(?:john|the candidate|this candidate|this role)\b/i,
+  /\brank(?:ed|ing)?\s+(?:the candidate|this candidate|this role)\b/i,
   /\branked\s+(?:#?\d+|first|second|third|above|below|higher|lower|best|worst)\b/i,
-  /\b(?:john|the candidate|this candidate|the applicant|this applicant)\s+ranks?\s+(?:#?\d+|first|second|third|above|below|higher|lower|best|worst)\b/i,
-  /\brecommendation\s*[:=-]\s*(?:hire|select|choose|reject|advance|john|the candidate|this candidate|yes|no)\b/i,
-  /\brecommend(?:ed|ing)?\s+(?:john|the candidate|this candidate|hiring|selecting|choosing|rejecting|advancing|for (?:the|this) role|over)\b/i,
+  /\b(?:the candidate|this candidate|the applicant|this applicant)\s+ranks?\s+(?:#?\d+|first|second|third|above|below|higher|lower|best|worst)\b/i,
+  /\brecommendation\s*[:=-]\s*(?:hire|select|choose|reject|advance|the candidate|this candidate|yes|no)\b/i,
+  /\brecommend(?:ed|ing)?\s+(?:the candidate|this candidate|hiring|selecting|choosing|rejecting|advancing|for (?:the|this) role|over)\b/i,
   /\b(?:best[- ]fit|best suited|strongest role|weakest role|preferred role|most suitable role|least suitable role|top candidate|top choice)\b/i,
   /\b(?:hiring decision|no[- ]hire|do not hire)\b/i,
   /\b(?:should|would)\s+(?:hire|select|choose|advance|reject)\b/i,
-  /\b(?:hire|select|choose|advance|reject)\s+(?:john|the candidate|this candidate)\b/i,
-  /\b(?:john|the candidate|this candidate|the applicant|this applicant)\s+(?:is|appears|seems)\s+(?:an?\s+)?(?:strong|good|excellent|poor|weak|bad|ideal|best|unsuitable)\s+(?:fit|match|candidate)\b/i,
+  /\b(?:hire|select|choose|advance|reject)\s+(?:the candidate|this candidate)\b/i,
+  /\b(?:the candidate|this candidate|the applicant|this applicant)\s+(?:is|appears|seems)\s+(?:an?\s+)?(?:strong|good|excellent|poor|weak|bad|ideal|best|unsuitable)\s+(?:fit|match|candidate)\b/i,
 ];
 
 // The owner's questions, and a Unicode-aware match of their names that the conclusion guards read as "the candidate".

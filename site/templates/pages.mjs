@@ -346,7 +346,7 @@ ${beacon(owner)}</body>
 
 export function renderAdmin({ owner, site }) {
   return `<!doctype html>
-<html lang="${e(owner.site.lang)}">
+<html ${htmlAttributes(owner)}>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">

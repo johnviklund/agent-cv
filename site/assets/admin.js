@@ -1,4 +1,4 @@
-import { createLink } from "./dom.js";
+import { createLink, readOwner } from "./dom.js";
 import {
   buildConversationReviewBrief,
   CLASSIFICATION_OPTIONS,
@@ -101,6 +101,7 @@ reviewList?.addEventListener("change", (event) => {
 briefButton?.addEventListener("click", () => {
   try {
     const brief = buildConversationReviewBrief({
+      owner: readOwner(),
       groups: currentReviewGroups(),
       classifications,
       generatedAt: new Date(),

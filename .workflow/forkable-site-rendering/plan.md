@@ -9,10 +9,10 @@ Size: code 7517 · tests 5902 · ratio 0.79 · baseline includes moved browser J
 Decisions: user 1a approved technical golden exceptions; John approved B1–B6, six tickets and their acceptance criteria. Main session writes; Opus 5.5 audit incorporated; verified findings and dispositions in notes/audit.md.
 
 ## Execution state
-T1 @ 9aa0df6 · T2 @ e262441 (private b95360d) · T3 @ 04f3a25 (private 746d16b) · T4 @ 7a9f61a (private 984d692) · next T5 (logic) · writer: Opus 5.5 (see Deviations) · Session 1: T1 · Session 2: T2, T3 · Session 3: T4
-Every ticket runs npm run check and local golden:diff before commit (approved). Baseline 224 passed, 1 skipped; now 239 passed, 1 skipped; golden:diff empty. Owner data/faq.md edit is pre-existing, untouched.
-In flight: golden-exceptions.json {"exceptions":[{path, before, after, reason, diff}]}; buildSystemPrompt(knowledge, { owner, updatedAt }); canonicalizeComparisonDraft(..., owner), handleRequest({ owner }) default to src/data/owner.js; test/fixtures/owners.mjs JOHN, ADA, ELISE.
-Rendering: build-site renderSite({ owner, site }) → 15 files; buildSite({ owner, site, out, dataRoot }) adds the 4 public Markdown; site/templates/{html,home,pages,discovery,headers}.mjs; site.json meta, person, home, pages.{about,experience,projects,cv,contact,privacy}; prose blocks p/h2/h3/kicker/quote/list with **bold**, `code`, [label](href). John's render equals public/ except experience/ " &amp; ".
+T1 @ 9aa0df6 · T2 @ e262441 (private b95360d) · T3 @ 04f3a25 (private 746d16b) · T4 @ 7a9f61a (private 984d692) · T5 @ 355f653 (private 20039c5) · next T6 (logic, UI receipts) · writer: Opus 5.5 (see Deviations) · Session 1: T1 · Session 2: T2, T3 · Session 3: T4 · Session 4: T5
+Every ticket runs npm run check and local golden:diff before commit (approved). Baseline 224 passed, 1 skipped; now 241 passed, 1 skipped; golden:diff accepts 8 recorded T5 exceptions, none unlisted. Owner data/faq.md edit is pre-existing, untouched.
+In flight: owner-root golden-exceptions.json {"exceptions":[{path, before, after, reason, diff}]}, written by scripts/record_golden_exceptions.py; buildSystemPrompt(knowledge, { owner, updatedAt }); canonicalizeComparisonDraft(..., owner), handleRequest({ owner }) default to src/data/owner.js; test/fixtures/owners.mjs JOHN, ADA, ELISE.
+Rendering: build-site renderSite({ owner, site }) → 15 files; buildSite({ owner, site, out, dataRoot }) adds the 4 public Markdown; site/templates/{html,home,pages,discovery,headers}.mjs; site.json meta, person, home, pages.{about,experience,projects,cv,contact,privacy}; prose blocks p/h2/h3/kicker/quote/list with **bold**, `code`, [label](href). John's render equals public/ except experience/ " &amp; ". Browser: <html data-owner-name|short-name|slug>, readOwner(doc) in dom.js → {name, shortName, slug, lang}.
 
 ## Findings
 | # | What is true | What it changes |
@@ -89,11 +89,12 @@ Delivers: B5 · Blocked by: T2, T4 · Lane: logic
 Budget: code +100 · tests +90
 Seam: home/application controllers, comparison view and WebMCP registration using data-owner-name, data-owner-short-name and data-owner-slug; reuse dom.js and textContent.
 Accept:
-- [ ] John/Ada DOM shows correct agent label, chat status, application title and comparison copy; Ada download is ada-example-role-comparison.md. (B5)
-- [ ] Four WebMCP names and schemas stay identical; comparison tool description names the selected owner and preserves its data-sharing disclosure. (B5)
+- [x] John/Ada DOM shows correct agent label, chat status, application title and comparison copy; Ada download is ada-example-role-comparison.md. (B5)
+- [x] Four WebMCP names and schemas stay identical; comparison tool description names the selected owner and preserves its data-sharing disclosure. (B5)
 Verify: `node --test test/browser-owner.test.mjs && node --test test/comparison-view-model.test.mjs test/webmcp.test.mjs` (pre: new file; existing tests 22 passed)
 Skills: none
-Status: todo
+Status: done @ 355f653
+Writer: Opus 5.5
 
 ### T6 — Serve and verify the generated site
 Delivers: B1, B6 · Blocked by: T1, T2, T4, T5 · Lane: logic
@@ -127,3 +128,4 @@ design.md: update canonical published token path to build/site/tokens.css; visua
 - T2: six existing tests changed setup only, assertion counts unchanged: chat-core, worker redirect and comparison question tests pass JOHN; owner/sync-owner fixtures add site.json updatedAt. Conclusion patterns keep their "john" tokens (cleanup is U8). Tests +129 against budget +100.
 - T3: _headers renders now, CSP hashes and the PDF route from the slug, because the CSP hash acceptance line needs it; T4 keeps the rest of the discovery resources. Code about +557 against +500, mostly the copied page body and the repeated schema item shapes. The John byte-equality test skips without John's owner root, as in CI.
 - T4: experience/ renders "&amp;" where the published page has raw "&" (three lines, same display); T6 needs a golden exception outside the four approved categories, or a human ruling. Code about +1,000 against +650, mostly page markup copied from public/ by the one-off generators in scripts/.
+- T5: owner copy helpers sit in chat-state.js (agentLabel, busyChatMessage, applicationTitle) and comparison-view.js (comparisonOwnerCopy) so Node tests reach them; app.js and application.js run DOM code at import. public/index.html and application/index.html gained the same attributes so John's byte-parity test holds; golden exceptions recorded for them and six browser modules. Tests +138 against +90, mostly the three-owner table; code +47.

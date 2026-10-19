@@ -83,7 +83,7 @@ Deploying a fork needs its own Cloudflare setup: a KV namespace, OpenAI and admi
 
 `data/cv.md`, `data/overview.md`, `data/projects.md`, and `data/repositories.md` are the tracked public sources. The six other `data/*.md` knowledge files and the generated `src/data/` bundle are ignored because a real deployment may contain private material. After editing a canonical source, run `npm run sync:data` to regenerate the published copies.
 
-Public repository evidence comes only from the allowlist in `config/repositories.json` and is refreshed deliberately with `npm run sync:repositories`. The public chat never fetches a repository or URL supplied by a visitor.
+Public repository evidence comes only from the allowlist in the owner repo's `repositories.json` and is refreshed deliberately with `npm run sync:repositories`. The public chat never fetches a repository or URL supplied by a visitor.
 
 Conversation records, `.dev.vars`, admin tokens, application notes, job descriptions, review briefs, and exports always stay out of Git.
 

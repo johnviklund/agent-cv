@@ -3,6 +3,8 @@ import { mkdir, readFile, realpath, rename, writeFile } from "node:fs/promises";
 import { dirname, relative, resolve, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
+import { resolveOwnerRoot } from "./owner.mjs";
+
 const PRIMARY_SOURCE_PATHS = new Set([
   "data/cv.md",
   "data/overview.md",
@@ -72,9 +74,12 @@ export async function buildComparisonEvidenceCatalog({ root, manifest }) {
   return catalog;
 }
 
-export async function writeComparisonEvidence({ root, manifestPath } = {}) {
+// The manifest comes from the owner root only; evidence sources stay in the engine's data/.
+export async function writeComparisonEvidence({ root, ownerRoot, manifestPath } = {}) {
   const repositoryRoot = resolve(root || dirname(fileURLToPath(import.meta.url)), root ? "." : "..");
-  const configPath = resolve(repositoryRoot, manifestPath || "config/comparison-evidence.json");
+  const configPath = manifestPath
+    ? resolve(repositoryRoot, manifestPath)
+    : resolve(ownerRoot ?? resolveOwnerRoot({ engineRoot: repositoryRoot }), "comparison-evidence.json");
   const manifest = JSON.parse(await readFile(configPath, "utf8"));
   const catalog = await buildComparisonEvidenceCatalog({ root: repositoryRoot, manifest });
   const json = `${JSON.stringify(catalog, null, 2)}\n`;

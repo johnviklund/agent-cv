@@ -1,10 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { BudgetCounter, handleRequest } from "../src/worker.js";
+import { BudgetCounter, handleRequest as handleWorkerRequest } from "../src/worker.js";
 import { readRecordsWithStatus } from "../src/archive.js";
 import { parseRoleBatch } from "../site/assets/comparison-transfer.js";
 import { PLAIN_LINE_BATCH, PLAIN_LINE_REQUIREMENT_COUNTS } from "./fixtures/requirement-sections.mjs";
 import { JOHN } from "./fixtures/owners.mjs";
+import { EVIDENCE_CATALOG } from "./fixtures/evidence-catalog.mjs";
+
+// Comparisons map to the explicit fixture catalog, never to the selected owner's generated evidence.
+const handleRequest = (request, env, context, options = {}) => handleWorkerRequest(request, env, context, { catalog: EVIDENCE_CATALOG, ...options });
 
 const ASK_URL = "https://example.test/api/ask";
 const COMPARE_URL = "https://example.test/api/compare";

@@ -25,6 +25,7 @@ export async function handleCompare(
   {
     fetchImpl = fetch,
     openAIConnectTimeoutMs = DEFAULT_RESPONSE_HEADER_TIMEOUT_MS,
+    catalog = evidenceCatalog,
   } = {},
 ) {
   const access = validateComparisonAccess(request);
@@ -61,7 +62,7 @@ export async function handleCompare(
   let input;
   try {
     const raw = await readBoundedRequestText(request, COMPARISON_CONTRACT.limits.maxBodyBytes);
-    input = validateComparisonPayload(JSON.parse(raw), evidenceCatalog);
+    input = validateComparisonPayload(JSON.parse(raw), catalog);
   } catch (error) {
     if (error instanceof ComparisonBodyTooLargeError) return comparisonError("The comparison request is too large.", 413, {}, access.origin);
     if (error instanceof ComparisonInputError) return comparisonError(error.message, error.status, {}, access.origin);
@@ -86,7 +87,7 @@ export async function handleCompare(
         instructions: buildComparisonInstructions(),
         input: [{
           role: "user",
-          content: buildComparisonProviderInput(input.roles, evidenceCatalog, input.requirementInventory),
+          content: buildComparisonProviderInput(input.roles, catalog, input.requirementInventory),
         }],
         reasoning: { effort: "none" },
         max_output_tokens: boundedComparisonOutputTokens(env.COMPARISON_MAX_OUTPUT_TOKENS),
@@ -128,10 +129,10 @@ export async function handleCompare(
     try {
       const providerResponse = JSON.parse(providerResponseText);
       const draft = extractStructuredComparison(providerResponse);
-      const result = canonicalizeComparisonDraft(draft, input.roles, evidenceCatalog, input.requirementInventory);
+      const result = canonicalizeComparisonDraft(draft, input.roles, catalog, input.requirementInventory);
       return noStoreJson(result, 200, Object.fromEntries(comparisonCorsHeaders(access.origin, {
           "x-agent-model": model,
-          "x-comparison-catalog-digest": evidenceCatalog.digest,
+          "x-comparison-catalog-digest": catalog.digest,
           "access-control-expose-headers": "x-agent-model, x-comparison-catalog-digest",
         })));
     } catch (error) {

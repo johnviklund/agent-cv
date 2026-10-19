@@ -71,7 +71,7 @@ Use a feature branch and make these changes as one reviewed identity migration:
 4. Replace canonical URLs in HTML, `public/robots.txt`, `public/sitemap.xml`, and the matching assertions in `scripts/check-static.mjs`.
 5. Set `deploy.workerName`, `deploy.archiveNamespaceId`, `site.hosts` and `contact.email` in your owner repo's `owner.json`. The generated `wrangler.jsonc` takes them from there; set `contact.email` to `null` if you prefer the contact page's profile-only fallback.
 6. Set your deployed HTTPS origin as `site.origin` in your owner repo's `owner.json`. Both private conversation scripts use this code-controlled destination and refuse the example owner; `conversations:export` may still take an explicit `--url` override.
-7. Replace `config/repositories.json` with only public repositories and named Markdown or text documents you approve. An empty array is valid if you do not want repository evidence yet.
+7. Put only public repositories and named Markdown or text documents you approve in your owner repo's `repositories.json`, and the comparison evidence selectors in its `comparison-evidence.json`. An empty array (and `{ "schemaVersion": 1, "items": [] }`) is valid if you do not want repository or comparison evidence yet; the engine has no fallback copies.
 8. Run `npm run sync:repositories` only after reviewing that allowlist. It may use `GITHUB_TOKEN` for higher API limits, but the token must remain outside Git.
 9. Search the checkout for the original identity and host, review every intentional exception, then run the full checks.
 
@@ -149,7 +149,7 @@ The private `/admin/` **Conversation candidates** section remains an optional vi
 ## Maintain the site
 
 - Update canonical Markdown under `data/`, run `npm run sync:data`, review generated changes, and run `npm run check`.
-- Refresh `config/repositories.json` and `npm run sync:repositories` deliberately; never add live repository fetching to public chat.
+- Refresh the owner repo's `repositories.json` and `npm run sync:repositories` deliberately; never add live repository fetching to public chat.
 - Ask Codex to review project updates and update the site; Codex maintains the ignored source manifest and review packet, asks for evidence decisions, and advances timestamps only after approval.
 - Ask Codex to “review my conversation learnings”; use the private admin conversation browser only when you want the optional visual view. Approve exact proposals before canonical changes, and delete the private input files when the review is complete.
 - Run `npm run build` for Worker configuration or deployment changes.

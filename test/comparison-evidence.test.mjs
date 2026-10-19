@@ -35,7 +35,7 @@ const baseSources = {
 
 test("emits identical stable IDs and canonical text to public JSON and the Worker module", async (context) => {
   const root = await createFixture(context);
-  const result = await writeComparisonEvidence({ root });
+  const result = await writeComparisonEvidence({ root, ownerRoot: root });
   const publicCatalog = JSON.parse(await readFile(resolve(root, "public/evidence.json"), "utf8"));
   const workerCatalog = (await import(`${pathToFileURL(resolve(root, "src/data/comparison-evidence.js")).href}?v=${Date.now()}`)).default;
 
@@ -184,14 +184,13 @@ async function createFixture(context) {
   const root = await mkdtemp(resolve(tmpdir(), "agent-cv-evidence-"));
   context.after(() => rm(root, { recursive: true, force: true }));
   await Promise.all([
-    mkdir(resolve(root, "config"), { recursive: true }),
     mkdir(resolve(root, "data"), { recursive: true }),
   ]);
   await Promise.all(Object.entries(baseSources).map(([path, content]) => (
     writeFile(resolve(root, path), content)
   )));
   await writeFile(
-    resolve(root, "config/comparison-evidence.json"),
+    resolve(root, "comparison-evidence.json"),
     `${JSON.stringify(baseManifest, null, 2)}\n`,
   );
   return root;

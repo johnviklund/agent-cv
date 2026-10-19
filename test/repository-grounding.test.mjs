@@ -1,16 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
 import {
   renderRepositoryKnowledge,
   validateRepositoryManifest,
 } from "../scripts/repository-grounding.mjs";
 import { content, readSite } from "./fixtures/site.mjs";
 
-const publicRepositoryConfig = JSON.parse(await readFile(
-  new URL("../config/repositories.json", import.meta.url),
-  "utf8",
-));
+const publicRepositoryConfig = JSON.parse(await readFile(resolve(content.root, "repositories.json"), "utf8"));
 const projectsPage = await readSite("projects/index.html");
 // John's project list is owner content; the example owner lists its own placeholder project.
 const johnOnly = { skip: content.owner.slug !== "john-viklund" && "needs John's owner root" };

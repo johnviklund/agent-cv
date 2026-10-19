@@ -4,7 +4,9 @@ import { readFileSync } from "node:fs";
 import { parseRoleBatch, buildRoleRequirementPreview } from "../site/assets/comparison-transfer.js";
 import { PLAIN_LINE_BATCH, PLAIN_LINE_REQUIREMENT_COUNTS } from "./fixtures/requirement-sections.mjs";
 import { JOHN } from "./fixtures/owners.mjs";
-import evidenceCatalog from "../src/data/comparison-evidence.js";
+import { EVIDENCE_CATALOG as evidenceCatalog } from "./fixtures/evidence-catalog.mjs";
+import generatedCatalog from "../src/data/comparison-evidence.js";
+import generatedOwner from "../src/data/owner.js";
 import {
   buildComparisonRequirementInventory,
   buildComparisonProviderInput,
@@ -36,7 +38,7 @@ const ROLES = [
 ];
 
 test("comparison request validation preserves role order and assigns canonical IDs", () => {
-  const input = validateComparisonPayload({ roles: ROLES });
+  const input = validateComparisonPayload({ roles: ROLES }, evidenceCatalog);
 
   assert.deepEqual(input.roles.map(({ id, position, title, company }) => ({ id, position, title, company })), [
     { id: "role_01", position: 1, title: "AI Product Lead", company: "Example One" },
@@ -203,7 +205,9 @@ test("provider input treats role text as delimited untrusted data", () => {
   assert.doesNotMatch(providerInput, /"description"/);
 });
 
-test("new career subroles are available as bounded comparison evidence", () => {
+// John's generated evidence is owner content; the example owner publishes none.
+test("new career subroles are available as bounded comparison evidence", { skip: generatedOwner.slug !== "john-viklund" && "needs John's owner root" }, () => {
+  const evidenceCatalog = generatedCatalog;
   const roles = [{
     title: "Transformation Product Lead",
     description: "- Lead an Oracle-to-Salesforce transformation\n- Own a customer communications product lifecycle",

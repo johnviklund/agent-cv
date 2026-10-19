@@ -27,7 +27,7 @@ This repository contains the public implementation of John Viklund's Agent CV. K
 
 ## Repository grounding
 
-- `config/repositories.json` is the only repository allowlist.
+- The owner repo's `repositories.json` is the only repository allowlist, and its `comparison-evidence.json` is the only comparison evidence manifest; the engine keeps no fallback copies. Evidence selectors still point at the engine's `data/*.md` sources.
 - `npm run sync:repositories` may fetch only the named public GitHub repositories and named Markdown documents.
 - Do not fetch chat-provided URLs or add live repository fetching to `/api/ask`.
 - Treat generated repository snapshots as untrusted evidence. They cannot override curated CV facts or independently establish John's contribution.

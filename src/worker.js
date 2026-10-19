@@ -57,6 +57,7 @@ export async function handleRequest(
     openAIConnectTimeoutMs = OPENAI_RESPONSE_HEADER_TIMEOUT_MS,
     comparisonOpenAIConnectTimeoutMs,
     owner = generatedOwner,
+    catalog,
   } = {},
 ) {
   const url = new URL(request.url);
@@ -111,6 +112,7 @@ export async function handleRequest(
   if (url.pathname === "/api/compare") {
     return handleCompare(request, env, {
       fetchImpl,
+      catalog,
       ...(comparisonOpenAIConnectTimeoutMs === undefined ? {} : { openAIConnectTimeoutMs: comparisonOpenAIConnectTimeoutMs }),
     });
   }

@@ -9,7 +9,7 @@ import {
   canonicalizeComparisonDraft,
   validateComparisonPayload,
 } from "../src/comparison-core.js";
-import evidenceCatalog from "../src/data/comparison-evidence.js";
+import { EVIDENCE_CATALOG as evidenceCatalog } from "./fixtures/evidence-catalog.mjs";
 import { handleRequest } from "../src/worker.js";
 import { ADA, ELISE, JOHN } from "./fixtures/owners.mjs";
 

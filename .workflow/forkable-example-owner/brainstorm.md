@@ -11,14 +11,14 @@ Ada Example (`examples/owner/`) has no `data/` folder, and the engine reads the 
 `AGENT_CV_OWNER_ROOT=examples/owner npm run check` builds a complete Ada site (pages, ten Markdown sources, evidence) and fails if any built output names John. Every page of every owner shows the footer credit. CI runs against Ada.
 
 ## Behaviours
-- B1 — Ada's root holds all ten `data/*.md`; `sync:owner` then `sync:data` succeed and `public/cv.md` contains "Ada Example"
-- B2 — John's four public sources are read from `agent-cv-private/data/`; `golden:diff` differs from golden only by the footer (B5)
-- B3 — a scan of Ada's `build/site/`, `public/` and `src/data/` finds no "john", "viklund" or "johnviklund" (case-insensitive) outside the upstream credit URL
-- B4 — injecting "John" into one Ada output file makes the leak check fail and name the file; the clean build passes (inside `npm run check`)
-- B5 — every rendered HTML page, for Ada and John, ends with "Built with Agent CV" linking to the upstream URL constant
-- B6 — Ada's ten sources and `comparison-evidence.json` validate; the six private-slot files hold fictional text only
-- B7 — CI runs `npm run build` with `AGENT_CV_OWNER_ROOT=examples/owner` and no `bootstrap:data` step
-- B8 — `deploy` still refuses the example owner (existing behaviour, regression test kept)
+- B1 — Ada's root holds all ten `data/*.md` and `sync:owner` plus `sync:data` run on it → both succeed and `public/cv.md` contains "Ada Example"
+- B2 — John's four public sources are read from `agent-cv-private/data/` → `golden:diff` differs from golden only by the footer (B5)
+- B3 — scan of Ada's `build/site/`, `public/` and `src/data/` → no "john", "viklund" or "johnviklund" (case-insensitive) outside the upstream credit URL
+- B4 — "John" injected into one Ada output file → the leak check fails and names the file; the clean build passes (inside `npm run check`)
+- B5 — any rendered HTML page, for Ada or John → ends with "Built with Agent CV" linking to the upstream URL constant
+- B6 — Ada's ten sources and `comparison-evidence.json` are validated → all pass and the six private-slot files hold fictional text only
+- B7 — the CI workflow file is read → it runs `npm run build` with `AGENT_CV_OWNER_ROOT=examples/owner` and has no `bootstrap:data` step
+- B8 — `deploy` run against the example owner → refused (existing behaviour, regression test kept)
 
 ## Decisions
 - D1 — `sync-public-data` reads all ten sources from the owner root; John's four are copied additively into `agent-cv-private/data/`, engine `data/` stays until U8 — Ada cannot build otherwise (code: scripts/sync-public-data.mjs)

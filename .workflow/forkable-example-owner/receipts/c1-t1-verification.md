@@ -22,4 +22,6 @@ Status:  complete
 - Noticed: the conversation-review skill has the same obsolete source-path prose; deferred outside C1-T1.
 
 ## Push and CI
-Pending checkpoint push and CI verification.
+- Engine main pushed from 91249b4 to 418ac00caa1c34d3008ecc7b98bd09acf2db0c67. Private owner repo untouched.
+- GitHub Actions run 39343714064 completed with conclusion `success` on that SHA: https://github.com/johnviklund/agent-cv/actions/runs/39343714064.
+- C1-T2 remains todo; fresh execute session at high effort, then review. No deployment performed.

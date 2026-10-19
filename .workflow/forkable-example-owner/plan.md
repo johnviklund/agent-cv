@@ -10,7 +10,7 @@ Decisions: 1a drop CI git-diff step, accept dirty public/ locally until U8 · 2a
 
 ## Execution state
 T1–T4 done; patch C1-T1 done. Next: C1-T2 at high effort, then review.
-Pending: C1-T1 push and CI receipt before handoff.
+Pending: none. C1-T1 checkpoint 418ac00 pushed; CI success, receipt c1-t1-verification.md.
 T1 @ 023e92f · private source copy @ 5699413
 T2 @ 95eae04 · private golden exceptions @ ae5d654
 T3 @ 28d4fc6

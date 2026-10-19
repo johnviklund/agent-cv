@@ -9,11 +9,12 @@ Size: code 2558 · tests 1610 · ratio 0.63 · largest touched site/templates/pa
 Decisions: 1a (skills say "the owner's public sources, currently engine `data/`"; U8 drops the clause) · 2a ticket list approved
 
 ## Execution state
-Current: T2 in progress · writer: GPT-6.1 Sol
+Current: T3 in progress · writer: GPT-6.1 Sol
 T1 @ 7e1febe
-Session 1: T1, T2
+T2 @ 5d296b4; owner golden exceptions @ bab16db
+Session 1: T1, T2, T3
 Baseline: no code failures; sandbox broke subprocess output. Unsandboxed checks pass; see receipts/t1-verification.md.
-Uncommitted: plan execution state; no pending decision.
+Uncommitted: T3 docs, tests and receipt; no pending decision.
 
 ## Findings
 | # | What is true | What it changes |
@@ -51,13 +52,14 @@ Delivers: B2, B4 · Blocked by: none · Lane: logic
 Budget: code +30 · tests +40 · why: script and browser builders each get an Ada and a John case
 Seam: `renderConversationCandidatePacket({ owner })`, `buildConversationReviewBrief({ owner })`, rendered admin page, `canonicalizeComparisonDraft`
 Accept:
-- [ ] Ada packet and Ada brief → each contains "Interview Ada" and 0 matches of /John|Viklund/ (B2)
-- [ ] renderAdmin for Ada → `<html>` carries `data-owner-short-name="Ada"` (B2)
-- [ ] `grep -ci john src/comparison-core.js` → 0; "Ada scores 99%" for Ada and every John prohibited string for John still throw `draft_hiring_conclusion` (B4)
-- [ ] `npm run golden:diff` → 0 unlisted; three new exceptions in agent-cv-private name admin/index.html, admin.js, conversation-review.js (B2)
+- [x] Ada packet and Ada brief → each contains "Interview Ada" and 0 matches of /John|Viklund/ (B2)
+- [x] renderAdmin for Ada → `<html>` carries `data-owner-short-name="Ada"` (B2)
+- [x] `grep -ci john src/comparison-core.js` → 0; "Ada scores 99%" for Ada and every John prohibited string for John still throw `draft_hiring_conclusion` (B4)
+- [x] `npm run golden:diff` → 0 unlisted; three new exceptions in agent-cv-private name admin/index.html, admin.js, conversation-review.js (B2)
 Verify: `node --test test/review-conversations.test.mjs test/conversation-review.test.mjs test/comparison-core.test.mjs test/owner-runtime.test.mjs test/site-rendering.test.mjs && npm run golden:diff` (pre: 43 passed, 1 skipped; golden 0 unlisted)
 Skills: none
-Status: todo
+Status: done @ 5d296b4
+Writer: GPT-6.1 Sol
 
 ### T3 — AGENTS.md and both skills are owner-neutral and two-repo
 Delivers: B7 · Blocked by: T1 · Lane: logic
@@ -87,3 +89,6 @@ none
 
 ## Product doc impacts
 - PRODUCT.md, DESIGN.md, ROADMAP.md: no changes.
+
+## Deviations
+- T3: two existing wording assertions change from the original owner name to owner-neutral text; assertion count stays 23. Supplementary Copilot discovery and live trigger trials unavailable; see receipts/t3-verification.md.

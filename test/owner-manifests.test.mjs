@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 
 import { writeComparisonEvidence } from "../scripts/build-comparison-evidence.mjs";
 import { syncRepositories } from "../scripts/sync-github-repositories.mjs";
+import { syncPublicData } from "../scripts/sync-public-data.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const ada = resolve(root, "examples/owner");
@@ -20,6 +21,8 @@ async function workspace(context, ownerFiles = {}) {
   await mkdir(resolve(engine, "config"), { recursive: true });
   await mkdir(owner);
   for (const file of ["owner.json", "site.json"]) await cp(resolve(ada, file), resolve(owner, file));
+  await cp(resolve(ada, "data"), resolve(owner, "data"), { recursive: true });
+  await cp(resolve(root, "config/comparison-contract.json"), resolve(engine, "config/comparison-contract.json"));
   for (const file of ["cv.md", "overview.md", "projects.md", "repositories.md"]) {
     await cp(resolve(root, "data", file), resolve(engine, "data", file));
   }
@@ -58,7 +61,7 @@ test("an owner's empty manifests produce no evidence and no repository requests"
   const { urls, fetchImpl } = githubStub();
   assert.deepEqual(await syncRepositories({ engineRoot: engine, ownerRoot: owner, fetchImpl }), []);
   assert.deepEqual(urls, []);
-  assert.doesNotMatch(await readFile(resolve(engine, "data/repositories.md"), "utf8"), /^## /m);
+  assert.doesNotMatch(await readFile(resolve(owner, "data/repositories.md"), "utf8"), /^## /m);
 });
 
 test("missing or invalid owner manifests fail even when the engine still has config copies", async (t) => {
@@ -90,5 +93,16 @@ test("a nonempty owner allowlist fetches only its named repositories and documen
   ]);
   assert.equal(entry.repository, "example/alpha");
   assert.deepEqual(userAgents, Array(3).fill("ada-example-agent-cv-repository-sync"));
-  assert.match(await readFile(resolve(engine, "data/repositories.md"), "utf8"), /^## Alpha$/m);
+  assert.match(await readFile(resolve(owner, "data/repositories.md"), "utf8"), /^## Alpha$/m);
+});
+
+test("repository sync publishes freshly fetched grounding from the owner's data", async (context) => {
+  const { engine, owner } = await workspace(context, {
+    "repositories.json": JSON.stringify([{ project: "Fresh repository", repository: "example/alpha", documents: [] }]),
+    "comparison-evidence.json": '{"schemaVersion":1,"items":[]}',
+  });
+  await syncRepositories({ engineRoot: engine, ownerRoot: owner, fetchImpl: githubStub().fetchImpl });
+  assert.match(await readFile(resolve(owner, "data/repositories.md"), "utf8"), /^## Fresh repository$/m);
+  await syncPublicData({ root: engine, ownerRoot: owner });
+  assert.match(await readFile(resolve(engine, "public/repositories.md"), "utf8"), /^## Fresh repository$/m);
 });

@@ -9,7 +9,15 @@ Size: code 1,329 · tests 743 · ratio 0.56 · largest touched pages.mjs 453, bu
 Decisions: 1a drop CI git-diff step, accept dirty public/ locally until U8 · 2a admin and 404 get a credit-only footer · 3a leak scan runs only for examples/owner, else prints skipped · 4a tickets approved
 
 ## Execution state
-<filled by execute>
+T1 done; next T2, ready. No pending decision.
+T1 @ 023e92f · private source copy @ 5699413
+writer: GPT-6.1 Sol · T1 xhigh
+Session 1: T1
+Baseline: npm run check passed outside sandbox; sandbox loses child-process output.
+Contract: syncPublicData({ root, ownerRoot }); writeComparisonEvidence adds optional sourceRoot.
+Verification: receipts/t1-verification.md; John's generated outputs restored.
+Uncommitted engine files: none after this checkpoint; private data/faq.md remains the owner's edit.
+Pushes deferred to T4's approved operator step; both commits remain on local main.
 
 ## Findings
 | # | What is true | What it changes |
@@ -34,14 +42,15 @@ Delivers: B1, B2, B6 · Blocked by: none · Lane: contract
 Budget: code +50 · tests +70 · why: temp-root fixtures for both owners
 Seam: `syncPublicData({ root, ownerRoot })`; `npm run golden:diff`
 Accept:
-- [ ] `syncPublicData` into a temp root from `examples/owner` → `public/cv.md` contains "Ada Example"; all ten land in `src/data/` (B1)
-- [ ] same sync → `public/evidence.json` has 3 items, each id from Ada's manifest (B6)
-- [ ] Ada's six private-slot files are the ones in `examples/owner/data/`, and none contains "john" (case-insensitive) (B6)
-- [ ] an owner root missing `data/cv.md` → sync rejects with a message naming `cv.md`; nothing is written (B1)
-- [ ] John's root, after the four files are copied → `npm run golden:diff` exits 0 with no unlisted line (B2)
+- [x] `syncPublicData` into a temp root from `examples/owner` → `public/cv.md` contains "Ada Example"; all ten land in `src/data/` (B1)
+- [x] same sync → `public/evidence.json` has 3 items, each id from Ada's manifest (B6)
+- [x] Ada's six private-slot files are the ones in `examples/owner/data/`, and none contains "john" (case-insensitive) (B6)
+- [x] an owner root missing `data/cv.md` → sync rejects with a message naming `cv.md`; nothing is written (B1)
+- [x] John's root, after the four files are copied → `npm run golden:diff` exits 0 with no unlisted line (B2)
 Verify: `node --test test/sync-public-data.test.mjs test/sync-owner.test.mjs test/comparison-evidence.test.mjs && npm run golden:diff` (pre: new file; golden:diff exit 0)
 Skills: none
-Status: todo
+Status: done @ 023e92f
+Writer: GPT-6.1 Sol
 
 ### T2 — every page credits Agent CV
 Delivers: B5 · Blocked by: T1 · Lane: logic (UI: human tries it before commit)
@@ -94,3 +103,7 @@ none named by the brief
 
 ## Product doc impacts
 design.md — no changes (the credit fits Ft2 "inline credits and links") · PRODUCT.md, ROADMAP.md absent
+
+## Deviations
+- T1: golden and OG-image test owners now carry public sources. Empty-manifest coverage uses an explicit empty fixture; Ada now has three evidence items. Assertions remain 33, 13, and 14 respectively. No assertion removed or weakened.
+- Ratio waived: T1 — three regression tests need temporary owner and engine roots; +64 test lines cover all ten files, evidence, missing-source refusal, and the site default. Code adds 25 lines; no new abstraction.

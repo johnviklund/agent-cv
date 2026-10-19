@@ -4,6 +4,10 @@ Base: 0835333de21e5385e3b5d8a423c95b4254976122
 Inputs: review.md @ 0835333de21e5385e3b5d8a423c95b4254976122
 Status: complete
 
+## Execution state
+C1-T1 @ 65a0eaa (red test 6c7dc2b) · writer: Opus 5.5 (approved execute-seat deviation, plan.md) · next C1-T2
+Baseline 246 passed, 1 skipped; after C1-T1 248 passed, 1 skipped; golden:diff 9 accepted, none unlisted.
+
 ## Patch cycle 1
 Fix C1-1 and C1-2. Keep the frozen snapshot and John's content unchanged.
 Reuse: blocks at site/templates/html.mjs:92; validate at scripts/owner.mjs:41; golden test helpers at test/golden.test.mjs:151.
@@ -13,13 +17,14 @@ Delivers: B3, B4 · Blocked by: none · Lane: contract
 Budget: code +15 · tests +30
 Seam: existing block validation and renderer; schemas/site.schema.json if schema cardinality is enforced there.
 Accept:
-- [ ] Empty blocks in pages.about.body, pages.cv.body and pages.privacy.sections fail with site.json and the exact field path.
-- [ ] Multiple block keys fail; each of p, h2, h3, kicker, quote and list still renders its supported markup.
-- [ ] John's golden diff remains limited to the same nine approved exceptions.
+- [x] Empty blocks in pages.about.body, pages.cv.body and pages.privacy.sections fail with site.json and the exact field path.
+- [x] Multiple block keys fail; each of p, h2, h3, kicker, quote and list still renders its supported markup.
+- [x] John's golden diff remains limited to the same nine approved exceptions.
 Verify: `node --test test/site-rendering.test.mjs && npm run check && npm run golden:diff` (pre: 13 renderer tests pass; empty block reproduction incorrectly renders undefined)
-Red: pending. Commit a failing empty-block regression test first; commit the fix separately without changing those tests.
+Red: 6c7dc2b failed on "Missing expected rejection". Commit a failing empty-block regression test first; commit the fix separately without changing those tests.
 Skills: none
-Status: todo
+Status: done @ 65a0eaa
+Writer: Opus 5.5
 
 ### C1-T2 — Make golden tests enforce path identity
 Delivers: B1 · Blocked by: none · Lane: logic

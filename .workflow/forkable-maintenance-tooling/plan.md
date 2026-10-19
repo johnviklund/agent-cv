@@ -9,13 +9,13 @@ Size: code 2558 · tests 1610 · ratio 0.63 · largest touched site/templates/pa
 Decisions: 1a (skills say "the owner's public sources, currently engine `data/`"; U8 drops the clause) · 2a ticket list approved
 
 ## Execution state
-Current: all tickets done; push awaiting explicit approval · writer: GPT-6.1 Sol
+Current: all tickets done; ready for review · writer: GPT-6.1 Sol
 T1 @ 7e1febe
 T2 @ 5d296b4; owner golden exceptions @ bab16db
 T3 @ 10bff27
 Session 1: T1, T2, T3
 Baseline: no code failures; sandbox broke subprocess output. Unsandboxed checks pass; see receipts/t1-verification.md.
-Uncommitted: plan execution state only; pending approval to push engine and owner main.
+Uncommitted: none; no pending decision.
 
 ## Findings
 | # | What is true | What it changes |
@@ -94,4 +94,4 @@ none
 
 ## Deviations
 - T3: two existing wording assertions change from the original owner name to owner-neutral text; assertion count stays 23. Supplementary Copilot discovery and live trigger trials unavailable; see receipts/t3-verification.md.
-- Handoff push: automatic approval review rejected direct default-branch push as a durable shared-repository side effect without explicit authorization. No push ran; awaiting approval for engine and owner main.
+- Handoff push: automatic approval review initially rejected direct default-branch pushes. User explicitly approved option 1a; engine through 0c0e523 and owner bab16db pushed successfully to origin/main.

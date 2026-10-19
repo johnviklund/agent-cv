@@ -32,8 +32,8 @@ export function resolveOwnerRoot({ env = process.env, deploy = false, engineRoot
   return root;
 }
 
-// A JSON Schema subset: type, const, pattern, minLength, minItems, items, required, properties,
-// additionalProperties and "#/$defs/<name>" references. Throws on the first error with the file and field path.
+// A JSON Schema subset: type, const, pattern, minLength, minItems, items, minProperties, maxProperties,
+// required, properties, additionalProperties and "#/$defs/<name>" references. Throws on the first error with the file and field path.
 export function validate(schema, value, file, path = "", root = schema) {
   if (schema.$ref) {
     const name = schema.$ref.replace(/^#\/\$defs\//, "");
@@ -57,6 +57,9 @@ export function validate(schema, value, file, path = "", root = schema) {
   }
   if (typeOf(value) === "object") {
     const join = (key) => (path ? `${path}.${key}` : key);
+    const count = Object.keys(value).length;
+    if (schema.minProperties && count < schema.minProperties) fail(`must have at least ${schema.minProperties} key(s)`);
+    if (schema.maxProperties && count > schema.maxProperties) fail(`must have at most ${schema.maxProperties} key(s)`);
     for (const key of schema.required ?? []) {
       if (value[key] === undefined) throw new Error(`${file}: ${join(key)} is required`);
     }

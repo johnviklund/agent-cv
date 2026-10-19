@@ -2,7 +2,7 @@ Command: workflow review forkable-site-rendering
 Created: 2026-10-19
 Base: 1552a265f02d62ff17231ffac334069f256b14ae
 Inputs: plan.md @ 7e923462686a794061dbbdcfb23f3988fb080d9b
-Status: complete
+Status: done
 
 ## Coverage
 Docs read: AGENTS.md; design.md §§System, Typography and spacing, CTA voice and states, Motion stance, Notes.

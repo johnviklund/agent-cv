@@ -2,7 +2,7 @@ Command: workflow plan B
 Created: 2026-10-18
 Base: 7e923462686a794061dbbdcfb23f3988fb080d9b
 Inputs: docs/plans/2026-10-18-1358-feat-forkable-agent-cv-plan.md @ 7e923462686a794061dbbdcfb23f3988fb080d9b
-Status: complete
+Status: done
 
 Docs read: master forkable plan; AGENTS.md; design.md §§System, Typography and spacing, CTA voice and states, Motion stance, Notes; Run A wrap.
 

@@ -1,7 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { resolveOwnerRoot } from "./owner.mjs";
+import { loadOwner, resolveOwnerRoot } from "./owner.mjs";
 import { renderRepositoryKnowledge, validateRepositoryManifest } from "./repository-grounding.mjs";
 
 const defaultEngineRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -16,9 +16,10 @@ export async function syncRepositories({
   token = process.env.GITHUB_TOKEN,
 } = {}) {
   const manifest = validateRepositoryManifest(JSON.parse(await readFile(resolve(ownerRoot, "repositories.json"), "utf8")));
+  const { owner } = await loadOwner({ root: ownerRoot });
   const headers = {
     accept: "application/vnd.github+json",
-    "user-agent": "johnviklund-agent-cv-repository-sync",
+    "user-agent": `${owner.slug}-agent-cv-repository-sync`,
     "x-github-api-version": "2022-11-28",
   };
   if (token) headers.authorization = `Bearer ${token}`;

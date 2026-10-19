@@ -32,7 +32,7 @@ export function validateProjectSourceManifest(value) {
   return { schemaVersion: 1, publicRepositories, privateRepositories, localFolders };
 }
 
-export function renderProjectReview({ manifest, canonical, sources, generatedAt = new Date().toISOString() }) {
+export function renderProjectReview({ owner, manifest, canonical, sources, generatedAt = new Date().toISOString() }) {
   const expectedSources = manifest.publicRepositories.length
     + manifest.privateRepositories.length
     + manifest.localFolders.length;
@@ -41,7 +41,7 @@ export function renderProjectReview({ manifest, canonical, sources, generatedAt 
     throw new Error(`Project review expected ${expectedSources} source snapshots.`);
   }
 
-  const proposals = sources.flatMap((source) => buildProposals(source, canonical));
+  const proposals = sources.flatMap((source) => buildProposals(source, canonical, owner));
   const proposalLines = proposals.length
     ? proposals.map((proposal) => `- [ ] ${proposal}`)
     : ["- No deterministic edits proposed. Reconfirm the evidence before advancing any source's `lastReviewedAt` timestamp."];
@@ -54,7 +54,7 @@ export function renderProjectReview({ manifest, canonical, sources, generatedAt 
     "",
     `Generated: ${generatedAt}`,
     "",
-    "Canonical sources were not changed. Every proposed edit below requires John's review and manual approval.",
+    `Canonical sources were not changed. Every proposed edit below requires ${owner.name.short}'s review and manual approval.`,
     "",
     "## Canonical files compared",
     "",
@@ -161,7 +161,7 @@ function isValidTimestamp(value) {
   return !Number.isNaN(date.valueOf()) && date.toISOString() === normalized;
 }
 
-function buildProposals(source, canonical) {
+function buildProposals(source, canonical, owner) {
   const proposals = [];
   const targets = source.canonicalFiles.map((path) => {
     const content = canonical.get(path) || "";
@@ -182,13 +182,13 @@ function buildProposals(source, canonical) {
       if (!match) continue;
       const claimed = Number(match[1].replaceAll(",", ""));
       if (claimed !== source.trackedFiles) {
-        proposals.push(`${source.project}: In \`${path}\`, replace the reviewed scale of ${claimed.toLocaleString("en-US")} tracked files with ${source.trackedFiles.toLocaleString("en-US")} tracked files if John confirms the snapshot is representative.`);
+        proposals.push(`${source.project}: In \`${path}\`, replace the reviewed scale of ${claimed.toLocaleString("en-US")} tracked files with ${source.trackedFiles.toLocaleString("en-US")} tracked files if ${owner.name.short} confirms the snapshot is representative.`);
       }
     }
   }
 
   if (!targets.some(({ section }) => section)) {
-    proposals.push(`${source.project}: Add a curated project section to ${formatPaths(source.canonicalFiles)} only if John confirms the source establishes his contribution.`);
+    proposals.push(`${source.project}: Add a curated project section to ${formatPaths(source.canonicalFiles)} only if ${owner.name.short} confirms the source establishes the owner's contribution.`);
   }
 
   return proposals;

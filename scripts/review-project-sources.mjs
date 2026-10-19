@@ -3,6 +3,7 @@ import { chmod, lstat, mkdir, open, readFile, realpath, rename, stat, unlink } f
 import { dirname, isAbsolute, relative, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { renderProjectReview, validateProjectSourceManifest } from "./project-review.mjs";
+import { loadOwner, resolveOwnerRoot } from "./owner.mjs";
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const GITHUB_TIMEOUT_MS = 15_000;
@@ -11,7 +12,8 @@ const MAX_SOURCE_BYTES = 24_000;
 
 export async function runProjectReview({
   root = repositoryRoot,
-  manifestPath = resolve(root, "config", "project-sources.private.json"),
+  ownerRoot = resolveOwnerRoot({ engineRoot: root }),
+  manifestPath = resolve(ownerRoot, "project-sources.json"),
   outputPath,
   now = new Date(),
   fetchImpl = fetch,
@@ -40,11 +42,12 @@ export async function runProjectReview({
     manifestSource = await readFile(resolvedManifest, "utf8");
   } catch (error) {
     if (error.code === "ENOENT") {
-      throw new Error(`Missing private source manifest at ${resolvedManifest}. Copy config/project-sources.example.json, keep the private copy ignored, and add only approved sources.`);
+      throw new Error(`Missing project source manifest at ${resolvedManifest}. Copy config/project-sources.example.json to the owner repo's project-sources.json and add only approved sources.`);
     }
     throw error;
   }
   const manifest = validateProjectSourceManifest(JSON.parse(manifestSource));
+  const { owner } = await loadOwner({ root: ownerRoot });
   const canonicalPaths = [...new Set([
     ...manifest.publicRepositories,
     ...manifest.privateRepositories,
@@ -69,6 +72,7 @@ export async function runProjectReview({
       : fetchRepository(entry, kind, headers, fetchImpl)
   ));
   const report = renderProjectReview({
+    owner,
     manifest,
     canonical,
     sources,

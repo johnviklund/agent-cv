@@ -19,6 +19,7 @@ async function workspace(context, ownerFiles = {}) {
   const owner = resolve(dir, "owner");
   await mkdir(resolve(engine, "config"), { recursive: true });
   await mkdir(owner);
+  for (const file of ["owner.json", "site.json"]) await cp(resolve(ada, file), resolve(owner, file));
   for (const file of ["cv.md", "overview.md", "projects.md", "repositories.md"]) {
     await cp(resolve(root, "data", file), resolve(engine, "data", file));
   }
@@ -31,14 +32,16 @@ async function workspace(context, ownerFiles = {}) {
 // Answers the GitHub API for any public repository and records every URL requested.
 function githubStub() {
   const urls = [];
-  const fetchImpl = async (url) => {
+  const userAgents = [];
+  const fetchImpl = async (url, { headers }) => {
     urls.push(url);
+    userAgents.push(headers["user-agent"]);
     const body = url.endsWith("/languages") ? { JavaScript: 1 }
       : url.includes("/contents/") ? "# Alpha\n"
         : { private: false, html_url: "https://github.com/example/alpha", description: "Alpha", pushed_at: "2026-10-01T00:00:00Z", default_branch: "main", license: null };
     return new Response(typeof body === "string" ? body : JSON.stringify(body));
   };
-  return { urls, fetchImpl };
+  return { urls, userAgents, fetchImpl };
 }
 
 test("the example owner's empty manifests produce no evidence and no repository requests", async (context) => {
@@ -75,7 +78,7 @@ test("missing or invalid owner manifests fail even when the engine still has con
 test("a nonempty owner allowlist fetches only its named repositories and documents", async (context) => {
   const manifest = [{ project: "Alpha", repository: "example/alpha", documents: ["README.md"] }];
   const { engine, owner } = await workspace(context, { "repositories.json": JSON.stringify(manifest) });
-  const { urls, fetchImpl } = githubStub();
+  const { urls, userAgents, fetchImpl } = githubStub();
 
   const [entry] = await syncRepositories({ engineRoot: engine, ownerRoot: owner, fetchImpl });
   assert.deepEqual(urls.sort(), [
@@ -84,5 +87,6 @@ test("a nonempty owner allowlist fetches only its named repositories and documen
     "https://api.github.com/repos/example/alpha/languages",
   ]);
   assert.equal(entry.repository, "example/alpha");
+  assert.deepEqual(userAgents, Array(3).fill("ada-example-agent-cv-repository-sync"));
   assert.match(await readFile(resolve(engine, "data/repositories.md"), "utf8"), /^## Alpha$/m);
 });

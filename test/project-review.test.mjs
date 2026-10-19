@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
+import { execFileSync } from "node:child_process";
+import { cp, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import {
@@ -8,6 +9,7 @@ import {
   validateProjectSourceManifest,
 } from "../scripts/project-review.mjs";
 import { runProjectReview } from "../scripts/review-project-sources.mjs";
+import { JOHN } from "./fixtures/owners.mjs";
 
 const manifest = {
   schemaVersion: 1,
@@ -84,6 +86,7 @@ test("renders a private approval queue without mutating canonical content", () =
     ["data/cv.md", "### Product Studio\n\nApproximately 999 tracked files."],
   ]);
   const markdown = renderProjectReview({
+    owner: JOHN,
     manifest: validateProjectSourceManifest(manifest),
     canonical,
     sources: [{
@@ -128,6 +131,7 @@ test("keeps private repository identifiers out of proposal text while retaining 
     localFolders: [],
   });
   const markdown = renderProjectReview({
+    owner: JOHN,
     manifest: privateManifest,
     canonical: new Map([["data/projects.md", "# Projects\n"]]),
     sources: [{
@@ -154,7 +158,8 @@ test("keeps private repository identifiers out of proposal text while retaining 
 test("writes a private local-folder review packet and leaves canonical Markdown unchanged", async (context) => {
   const root = await mkdtemp(resolve(tmpdir(), "agent-cv-project-review-"));
   context.after(() => rm(root, { recursive: true, force: true }));
-  const localProject = resolve(root, "private-project");
+  const ownerRoot = resolve(root, "owner");
+  const localProject = resolve(ownerRoot, "private-project");
   await mkdir(resolve(root, "config"), { recursive: true });
   await mkdir(resolve(root, "data"), { recursive: true });
   await mkdir(localProject, { recursive: true });
@@ -162,29 +167,47 @@ test("writes a private local-folder review packet and leaves canonical Markdown 
   const canonicalContent = "# Projects\n\nNo private project details yet.\n";
   await writeFile(canonicalPath, canonicalContent);
   await writeFile(resolve(localProject, "README.md"), "# Private Project\n\nCurrent local evidence.\n");
-  await writeFile(resolve(root, "config", "project-sources.private.json"), JSON.stringify({
+  await writeManifest(ownerRoot, {
     schemaVersion: 1,
     publicRepositories: [],
     privateRepositories: [],
     localFolders: [{
       project: "Private Project",
-      path: localProject,
+      path: "private-project",
       documents: ["README.md"],
       canonicalFiles: ["data/projects.md"],
       lastReviewedAt: "2026-08-14T12:00:00.000Z",
     }],
-  }));
+  });
 
   const outputPath = await runProjectReview({
     root,
+    ownerRoot,
     now: new Date("2026-08-15T18:00:00.000Z"),
   });
   const report = await readFile(outputPath, "utf8");
 
   assert.equal(outputPath, resolve(root, "project-reviews", "project-review-2026-08-15.md"));
   assert.match(report, /Local folder:/);
+  assert.ok(report.includes(`Local folder: ${localProject}`));
+  assert.match(report, /requires Ada's review/);
+  assert.doesNotMatch(report, /John|Viklund/);
   assert.match(report, /Add a curated project section/);
   assert.equal(await readFile(canonicalPath, "utf8"), canonicalContent);
+});
+
+test("missing project manifest names the selected owner's path", async (context) => {
+  const root = await createGitHubReviewRoot(context);
+  await rm(resolve(root, "project-sources.json"));
+  await assert.rejects(runProjectReview({ root, ownerRoot: root }), (error) => (
+    error.message.includes(resolve(root, "project-sources.json"))
+  ));
+});
+
+test("review packets remain ignored in the engine checkout", () => {
+  for (const path of ["project-reviews/x.md", "conversation-reviews/inbox/x.md"]) {
+    execFileSync("git", ["check-ignore", "--quiet", "--", path]);
+  }
 });
 
 test("refuses to write project reviews into public or canonical paths", async () => {
@@ -219,7 +242,7 @@ test("rejects local document symlinks that escape an approved folder", async (co
     }],
   });
 
-  await assert.rejects(() => runProjectReview({ root }), /symbolic link/);
+  await assert.rejects(() => runProjectReview({ root, ownerRoot: root }), /symbolic link/);
 });
 
 test("rejects an output symlink without modifying its target", async (context) => {
@@ -235,7 +258,7 @@ test("rejects an output symlink without modifying its target", async (context) =
   const outputPath = resolve(root, "project-reviews", "review.md");
   await symlink(canonicalPath, outputPath);
 
-  await assert.rejects(() => runProjectReview({ root, outputPath }), /must not be a symbolic link/);
+  await assert.rejects(() => runProjectReview({ root, ownerRoot: root, outputPath }), /must not be a symbolic link/);
   assert.equal(await readFile(canonicalPath, "utf8"), canonicalContent);
 });
 
@@ -254,7 +277,7 @@ test("fetches a complete public GitHub snapshot pinned to one tree SHA", async (
     return new Response("missing", { status: 404 });
   };
 
-  const outputPath = await runProjectReview({ root, fetchImpl, now: new Date("2026-08-15T18:00:00.000Z") });
+  const outputPath = await runProjectReview({ root, ownerRoot: root, fetchImpl, now: new Date("2026-08-15T18:00:00.000Z") });
   assert.match(await readFile(outputPath, "utf8"), /Tracked files: 1/);
   assert.ok(requested.some((url) => url.endsWith("/contents/README.md?ref=abc123")));
 });
@@ -267,7 +290,7 @@ test("fails before fetching sources when the GitHub allowance is insufficient", 
     return jsonResponse({ resources: { core: { remaining: 1 } } });
   };
 
-  await assert.rejects(() => runProjectReview({ root, fetchImpl }), /allowance is insufficient/);
+  await assert.rejects(() => runProjectReview({ root, ownerRoot: root, fetchImpl }), /allowance is insufficient/);
   assert.deepEqual(requested, ["https://api.github.com/rate_limit"]);
 });
 
@@ -284,7 +307,7 @@ test("rejects repository visibility mismatches and truncated trees", async (cont
       return new Response("missing", { status: 404 });
     };
     await assert.rejects(
-      () => runProjectReview({ root, fetchImpl }),
+      () => runProjectReview({ root, ownerRoot: root, fetchImpl }),
       failure === "visibility" ? /does not match its public manifest section/ : /too large/,
     );
     await assert.rejects(
@@ -315,7 +338,10 @@ async function createGitHubReviewRoot(context, suffix = "success") {
 }
 
 async function writeManifest(root, value) {
-  await writeFile(resolve(root, "config", "project-sources.private.json"), JSON.stringify({ schemaVersion: 1, ...value }));
+  for (const file of ["owner.json", "site.json"]) {
+    await cp(new URL(`../examples/owner/${file}`, import.meta.url), resolve(root, file));
+  }
+  await writeFile(resolve(root, "project-sources.json"), JSON.stringify({ schemaVersion: 1, ...value }));
 }
 
 function jsonResponse(value) {

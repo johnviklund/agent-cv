@@ -9,7 +9,10 @@ Size: code 2558 · tests 1610 · ratio 0.63 · largest touched site/templates/pa
 Decisions: 1a (skills say "the owner's public sources, currently engine `data/`"; U8 drops the clause) · 2a ticket list approved
 
 ## Execution state
-<filled by execute>
+Current: T1 verified; ready to commit · writer: GPT-6.1 Sol
+Session 1: T1
+Baseline: no code failures; sandbox broke subprocess output. Unsandboxed checks pass; see receipts/t1-verification.md.
+Uncommitted: T1 code, tests and receipt; no pending decision.
 
 ## Findings
 | # | What is true | What it changes |

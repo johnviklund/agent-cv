@@ -1,6 +1,6 @@
 Command: workflow review forkable-maintenance-tooling
 Created: 2026-10-19
-Base:    8a30e36
+Base:    55f333a
 Inputs:  .workflow/forkable-maintenance-tooling/plan.md @ e32329f
 Status:  complete
 
@@ -8,32 +8,27 @@ Status:  complete
 - [x] T1 — acceptance 4/4 tested and passing; mutations (UA, manifest default, folder base, packet name) each go red
 - [x] T2 — acceptance 4/4 pass on John's bundle; B4 line fails on the example-owner bundle (C1-1)
 - [x] T3 — acceptance 4/4 tested and passing (static test/maintenance-docs.test.mjs)
-- [ ] B1–B3, B5–B7 delivered · B4 delivered in code, its John refusal test red on CI · Outcome observed on packet/brief/UA output via tests, no verify skill (no live surface; deploy is U8) · out of scope untouched (README.md, U7, U8)
+- [x] C1-T1 — acceptance 4/4: example-bundle refusal test green (receipt), JOHN passed for every John string, src/comparison-core.js untouched, CI 39275011156 and 39275611970 success
+- [x] B1–B7 delivered (B4 refusal test green on CI's example-owner bundle) · Outcome observed on packet/brief/UA output via tests, no verify skill (no live surface; deploy is U8) · out of scope untouched (README.md, U7, U8)
 - [x] .workflow/ dependency check — 0 hits
-Size: +35 code · +89 tests · ratio 2.54 · net +81 · over 1,000: none
+Size: +35 code · +90 tests · ratio 2.57 · net +81 (cycle 2 fix: +1/−1 test only) · over 1,000: none
 Reachability: test/maintenance-docs.test.mjs → `node --test` · no new modules · guards shown failing: B3 UA, B5 manifest path, local-folder base, admin data-owner attrs, packet and brief owner name
 Escape hatches: none added
 Independence: cross-vendor (writer GPT-6.1 Sol / OpenAI; reviewer Opus 5.5 / Anthropic)
 
-## Cycle 1 findings
-### P1 — John refusal test fails for every non-John owner; CI red on main
-- Evidence: B4 "John still refused" · test/comparison-core.test.mjs:386–399 canonicalizes "John scores 99%" and "John ranks first" with the default `generatedOwner`; after src/comparison-core.js:32–44 dropped the `john` alternatives, only `ownerScreen` turns "John" into "the candidate", and it screens the bundled owner's names. Example-owner bundle (CI's `bootstrap:data`): 20 pass, 1 fail; same bundle at e32329f: 21 pass. CI runs 39263982986 and 39264031358 fail on exactly this test (284 pass, 1 fail). Local `npm run check` passes only because src/data is John's.
-- Remedy: pass the `JOHN` fixture (test/fixtures/owners.mjs) as the `owner` argument for the John strings, as test/owner-runtime.test.mjs:62 does; code stays as is (D2).
-- Disposition: fix now
-- Resolved: —
+## Resolved
+| Finding | Sev | Title | Disposition | Resolved |
+|---|---|---|---|---|
+| C1-1 | P1 | John refusal test fails for every non-John owner; CI red on main | fix now | @ 539d45c (cycle 2) |
+| C1-2 | P2 | Conversation review loads the owner after advancing the cursor | defer → TODO.md | settled (cycle 2) |
+| C1-3 | P3 | admin.js `owner: readOwner()` untested · skills cite owner.mjs with no CLI · project-review check-ignore uses process cwd | defer (stays in review.md) | settled (cycle 2) |
 
-### P2 — Conversation review loads the owner after advancing the cursor
-- Evidence: scripts/review-conversations.mjs:165 `loadOwner({ env })` runs after `writeSavedCursor` (line 155). admin-origin.mjs:17 reads owner.json without schema checks, so an owner.json that fails the schema, or a bad site.json, passes the origin step, then throws after a truncated scan saved `nextCursor`: that batch is never written and the next run starts past it.
-- Remedy: load the owner before `collectConversationCandidates`.
-- Disposition: defer → TODO.md
-- Resolved: —
-
-### P3 — minor (3)
-- site/assets/admin.js:104 `owner: readOwner()` has no test (admin.js has no harness); deleting it breaks the brief download for every owner and stays green.
-- Both skills say "Resolve the owner root with `scripts/owner.mjs`", but owner.mjs has no CLI; the agent must import `resolveOwnerRoot` ad hoc.
-- test/project-review.test.mjs:474 runs `git check-ignore` from process cwd, not the engine root.
-- Disposition: defer (stays in review.md)
-- Resolved: —
+## Cycle 2 findings
+- C1-1 class re-checked: every John-named string in test/comparison-core.test.mjs (194, 277, 357–362, 387–393) passes on the example bundle — CI runs the suite on it and reports 0 failed; the `ordinary` case names no owner. No other test canonicalizes a John string with the default owner.
+- Fix touched only test/comparison-core.test.mjs:401; src/comparison-core.js unchanged (`grep -ci john` → 0); assertions 72 → 72.
+- Mutation: dropping `JOHN` reproduces the cycle-1 failure on the example bundle (CI 39264031358, 39273500659 red; executor's worktree mutation red).
+- Local `npm run check` at 55f333a: 294 pass, 0 fail, 3 skipped. .workflow/ grep: 0 hits. Escape hatches added: 0.
+- No new findings.
 
 ## Pre-existing / environmental
 - agent-cv-private has an uncommitted `data/faq.md` edit that predates this run (t2 receipt); untouched.
@@ -41,3 +36,6 @@ Independence: cross-vendor (writer GPT-6.1 Sol / OpenAI; reviewer Opus 5.5 / Ant
 
 ## Cycle 1 verdict
 Patch needed: 1 P1 (C1-1) fix now · 1 P2 deferred to TODO.md · 3 P3 kept here. Everything else meets its acceptance lines and every new guard was shown failing once.
+
+## Cycle 2 verdict
+Ship as-is. C1-1 fixed @ 539d45c and CI green on main; C1-2 goes to TODO.md at wrap; C1-3 stays here. 0 P0 · 0 P1 · 0 P2 · 0 P3 new.

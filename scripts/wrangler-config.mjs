@@ -21,11 +21,22 @@ export function buildWranglerConfig(owner, base) {
     )),
     vars: owner.contact.email ? { ...vars, CONTACT_EMAIL: owner.contact.email } : vars,
   };
-  // Arrays of plain values stay on one line, as in the hand-written config this replaces.
-  const value = String.raw`(?:"(?:[^"\\]|\\.)*"|-?[\d.]+|true|false|null)`;
-  const flatArray = new RegExp(String.raw`\[\s+(${value}(?:,\s+${value})*)\s+\]`, "g");
-  const flatten = (_, items) => `[${JSON.parse(`[${items}]`).map((item) => JSON.stringify(item)).join(", ")}]`;
-  return `${JSON.stringify(config, null, 2).replace(flatArray, flatten)}\n`;
+  return `${format(config)}\n`;
+}
+
+// JSON.stringify(value, null, 2), except that arrays of plain values stay on one line, as in the
+// hand-written config this replaces. Strings are only ever written by JSON.stringify.
+function format(value, indent = "") {
+  if (value === null || typeof value !== "object") return JSON.stringify(value);
+  if (Array.isArray(value) && value.every((item) => typeof item !== "object")) {
+    return `[${value.map((item) => JSON.stringify(item)).join(", ")}]`;
+  }
+  const inner = `${indent}  `;
+  const items = Array.isArray(value)
+    ? value.map((item) => format(item, inner))
+    : Object.entries(value).map(([key, item]) => `${JSON.stringify(key)}: ${format(item, inner)}`);
+  const [open, close] = Array.isArray(value) ? "[]" : "{}";
+  return items.length ? `${open}\n${inner}${items.join(`,\n${inner}`)}\n${indent}${close}` : `${open}${close}`;
 }
 
 // Writes the selected owner's root wrangler.jsonc and returns its text. The rename keeps a parallel

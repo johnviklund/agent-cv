@@ -5,6 +5,7 @@ import {
   COMPARISON_REASON_CODES,
   normalizeComparisonRequest,
 } from "./comparison-contract.js";
+import { readOwner } from "./dom.js";
 
 const TOOL_NAMES = Object.freeze({
   compare: "compare_candidate_roles",
@@ -56,7 +57,7 @@ export async function registerWebMCPTools({
   let tools;
   try {
     registrationController = createAbortController();
-    tools = createToolDefinitions({ comparison, workspace, view });
+    tools = createToolDefinitions({ comparison, workspace, view, owner: readOwner(document) });
     for (const tool of tools) {
       await registerTool.call(document.modelContext, tool, { signal: registrationController.signal });
     }
@@ -71,12 +72,12 @@ export async function registerWebMCPTools({
   };
 }
 
-export function createToolDefinitions({ comparison, workspace, view }) {
+export function createToolDefinitions({ comparison, workspace, view, owner }) {
   return [
     {
       name: TOOL_NAMES.compare,
       title: "Compare roles (job text is sent to OpenAI)",
-      description: "Compare one to three roles with John's published evidence. The supplied job titles, company names, and descriptions are sent to this site's comparison API and OpenAI for analysis before a result is shown on the page.",
+      description: `Compare one to three roles with ${owner.shortName}'s published evidence. The supplied job titles, company names, and descriptions are sent to this site's comparison API and OpenAI for analysis before a result is shown on the page.`,
       inputSchema: COMPARISON_REQUEST_SCHEMA,
       execute: (input, options) => safelyExecute(
         TOOL_NAMES.compare,

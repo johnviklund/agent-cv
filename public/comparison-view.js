@@ -1,5 +1,5 @@
 import { COMPARISON_CONTRACT, normalizeComparisonRequirementLines } from "./comparison-contract.js";
-import { createLink } from "./dom.js";
+import { createLink, readOwner } from "./dom.js";
 import {
   buildRoleRequirementPreview,
   createLatestFileImport,
@@ -11,21 +11,21 @@ import {
 
 export { parseRoleBatch, serializeComparisonExport, validateRoleDrafts } from "./comparison-transfer.js";
 
-const COVERAGE_COPY = Object.freeze({
+const coverageCopy = (name) => ({
   documented: {
     label: "Documented evidence",
     countLabel: "Documented",
-    description: "John's public CV or project record directly documents relevant experience.",
+    description: `${name}'s public CV or project record directly documents relevant experience.`,
   },
   transferable: {
     label: "Transferable evidence",
     countLabel: "Transferable",
-    description: "John's public record documents adjacent experience that may transfer to this requirement.",
+    description: `${name}'s public record documents adjacent experience that may transfer to this requirement.`,
   },
   not_documented: {
     label: "Not documented yet",
     countLabel: "Not documented",
-    description: "The public CV does not document evidence for this requirement. This is not a claim that John lacks the capability.",
+    description: `The public CV does not document evidence for this requirement. This is not a claim that ${name} lacks the capability.`,
   },
   not_listed: {
     label: "Not listed in role",
@@ -38,6 +38,17 @@ const COVERAGE_COPY = Object.freeze({
     description: "The comparison did not assess this extracted role requirement, so it is not included in any evidence outcome.",
   },
 });
+
+// Comparison copy that names the page owner (see readOwner in dom.js).
+export function comparisonOwnerCopy(owner) {
+  return {
+    coverage: coverageCopy(owner.shortName),
+    analyzing: `Comparing role requirements with ${owner.shortName}'s published evidence.`,
+    caption: `Role requirements compared with ${owner.shortName}'s documented public evidence`,
+    questionsTitle: `Questions to ask ${owner.shortName}`,
+    exportFile: (extension) => `${owner.slug}-role-comparison.${extension}`,
+  };
+}
 const COVERAGE_ORDER = Object.freeze(["documented", "transferable", "not_documented"]);
 
 const REASON_LABELS = Object.freeze({
@@ -55,7 +66,8 @@ const EVIDENCE_SOURCES = Object.freeze({
   "data/overview.md": Object.freeze({ url: "/overview.md", label: "View professional overview" }),
 });
 
-export function buildComparisonViewModel(state, evidenceItems = []) {
+export function buildComparisonViewModel(state, evidenceItems = [], owner = readOwner()) {
+  const COVERAGE_COPY = comparisonOwnerCopy(owner).coverage;
   const evidenceById = new Map(evidenceItems.map((item) => [item.id, item]));
   const result = state?.result || null;
   const unmappedByRoleId = new Map(
@@ -186,7 +198,8 @@ export function buildComparisonStatusPresentation(model) {
   return presentation;
 }
 
-export function createComparisonView({ root, controller, requestMode = () => ({ status: "invalid" }) } = {}) {
+export function createComparisonView({ root, controller, requestMode = () => ({ status: "invalid" }), owner = readOwner() } = {}) {
+  const ownerCopy = comparisonOwnerCopy(owner);
   if (!root || !controller) throw new TypeError("Comparison view requires a root and controller.");
 
   const form = root.querySelector("[data-comparison-form]");
@@ -219,7 +232,7 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
   let drafts = [emptyRole(), emptyRole()];
   let hydrated = false;
   let latestState = controller.getState();
-  let latestModel = buildComparisonViewModel(latestState, controller.getEvidenceItems?.() || []);
+  let latestModel = buildComparisonViewModel(latestState, controller.getEvidenceItems?.() || [], owner);
   const expandedCellIds = new Set();
   const importLatestRoleFile = createLatestFileImport({
     maxBytes: COMPARISON_CONTRACT.limits.maxBodyBytes * 5,
@@ -264,7 +277,7 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
       hydrated = true;
       renderEditors();
     }
-    latestModel = buildComparisonViewModel(state, controller.getEvidenceItems?.() || []);
+    latestModel = buildComparisonViewModel(state, controller.getEvidenceItems?.() || [], owner);
     renderChrome();
     renderResult();
   }
@@ -474,7 +487,7 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
       const url = URL.createObjectURL(new Blob([content], { type }));
       const link = document.createElement("a");
       link.href = url;
-      link.download = `john-viklund-role-comparison.${extension}`;
+      link.download = ownerCopy.exportFile(extension);
       link.click();
       URL.revokeObjectURL(url);
       announce(`Comparison exported as ${format === "markdown" ? "Markdown" : "JSON"}.`);
@@ -546,7 +559,7 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
     if (stateIndicator) stateIndicator.textContent = presentation.indicator;
     errorLabel.textContent = presentation.errorLabel;
     errorTitle.textContent = presentation.errorTitle;
-    status.textContent = analyzing ? "Comparing role requirements with John's published evidence." : "";
+    status.textContent = analyzing ? ownerCopy.analyzing : "";
   }
 
   function renderResult() {
@@ -572,7 +585,7 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
     table.className = "comparison-matrix";
     table.style.minWidth = `${220 + (model.roles.length * 280)}px`;
     const caption = document.createElement("caption");
-    caption.textContent = "Role requirements compared with John's documented public evidence";
+    caption.textContent = ownerCopy.caption;
     const thead = document.createElement("thead");
     const headingRow = document.createElement("tr");
     const corner = document.createElement("th");
@@ -709,7 +722,7 @@ export function createComparisonView({ root, controller, requestMode = () => ({ 
     cell.evidence.forEach((evidence) => panel.append(createEvidenceReference(evidence)));
     if (cell.questions.length) {
       const title = document.createElement("h4");
-      title.textContent = "Questions to ask John";
+      title.textContent = ownerCopy.questionsTitle;
       const list = document.createElement("ul");
       list.className = "comparison-question-list";
       cell.questions.forEach((question) => {

@@ -67,3 +67,16 @@ export function takePendingApplication(storage) {
     return "";
   }
 }
+
+// Chat and application copy that names the page owner (see readOwner in dom.js).
+export function agentLabel(owner) {
+  return `${owner.shortName}'s agent`.toLocaleUpperCase(owner.lang);
+}
+
+export function busyChatMessage(owner) {
+  return `${owner.shortName}'s agent is still answering. Wait for the response before opening role comparison.`;
+}
+
+export function applicationTitle(application, owner) {
+  return `${application.role} at ${application.company} — ${owner.name}`;
+}

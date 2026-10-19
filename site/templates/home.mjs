@@ -1,4 +1,4 @@
-import { beacon, escapeHtml as e, profileLinks, scriptJson as j, updatedMonth, xHandle } from "./html.mjs";
+import { beacon, escapeHtml as e, htmlAttributes, profileLinks, scriptJson as j, updatedMonth, xHandle } from "./html.mjs";
 
 const item = (indent, { title, text, href }) => {
   const external = href.startsWith("https://");
@@ -70,7 +70,7 @@ ${person.worksFor ? `      "worksFor": { "@type": "Organization", "name": ${j(pe
   const source = repository ? `      <a href="${e(repository)}" rel="me noopener noreferrer" target="_blank">Source ↗</a>\n` : "";
 
   return `<!doctype html>
-<html lang="${e(owner.site.lang)}">
+<html ${htmlAttributes(owner)}>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">

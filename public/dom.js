@@ -13,3 +13,10 @@ function isExternal(href) {
   if (!/^https?:\/\//i.test(href)) return false;
   return new URL(href).origin !== globalThis.location?.origin;
 }
+
+// The page owner, from the data-owner-* attributes the site renders on <html>.
+export function readOwner(doc = globalThis.document) {
+  const element = doc?.documentElement;
+  const { ownerName = "", ownerShortName = "", ownerSlug = "" } = element?.dataset ?? {};
+  return { name: ownerName, shortName: ownerShortName, slug: ownerSlug, lang: element?.lang || undefined };
+}

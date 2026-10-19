@@ -45,6 +45,11 @@ export function xHandle(owner) {
   return owner.links?.x ? new URL(owner.links.x).pathname.split("/").filter(Boolean)[0] : null;
 }
 
+// The <html> attributes the browser code reads the owner from (readOwner in public/dom.js).
+export function htmlAttributes(owner) {
+  return `lang="${escapeHtml(owner.site.lang)}" data-owner-name="${escapeHtml(owner.name.full)}" data-owner-short-name="${escapeHtml(owner.name.short)}" data-owner-slug="${escapeHtml(owner.slug)}"`;
+}
+
 export function wordmark(owner) {
   const { full } = owner.name;
   return `<a class="wordmark" href="/" aria-label="${escapeHtml(full)}, home">${escapeHtml(full.toLocaleUpperCase(owner.site.lang))}</a>`;

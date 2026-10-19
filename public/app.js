@@ -1,13 +1,15 @@
 import { consumeEventStream } from "./stream.js";
 import { renderMarkdown } from "./markdown.js";
-import { createLink } from "./dom.js";
+import { createLink, readOwner } from "./dom.js";
 import { createComparisonController } from "./comparison-controller.js";
 import { resolveSessionStorage } from "./comparison-state.js";
 import { createWorkspaceController, modeFromHash } from "./workspace-controller.js";
 import { createComparisonView } from "./comparison-view.js";
 import { registerWebMCPTools } from "./webmcp.js";
 import {
+  agentLabel,
   applicationSlugFromPath,
+  busyChatMessage,
   canAddUserTurn,
   messagesForRequest,
   rollbackUnpairedUserTurn,
@@ -24,6 +26,7 @@ const state = {
   controller: null,
 };
 
+const owner = readOwner();
 const home = document.querySelector("[data-home]");
 const homeInput = document.querySelector("[data-initial-input]");
 const conversation = document.querySelector("[data-conversation]");
@@ -149,7 +152,7 @@ function focusMode(mode) {
 function explainBlockedWorkspace() {
   if (!workspaceMessage) return;
   workspaceMessage.hidden = false;
-  workspaceMessage.textContent = "John's agent is still answering. Wait for the response before opening role comparison.";
+  workspaceMessage.textContent = busyChatMessage(owner);
   workspaceMessage.focus?.({ preventScroll: true });
 }
 
@@ -309,7 +312,11 @@ function appendAgentMessage() {
   element.className = "message message-agent";
   const label = document.createElement("div");
   label.className = "agent-label";
-  label.innerHTML = '<span aria-hidden="true"></span><strong>JOHN\'S AGENT</strong>';
+  const name = document.createElement("strong");
+  name.textContent = agentLabel(owner);
+  const mark = document.createElement("span");
+  mark.setAttribute("aria-hidden", "true");
+  label.append(mark, name);
   const status = document.createElement("span");
   status.className = "sr-only";
   status.setAttribute("aria-live", "polite");

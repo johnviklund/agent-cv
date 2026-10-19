@@ -1,4 +1,5 @@
-import { applicationSlugFromPath } from "./chat-state.js";
+import { applicationSlugFromPath, applicationTitle } from "./chat-state.js";
+import { readOwner } from "./dom.js";
 
 const page = document.querySelector("[data-application-page]");
 const slug = applicationSlugFromPath(window.location.pathname);
@@ -12,7 +13,7 @@ async function loadApplication(container, applicationSlug) {
     container.querySelector("[data-application-company]").textContent = application.company.toUpperCase();
     container.querySelector("[data-application-role]").textContent = application.role;
     container.querySelector("[data-application-heading]").textContent = `${application.role} · ${application.company}`;
-    document.title = `${application.role} at ${application.company} — John Viklund`;
+    document.title = applicationTitle(application, readOwner());
   } catch (error) {
     container.querySelector("[data-application-heading]").textContent = error.message;
     container.querySelectorAll("form, .application-starters").forEach((element) => { element.hidden = true; });

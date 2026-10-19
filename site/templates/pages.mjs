@@ -1,5 +1,5 @@
 import {
-  beacon, blocks, escapeHtml as e, profileLinks, sourceLink, updatedMonth, wordmark, xHandle,
+  beacon, blocks, escapeHtml as e, htmlAttributes, profileLinks, sourceLink, updatedMonth, wordmark, xHandle,
 } from "./html.mjs";
 
 // Generated from the published pages, then reviewed: owner.json supplies identity, links and analytics;
@@ -299,7 +299,7 @@ ${beacon(owner)}</body>
 
 export function renderApplication({ owner, site }) {
   return `<!doctype html>
-<html lang="${e(owner.site.lang)}">
+<html ${htmlAttributes(owner)}>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">

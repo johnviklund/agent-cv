@@ -40,6 +40,7 @@ This repository contains the public implementation of John Viklund's Agent CV. K
 - `npm run build:site` assembles the served, ignored `build/site/` from the owner's `site.json`, `site/templates/`, the engine assets in `site/assets/`, `public/`, and `tokens.css`; `dev`, `check`, and `deploy` run it. Edit pages through the owner's `site.json` or the templates, never in `build/site/`.
 - `build/site/<slug>-cv.pdf` (John: `john-viklund-cv.pdf`) is generated from `data/cv.md` and the owner's `owner.json` by `npm run build:cv-pdf` during `npm run deploy` (requires Chromium) and is never committed. The build fails if the PDF exceeds two pages.
 - `<owner root>/assets/og-image.png` is the owner's committed social preview card, copied into `build/site/` by `npm run build:site`; regenerate it with `npm run build:og-image` (requires Chromium) when the name, tagline, location, headline or origin in `owner.json` changes.
+- The root `wrangler.jsonc` is generated and ignored: `npm run build:wrangler-config` merges the tracked engine `wrangler.base.jsonc` with the owner's `deploy`, `site.hosts` (custom domains, skipping `*.workers.dev`) and `contact.email` (the only source of `CONTACT_EMAIL`). `dev`, `deploy`, `check:worker-package`, the config-reading tests and golden regenerate it; edit the base file or `owner.json`, never `wrangler.jsonc`.
 - Keep `/AGENTS.md`, `/llms.txt`, `/sitemap.xml`, raw Markdown links, and documented API routes in parity.
 
 ## Privacy and security

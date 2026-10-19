@@ -63,7 +63,7 @@ npm run dev                      # http://localhost:8787
 
 `npm run bootstrap:data` copies generic placeholders from `examples/private-data/` only where a private data file is missing; it never overwrites reviewed data. Run the full verification with `npm run check`, and `npm run build` for Worker packaging changes.
 
-Deploying a fork needs its own Cloudflare setup: a KV namespace, OpenAI and admin secrets, your own contact email and limits in `wrangler.jsonc`, and a custom domain with matching canonical metadata. Follow [Deploy your fork](USERGUIDE.md#deploy-your-fork) in the user guide before running `npm run deploy`.
+Deploying a fork needs its own Cloudflare setup: a KV namespace, OpenAI and admin secrets, your own worker name, archive namespace, hosts, contact email and limits in your owner repo's `owner.json`, and a custom domain with matching canonical metadata. Follow [Deploy your fork](USERGUIDE.md#deploy-your-fork) in the user guide before running `npm run deploy`.
 
 ## Repository map
 
@@ -73,6 +73,7 @@ Deploying a fork needs its own Cloudflare setup: a KV namespace, OpenAI and admi
 | `site/` | Page templates and engine assets: browser scripts, styles, fonts, and images |
 | `public/` | Synchronized public Markdown and comparison evidence, copied into the built site |
 | `build/site/` | Generated, ignored site that Wrangler serves; built by `npm run build:site` |
+| `wrangler.jsonc` | Generated, ignored Worker config: `wrangler.base.jsonc` plus the owner's `deploy`, `site.hosts` and `contact.email`; built by `npm run build:wrangler-config` |
 | `data/` | Canonical Markdown sources; public files are tracked, private ones are ignored |
 | `config/` | Repository allowlist, comparison evidence, and admin origin |
 | `scripts/` | Data synchronization, checks, and maintenance tools |

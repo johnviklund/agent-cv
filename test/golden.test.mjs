@@ -10,7 +10,7 @@ import { promisify } from "node:util";
 
 import { collectOutputs, diffGolden, reviewGolden, writeGolden } from "../scripts/golden.mjs";
 import { buildComparisonInstructions } from "../src/comparison-core.js";
-import { resolveOwnerRoot } from "../scripts/owner.mjs";
+import { loadOwner, resolveOwnerRoot } from "../scripts/owner.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const run = promisify(execFile);
@@ -42,6 +42,7 @@ test("golden outputs cover the site, both prompts and the Worker config", async 
     assert.ok(keys.includes(key), key);
   }
   assert.equal(keys.some((key) => key.endsWith(".pdf")), false);
+  assert.equal(JSON.parse(outputs["wrangler.jsonc"]).name, (await loadOwner()).owner.deploy.workerName);
   // Buffer.equals, not deepEqual: a failing deepEqual diffs every byte and exhausts memory.
   assert.ok(outputs["site/og-image.png"].equals(await readFile(resolve(resolveOwnerRoot(), "assets/og-image.png"))), "site/og-image.png");
 

@@ -3,10 +3,11 @@ import assert from "node:assert/strict";
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { handleRequest } from "../src/worker.js";
+import { writeWranglerConfig } from "../scripts/wrangler-config.mjs";
 import { content, readSite, siteDir } from "./fixtures/site.mjs";
 
 const contactPage = await readSite("contact/index.html");
-const workerConfig = await readFile(new URL("../wrangler.jsonc", import.meta.url), "utf8");
+const workerConfig = JSON.parse(await writeWranglerConfig());
 // John's contact channels are owner content; the example owner configures none of them.
 const johnOnly = { skip: content.owner.slug !== "john-viklund" && "needs John's owner root" };
 const publicTree = (await readTree(siteDir))
@@ -68,5 +69,5 @@ test("agent guidance keeps the published email when the endpoint returns null", 
 });
 
 test("deployment config publishes the selected contact email", () => {
-  assert.match(workerConfig, /"CONTACT_EMAIL":\s*"johnwik@gmail\.com"/);
+  assert.equal(workerConfig.vars.CONTACT_EMAIL, content.owner.contact.email ?? undefined);
 });

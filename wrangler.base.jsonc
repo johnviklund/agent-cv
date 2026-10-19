@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "john-viklund-agent-cv",
+  "name": "agent-cv",
   "main": "src/index.js",
   "compatibility_date": "2026-08-15",
   "workers_dev": true,
@@ -11,16 +11,7 @@
   "observability": {
     "enabled": true
   },
-  "routes": [
-    {
-      "pattern": "johnviklund.com",
-      "custom_domain": true
-    },
-    {
-      "pattern": "www.johnviklund.com",
-      "custom_domain": true
-    }
-  ],
+  "routes": [],
   "assets": {
     "directory": "./build/site",
     "binding": "ASSETS",
@@ -60,7 +51,7 @@
   "kv_namespaces": [
     {
       "binding": "ARCHIVE",
-      "id": "66eaa9b0f9724e31980aec66972ad219"
+      "id": ""
     }
   ],
   "migrations": [
@@ -95,7 +86,6 @@
     "COMPARISON_MODEL": "gpt-6-luna",
     "COMPARISON_MAX_OUTPUT_TOKENS": "8000",
     "COMPARISON_MONTHLY_REQUEST_CAP": "60",
-    "ARCHIVE_RETENTION_DAYS": "90",
-    "CONTACT_EMAIL": "johnwik@gmail.com"
+    "ARCHIVE_RETENTION_DAYS": "90"
   }
 }

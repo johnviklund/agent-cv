@@ -27,3 +27,6 @@ docs/agent-cv-master-profile.md
 
 # Generated site output (npm run build:site), including the deploy-time CV PDF.
 build/
+
+# Generated from wrangler.base.jsonc and the owner (npm run build:wrangler-config).
+/wrangler.jsonc

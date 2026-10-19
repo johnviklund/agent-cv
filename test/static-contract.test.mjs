@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 import { content, readSite } from "./fixtures/site.mjs";
+import { writeWranglerConfig } from "../scripts/wrangler-config.mjs";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
@@ -223,7 +224,7 @@ test("chat knowledge includes the canonical public CV", async () => {
   const [knowledge, sync, wrangler, packageCheck] = await Promise.all([
     read("src/knowledge.js"),
     read("scripts/sync-public-data.mjs"),
-    read("wrangler.jsonc"),
+    writeWranglerConfig(),
     read("scripts/check-worker-package.mjs"),
   ]);
 

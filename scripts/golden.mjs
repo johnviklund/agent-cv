@@ -48,7 +48,8 @@ export async function collectOutputs({ root = engineRoot } = {}) {
   ]);
   outputs["prompts/system.txt"] = Buffer.from(buildSystemPrompt(knowledge, { owner, updatedAt }));
   outputs["prompts/comparison.txt"] = Buffer.from(buildComparisonInstructions());
-  outputs["wrangler.jsonc"] = await readFile(resolve(root, "wrangler.jsonc"));
+  const { writeWranglerConfig } = await module("scripts/wrangler-config.mjs");
+  outputs["wrangler.jsonc"] = Buffer.from(await writeWranglerConfig({ engineRoot: root }));
   return outputs;
 }
 

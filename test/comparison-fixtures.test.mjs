@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { validateComparisonPayload } from "../src/comparison-core.js";
+import { writeWranglerConfig } from "../scripts/wrangler-config.mjs";
 
 const fixture = JSON.parse(await readFile(
   new URL("./fixtures/comparison-roles.json", import.meta.url),
@@ -33,7 +34,7 @@ test("the three-role video fixture stays compact and has distinct comparison col
 
 test("the documented challenge cost ceiling matches the enforced request caps", async () => {
   const [config, submission] = await Promise.all([
-    readFile(new URL("../wrangler.jsonc", import.meta.url), "utf8").then(JSON.parse),
+    writeWranglerConfig().then(JSON.parse),
     readFile(new URL("../docs/webmcp-challenge-submission.md", import.meta.url), "utf8"),
   ]);
   assert.deepEqual(config.vars, {

@@ -2,8 +2,10 @@ import { readFile, readdir } from "node:fs/promises";
 import { dirname, extname, posix, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { writeWranglerConfig } from "./wrangler-config.mjs";
+
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const config = JSON.parse(await readFile(resolve(root, "wrangler.jsonc"), "utf8"));
+const config = JSON.parse(await writeWranglerConfig({ engineRoot: root }));
 const failures = [];
 const workerRoot = resolve(root, config.base_dir);
 

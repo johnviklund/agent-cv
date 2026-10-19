@@ -69,7 +69,7 @@ Use a feature branch and make these changes as one reviewed identity migration:
 2. Replace the six ignored private `data/*.md` files with reviewed knowledge for your deployment. Keep instructions in `meta.md` strict about grounding, sensitive requests, and missing facts.
 3. Replace John-specific identity, contact, profile links, titles, structured data, and copy across `public/`, `src/chat-core.js`, `AGENTS.md`, and machine-readable resources.
 4. Replace canonical URLs in HTML, `public/robots.txt`, `public/sitemap.xml`, and the matching assertions in `scripts/check-static.mjs`.
-5. Change the Worker `name`, public `CONTACT_EMAIL`, and KV namespace ID in `wrangler.jsonc`. Remove the public email value if you prefer the contact page's profile-only fallback.
+5. Set `deploy.workerName`, `deploy.archiveNamespaceId`, `site.hosts` and `contact.email` in your owner repo's `owner.json`. The generated `wrangler.jsonc` takes them from there; set `contact.email` to `null` if you prefer the contact page's profile-only fallback.
 6. Set your deployed HTTPS origin as `site.origin` in your owner repo's `owner.json`. Both private conversation scripts use this code-controlled destination and refuse the example owner; `conversations:export` may still take an explicit `--url` override.
 7. Replace `config/repositories.json` with only public repositories and named Markdown or text documents you approve. An empty array is valid if you do not want repository evidence yet.
 8. Run `npm run sync:repositories` only after reviewing that allowlist. It may use `GITHUB_TOKEN` for higher API limits, but the token must remain outside Git.
@@ -99,7 +99,7 @@ For a manual release check, clone your branch into a new directory, run `npm ci`
 ## Deploy your fork
 
 1. Authenticate Wrangler with the Cloudflare account that will own the deployment.
-2. Create a KV namespace and place its returned ID in the `ARCHIVE` binding in `wrangler.jsonc`:
+2. Create a KV namespace and place its returned ID in `deploy.archiveNamespaceId` in your `owner.json`:
 
    ```sh
    npx wrangler kv namespace create ARCHIVE
@@ -119,7 +119,7 @@ For a manual release check, clone your branch into a new directory, run `npm ci`
 
    This writes the same token to ignored `.dev.vars` with private file permissions and to Cloudflare without printing it.
 
-5. Review `OPENAI_MODEL`, reasoning effort, request cap, retention, contact email, rate limit, and binding values in `wrangler.jsonc`.
+5. Review `OPENAI_MODEL`, reasoning effort, request cap, retention and contact email in your `owner.json` (`deploy.vars` overrides the engine defaults in `wrangler.base.jsonc`), and the rate limit and binding values in `wrangler.base.jsonc`. `npm run build:wrangler-config` writes the merged, ignored `wrangler.jsonc`; every npm script that reads it regenerates it first.
 6. Run `npm run build` for the Worker packaging dry run. In the two-repository setup, run `npm run sync:private-data` first so this dry run uses the reviewed private sources.
 7. Deploy with `npm run deploy`. Deployment automatically imports the six reviewed files from the sibling private repository and stops if that source is missing or incomplete.
 8. Set your custom domain, then update canonical metadata, discovery resources, export URL, and static checks together. Run `npm run check` again.

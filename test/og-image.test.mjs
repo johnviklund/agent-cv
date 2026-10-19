@@ -58,6 +58,7 @@ test("og card CLI writes the selected owner's card, buildSite publishes those by
   const dir = await tempDir(context);
   const ownerRoot = resolve(dir, "owner");
   for (const file of ["owner.json", "site.json"]) await cp(resolve(example, file), resolve(ownerRoot, file));
+  await cp(resolve(example, "data"), resolve(ownerRoot, "data"), { recursive: true });
   const owner = JSON.parse(await readFile(resolve(ownerRoot, "owner.json"), "utf8"));
   await writeFile(resolve(ownerRoot, "owner.json"), JSON.stringify({ ...owner, tagline: "Staff engineer at Example" }));
   const env = { ...process.env, AGENT_CV_OWNER_ROOT: ownerRoot, CHROME_PATH: await fakeChromium(dir) };

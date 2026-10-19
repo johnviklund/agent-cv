@@ -44,17 +44,19 @@ function githubStub() {
   return { urls, userAgents, fetchImpl };
 }
 
-test("the example owner's empty manifests produce no evidence and no repository requests", async (context) => {
-  assert.deepEqual(JSON.parse(await readFile(resolve(ada, "repositories.json"), "utf8")), []);
-  assert.deepEqual(JSON.parse(await readFile(resolve(ada, "comparison-evidence.json"), "utf8")), { schemaVersion: 1, items: [] });
+test("an owner's empty manifests produce no evidence and no repository requests", async (context) => {
+  const { engine, owner } = await workspace(context, {
+    "repositories.json": "[]", "comparison-evidence.json": '{"schemaVersion":1,"items":[]}',
+  });
+  assert.deepEqual(JSON.parse(await readFile(resolve(owner, "repositories.json"), "utf8")), []);
+  assert.deepEqual(JSON.parse(await readFile(resolve(owner, "comparison-evidence.json"), "utf8")), { schemaVersion: 1, items: [] });
 
-  const { engine } = await workspace(context);
-  const catalog = await writeComparisonEvidence({ root: engine, ownerRoot: ada });
+  const catalog = await writeComparisonEvidence({ root: engine, ownerRoot: owner });
   assert.deepEqual(catalog.items, []);
   assert.deepEqual(JSON.parse(await readFile(resolve(engine, "public/evidence.json"), "utf8")).items, []);
 
   const { urls, fetchImpl } = githubStub();
-  assert.deepEqual(await syncRepositories({ engineRoot: engine, ownerRoot: ada, fetchImpl }), []);
+  assert.deepEqual(await syncRepositories({ engineRoot: engine, ownerRoot: owner, fetchImpl }), []);
   assert.deepEqual(urls, []);
   assert.doesNotMatch(await readFile(resolve(engine, "data/repositories.md"), "utf8"), /^## /m);
 });

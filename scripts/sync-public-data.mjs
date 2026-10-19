@@ -1,4 +1,4 @@
-import { copyFile, mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { loadOwner } from "./owner.mjs";
@@ -19,32 +19,36 @@ export async function writeOwnerModule({ root, owner, site }) {
   );
 }
 
-async function main() {
+export async function syncPublicData({ root: destinationRoot = root, ownerRoot } = {}) {
+  const { root: sourceRoot, owner, site } = await loadOwner({ root: ownerRoot });
+  // Read every source before writing anything, so incomplete owner bundles fail without changes.
+  const contents = await Promise.all(workerFiles.map((file) => readFile(resolve(sourceRoot, "data", file))));
+  const content = new Map(workerFiles.map((file, index) => [file, contents[index]]));
+  const root = destinationRoot;
   await mkdir(resolve(root, "public"), { recursive: true });
   await mkdir(resolve(root, "src", "data"), { recursive: true });
   await Promise.all([
-    ...publicFiles.map((file) => copyFile(
-      resolve(root, "data", file),
+    ...publicFiles.map((file) => writeFile(
       resolve(root, "public", file),
+      content.get(file),
     )),
-    ...workerFiles.map((file) => copyFile(
-      resolve(root, "data", file),
+    ...workerFiles.map((file) => writeFile(
       resolve(root, "src", "data", file),
+      content.get(file),
     )),
   ]);
 
   const [comparisonEvidence, comparisonContract] = await Promise.all([
-    writeComparisonEvidence({ root }),
+    writeComparisonEvidence({ root, ownerRoot: sourceRoot, sourceRoot }),
     writeComparisonContract({ repositoryRoot: root }),
   ]);
 
   console.log(`Synced ${publicFiles.length} public and ${workerFiles.length} Worker Markdown resources, ${comparisonEvidence.items.length} comparison evidence items, and comparison contract v${comparisonContract.schemaVersion}.`);
-  const { owner, site } = await loadOwner();
   await writeOwnerModule({ root, owner, site });
 }
 
 if (process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.meta.url) {
-  main().catch((error) => {
+  syncPublicData().catch((error) => {
     console.error(error.message);
     process.exitCode = 1;
   });

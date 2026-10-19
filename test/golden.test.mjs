@@ -146,7 +146,8 @@ async function driftedSnapshot(context) {
   await mkdir(ownerRoot);
   // The diff builds the site again, so its owner root carries the same owner configuration.
   await mkdir(resolve(ownerRoot, "assets"));
-  for (const file of ["owner.json", "site.json", "assets/og-image.png"]) await copyFile(resolve(resolveOwnerRoot(), file), resolve(ownerRoot, file));
+  await mkdir(resolve(ownerRoot, "data"));
+  for (const file of ["owner.json", "site.json", "assets/og-image.png", "data/cv.md", "data/overview.md", "data/projects.md", "data/repositories.md"]) await copyFile(resolve(resolveOwnerRoot(), file), resolve(ownerRoot, file));
   assert.equal((await golden("capture", "--golden", dir)).code, 0);
   const current = {};
   for (const file of ["llms.txt", "sitemap.xml"]) {

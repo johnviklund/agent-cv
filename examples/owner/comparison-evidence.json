@@ -1,1 +1,8 @@
-{ "schemaVersion": 1, "items": [] }
+{
+  "schemaVersion": 1,
+  "items": [
+    { "id": "cv.profile", "source": { "path": "data/cv.md", "headingPath": ["Profile"] } },
+    { "id": "overview.focus", "source": { "path": "data/overview.md", "headingPath": ["Focus"] } },
+    { "id": "project.example-library", "source": { "path": "data/projects.md", "headingPath": ["Example library"] } }
+  ]
+}

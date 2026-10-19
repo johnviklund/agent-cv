@@ -47,7 +47,7 @@ export function renderSite({ owner, site }) {
 
 // Replaces out with the engine assets, the synced public resources, the design tokens, the rendered
 // pages, the public Markdown from dataRoot and the owner's social card.
-export async function buildSite({ root: ownerRoot, owner, site, out = resolve(root, "build/site"), dataRoot = resolve(root, "data") }) {
+export async function buildSite({ root: ownerRoot, owner, site, out = resolve(root, "build/site"), dataRoot = resolve(ownerRoot, "data") }) {
   const files = renderSite({ owner, site });
   const card = resolve(ownerRoot, "assets/og-image.png");
   files["og-image.png"] = await readFile(card).catch((error) => {

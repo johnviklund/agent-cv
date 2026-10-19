@@ -9,7 +9,14 @@ Size: code 1833 · tests 2354 · ratio 1.28 · largest touched test/comparison-c
 Decisions: brief D1–D6 retained; John approved all five tickets on 2026-10-19. Public-code Opus 5.5 audit complete; findings verified by main session GPT-6 Astra.
 
 ## Execution state
-Plan approved; all five tickets are ready for execution in dependency order. Baseline npm run check passes outside the sandbox: 249 tests passed, 1 skipped; static checks pass for 10 pages. Sandbox child-process EPERM explained the initial failures. Direct golden diff has no unlisted differences.
+Current: T2 next (logic, blocked by T1 → ready). T4 ready.
+T1 @ 90cba12 (private: agent-cv-private 739738e)
+writer: Opus 5.5 (human-approved swap from GPT-6.1 Sol, 2026-10-19; review goes to GPT-6.1 Sol xhigh)
+Baseline: npm run check 249 passed, 1 skipped; after T1 254 tests, 252 passed, 2 skipped (real-Chromium card test opt-in via AGENT_CV_CHROMIUM_TESTS=1).
+Contract in flight: owner.json optional tagline (string, minLength 1); buildSite({ root, owner, site, out, dataRoot }) needs root/assets/og-image.png; scripts/chromium.mjs findChromium(artifact).
+Uncommitted: agent-cv-private data/faq.md is John's own edit; never stage it.
+Host: 7.7 GB RAM; compare Buffers with .equals, never deepEqual (OOM on failure).
+Session 1: T1
 
 ## Findings
 | # | What is true | What it changes |
@@ -38,13 +45,15 @@ Delivers: B1, B2, B8 · Blocked by: none · Lane: contract
 Budget: code +100 · tests +100
 Seam: owner validation → card renderer/CLI → buildSite → golden collection. Extract shared Chromium discovery for the PDF caller too.
 Accept:
-- [ ] John's regenerated PNG equals the committed card bytes; golden collection contains those same bytes at site/og-image.png. (B1, B8)
-- [ ] Ada's card contains Ada Example, her headline and ada.example; absent tagline renders location alone; owner text is HTML-escaped. (B1)
-- [ ] CLI writes assets/og-image.png under the selected owner; buildSite publishes identical bytes; missing card fails naming npm run build:og-image. (B2)
-- [ ] Both owners have committed cards; the engine card is removed; npm run check performs zero Chromium launches. (B2)
+- [x] John's regenerated PNG equals the committed card bytes; golden collection contains those same bytes at site/og-image.png. (B1, B8)
+- [x] Ada's card contains Ada Example, her headline and ada.example; absent tagline renders location alone; owner text is HTML-escaped. (B1)
+- [x] CLI writes assets/og-image.png under the selected owner; buildSite publishes identical bytes; missing card fails naming npm run build:og-image. (B2)
+- [x] Both owners have committed cards; the engine card is removed; npm run check performs zero Chromium launches. (B2)
 Verify: `node --test test/owner.test.mjs test/site-rendering.test.mjs test/og-image.test.mjs test/golden.test.mjs` (pre: 30 passed; new og-image file absent, Node 26 skipped its unmatched path)
 Skills: none
-Status: todo
+Status: done @ 90cba12
+Writer: Opus 5.5
+Receipt: receipts/t1-verification.md
 
 ### T2 — Build the owner's CV PDF
 Delivers: B3 · Blocked by: T1 · Lane: logic
@@ -97,6 +106,10 @@ Accept:
 Verify: `node --test test/repository-grounding.test.mjs test/comparison-evidence.test.mjs test/owner-manifests.test.mjs test/comparison-core.test.mjs test/owner-runtime.test.mjs` (pre: 37 passed, 1 skipped; new owner-manifests file absent, Node 26 skipped its unmatched path)
 Skills: none
 Status: todo
+
+## Deviations
+- T1: plan note says the card uses the headline verbatim; John's card shows "…product leader." while owner.json headline has no period. The card appends "." unless the headline ends in . ! or ?, which keeps John's bytes identical (acceptance line 1 wins).
+- T1: the real-Chromium John parity test is opt-in (AGENT_CV_CHROMIUM_TESTS=1) because npm test runs inside npm run check, which must launch zero Chromium.
 
 ## Coverage
 - Outcome → T1 card bytes, T2 PDF pages/text/path, T3 config parity, T5 manifest migration; final npm run check, npm run build and npm run golden:diff.

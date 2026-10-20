@@ -9,9 +9,10 @@ Size: code 218 · tests 232 · ratio 1.06 · largest touched USERGUIDE.md 174, t
 Decisions: 1a links.github set to null by setup · 2a deploy also refuses Ada's og-image bytes · 3a tickets approved 2026-10-20
 
 ## Execution state
-Current: T2 todo · writer: GPT-6.1 Sol
+Current: T3 todo · writer: GPT-6.1 Sol
 T1 @ a61c3ab
-Session 1: T1
+T2 @ ed23bc1
+Session 1: T1, T2
 Baseline: sandbox check fails in five child-process files; unsandboxed check passes, 303 pass / 3 skipped.
 Contracts: runSetup({args, env, run, ask, isTTY, engineRoot}); runner returns {stdout}.
 Uncommitted: plan execution record only · pending decision: none
@@ -57,14 +58,15 @@ Delivers: B4, B5 · Blocked by: T1 · Lane: logic
 Budget: code +90 · tests +100 · why: one failure case per cloud step
 Seam: `runSetup` with an injected `run`; `configureAdminSecret` from `scripts/configure-admin-secret.mjs`
 Accept:
-- [ ] no `--skip-cloud` → calls in order: kv create `grace-hopper-agent-cv-archive`, secret put OPENAI_API_KEY, secret put ADMIN_API_TOKEN (B4)
-- [ ] kv output id `0123…` (32 hex) → `owner.json` `deploy.archiveNamespaceId` equals it; Wrangler saw `name` grace-hopper-agent-cv (B4)
-- [ ] OpenAI key reaches only stdin: absent from every argv, owner directory and `.dev.vars` (B4)
-- [ ] each step failing in turn → exit 1, message names the step and its retry command; target kept, earlier id kept (B5)
-- [ ] kv output without an id → exit 1 naming the kv step; `archiveNamespaceId` stays Ada's placeholder (B5)
+- [x] no `--skip-cloud` → calls in order: kv create `grace-hopper-agent-cv-archive`, secret put OPENAI_API_KEY, secret put ADMIN_API_TOKEN (B4)
+- [x] kv output id `0123…` (32 hex) → `owner.json` `deploy.archiveNamespaceId` equals it; Wrangler saw `name` grace-hopper-agent-cv (B4)
+- [x] OpenAI key reaches only stdin: absent from every argv, owner directory and `.dev.vars` (B4)
+- [x] each step failing in turn → exit 1, message names the step and its retry command; target kept, earlier id kept (B5)
+- [x] kv output without an id → exit 1 naming the kv step; `archiveNamespaceId` stays Ada's placeholder (B5)
 Verify: `node --test test/setup.test.mjs test/setup-admin.test.mjs` (pre: new file · setup-admin 6 passed)
 Skills: none
-Status: todo
+Status: done @ ed23bc1
+Writer: GPT-6.1 Sol
 
 ### T3 — deploy refuses an owner whose content is still Ada's
 Delivers: B7 · Blocked by: none · Lane: logic

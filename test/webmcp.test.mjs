@@ -86,7 +86,7 @@ test("three-role comparison opens the workspace, uses the shared controller, and
     },
   ]);
   const serialized = JSON.stringify(result);
-  for (const secret of ["AI Product Lead", "Northstar", "Lead applied AI products", "Requirement from model", "What did John own?", "provider exploded"]) {
+  for (const secret of ["AI Product Lead", "Northstar", "Lead applied AI products", "Requirement from model", "What did Ada own?", "provider exploded"]) {
     assert.equal(serialized.includes(secret), false, secret);
   }
 });
@@ -274,7 +274,7 @@ function comparisonState() {
           id: `cell_row_01_role_0${index + 1}`, roleId: `role_0${index + 1}`,
           requirement: "Requirement from model", coverage: index ? "not_documented" : "documented",
           evidence: index ? [] : [{ evidenceId: "cv.profile", reasonCode: "direct_responsibility" }],
-          questions: ["What did John own?"],
+          questions: ["What did Ada own?"],
         })),
       }],
       unmappedRequirements: ROLES.map((_role, index) => ({

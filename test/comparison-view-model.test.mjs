@@ -42,7 +42,7 @@ const STATE = {
           requirement: "Lead applied AI products",
           coverage: "documented",
           evidence: [{ evidenceId: "cv.profile", reasonCode: "direct_responsibility" }],
-          questions: ["Which decisions did John own?"],
+          questions: ["Which decisions did Ada own?"],
         },
         {
           id: "cell_row_01_role_02",
@@ -90,13 +90,13 @@ const EVIDENCE = [
   {
     id: "cv.profile",
     title: "Profile",
-    text: "John owns applied-AI product direction.",
+    text: "Ada owns applied-AI product direction.",
     source: { path: "data/cv.md", headingPath: ["Profile"] },
   },
   {
     id: "project.product-studio",
     title: "Product Studio",
-    text: "**Status:** Active local-first personal system.\n\nJohn designed a governed agent loop.",
+    text: "**Status:** Active local-first personal system.\n\nAda designed a governed agent loop.",
     source: { path: "data/projects.md", headingPath: ["Product Studio"] },
   },
 ];
@@ -315,13 +315,13 @@ test("exports compact JSON and Markdown with denominators, evidence IDs, questio
   assert.deepEqual(json.rows[0].cells[0].evidence, [
     { evidenceId: "cv.profile", reasonCode: "direct_responsibility" },
   ]);
-  assert.deepEqual(json.rows[0].cells[0].questions, ["Which decisions did John own?"]);
+  assert.deepEqual(json.rows[0].cells[0].questions, ["Which decisions did Ada own?"]);
 
   const markdown = serializeComparisonExport(STATE.result, "markdown");
   assert.match(markdown, /Requirements assessed: 2 of 3/i);
   assert.match(markdown, /Not assessed[\s\S]*vendor performance recovery/i);
   assert.match(markdown, /cv\.profile/);
-  assert.match(markdown, /Which decisions did John own\?/);
+  assert.match(markdown, /Which decisions did Ada own\?/);
   assert.throws(() => serializeComparisonExport(STATE.result, "csv"), /format/i);
 });
 

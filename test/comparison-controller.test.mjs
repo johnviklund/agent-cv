@@ -466,7 +466,7 @@ function comparisonResult({ label = "Applied AI leadership", digest = DIGEST } =
         requirement: "Lead applied AI products",
         coverage: "documented",
         evidence: [{ evidenceId: "cv.profile", reasonCode: "direct_responsibility" }],
-        questions: ["Which decisions did John own?"],
+        questions: ["Which decisions did Ada own?"],
       }],
     }],
     unmappedRequirements: [{ roleId: "role_01", requirements: [] }],

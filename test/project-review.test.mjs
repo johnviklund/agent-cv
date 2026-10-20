@@ -16,7 +16,7 @@ const manifest = {
   publicRepositories: [
     {
       project: "Product Studio",
-      repository: "johnviklund/product-studio",
+      repository: "example/product-studio",
       documents: ["README.md", "PRODUCT.md", "ARCHITECTURE.md"],
       canonicalFiles: ["data/projects.md", "data/cv.md"],
       lastReviewedAt: "2026-08-10T09:00:00.000Z",
@@ -29,7 +29,7 @@ const manifest = {
 test("validates explicit project sources with per-source review dates", () => {
   const validated = validateProjectSourceManifest(manifest);
 
-  assert.equal(validated.publicRepositories[0].repository, "johnviklund/product-studio");
+  assert.equal(validated.publicRepositories[0].repository, "example/product-studio");
   assert.equal(validated.publicRepositories[0].lastReviewedAt, "2026-08-10T09:00:00.000Z");
   assert.deepEqual(validated.privateRepositories, []);
   assert.deepEqual(validated.localFolders, []);
@@ -92,8 +92,8 @@ test("renders a private approval queue without mutating canonical content", () =
     sources: [{
       kind: "publicRepository",
       project: "Product Studio",
-      repository: "johnviklund/product-studio",
-      url: "https://github.com/johnviklund/product-studio",
+      repository: "example/product-studio",
+      url: "https://github.com/example/product-studio",
       description: "A governed local-first product control plane.",
       defaultBranch: "main",
       updatedAt: "2026-08-13T07:15:18Z",
@@ -123,7 +123,7 @@ test("keeps private repository identifiers out of proposal text while retaining 
     publicRepositories: [],
     privateRepositories: [{
       project: "Internal Prototype",
-      repository: "johnviklund/internal-prototype",
+      repository: "example/internal-prototype",
       documents: ["README.md"],
       canonicalFiles: ["data/projects.md"],
       lastReviewedAt: "2026-08-15T08:59:59.000Z",
@@ -137,8 +137,8 @@ test("keeps private repository identifiers out of proposal text while retaining 
     sources: [{
       kind: "privateRepository",
       project: "Internal Prototype",
-      repository: "johnviklund/internal-prototype",
-      url: "https://github.com/johnviklund/internal-prototype",
+      repository: "example/internal-prototype",
+      url: "https://github.com/example/internal-prototype",
       updatedAt: "2026-08-15T09:00:00Z",
       trackedFiles: 10,
       languages: ["TypeScript"],
@@ -150,9 +150,9 @@ test("keeps private repository identifiers out of proposal text while retaining 
   });
 
   const proposals = markdown.split("## Source evidence")[0];
-  assert.doesNotMatch(proposals, /github\.com\/johnviklund\/internal-prototype/);
+  assert.doesNotMatch(proposals, /github\.com\/example\/internal-prototype/);
   assert.doesNotMatch(proposals, /Add the approved public repository link/);
-  assert.match(markdown, /Private repository: johnviklund\/internal-prototype/);
+  assert.match(markdown, /Private repository: example\/internal-prototype/);
 });
 
 test("writes a private local-folder review packet and leaves canonical Markdown unchanged", async (context) => {
@@ -273,8 +273,8 @@ test("fetches a complete public GitHub snapshot pinned to one tree SHA", async (
   const fetchImpl = async (url) => {
     requested.push(url);
     if (url.endsWith("/rate_limit")) return jsonResponse({ resources: { core: { remaining: 100 } } });
-    if (url.endsWith("/repos/johnviklund/product-studio")) {
-      return jsonResponse({ private: false, html_url: "https://github.com/johnviklund/product-studio", default_branch: "main", pushed_at: "2026-08-15T09:00:00Z" });
+    if (url.endsWith("/repos/example/product-studio")) {
+      return jsonResponse({ private: false, html_url: "https://github.com/example/product-studio", default_branch: "main", pushed_at: "2026-08-15T09:00:00Z" });
     }
     if (url.endsWith("/languages")) return jsonResponse({ TypeScript: 10 });
     if (url.includes("/git/trees/main")) return jsonResponse({ sha: "abc123", truncated: false, tree: [{ type: "blob" }] });
@@ -312,8 +312,8 @@ test("rejects repository visibility mismatches and truncated trees", async (cont
     const root = await createGitHubReviewRoot(context, failure);
     const fetchImpl = async (url) => {
       if (url.endsWith("/rate_limit")) return jsonResponse({ resources: { core: { remaining: 100 } } });
-      if (url.endsWith("/repos/johnviklund/product-studio")) {
-        return jsonResponse({ private: failure === "visibility", html_url: "https://github.com/johnviklund/product-studio", default_branch: "main", pushed_at: "2026-08-15T09:00:00Z" });
+      if (url.endsWith("/repos/example/product-studio")) {
+        return jsonResponse({ private: failure === "visibility", html_url: "https://github.com/example/product-studio", default_branch: "main", pushed_at: "2026-08-15T09:00:00Z" });
       }
       if (url.endsWith("/languages")) return jsonResponse({ TypeScript: 10 });
       if (url.includes("/git/trees/main")) return jsonResponse({ sha: "abc123", truncated: true, tree: [] });
@@ -339,7 +339,7 @@ async function createGitHubReviewRoot(context, suffix = "success") {
   await writeManifest(root, {
     publicRepositories: [{
       project: "Product Studio",
-      repository: "johnviklund/product-studio",
+      repository: "example/product-studio",
       documents: ["README.md"],
       canonicalFiles: ["data/projects.md"],
       lastReviewedAt: "2026-08-15T08:00:00.000Z",

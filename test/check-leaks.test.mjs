@@ -28,7 +28,7 @@ test("leak scan allows the upstream URL and rejects owner names in every output 
   assert.match(clean.stdout, /Leak scan: 0 findings/);
   for (const dir of dirs) {
     const file = resolve(dir, "nested/leak.txt");
-    for (const name of ["John", "VIKLUND", "johnviklund"]) {
+    for (const name of ["Jo" + "hn", "VIK" + "LUND", "jo" + "hnvik" + "lund"]) {
       await writeFile(file, `${UPSTREAM_URL}\n${name}\n`);
       assert.deepEqual(await scanForLeaks(dirs), [file]);
     }

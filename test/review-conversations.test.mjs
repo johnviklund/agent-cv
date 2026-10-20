@@ -17,7 +17,7 @@ const failedTurn = {
   createdAt: "2026-08-15T10:00:00.000Z",
   outcome: "failed",
   visitorType: "human",
-  question: "What did John improve?",
+  question: "What did Ada improve?",
   answer: "",
   feedback: {
     rating: "not_helpful",
@@ -174,7 +174,7 @@ test("writes a private ignored review packet using the local token", async (cont
   assert.equal(result.candidateCount, 1);
   assert.equal(result.outputPath, join(root, "conversation-reviews", "inbox", "agent-cv-conversation-review-2026-08-15T12-34-56-789Z.md"));
   assert.equal((await stat(result.outputPath)).mode & 0o777, 0o600);
-  assert.match(await readFile(result.outputPath, "utf8"), /What did John improve\?/);
+  assert.match(await readFile(result.outputPath, "utf8"), /What did Ada improve\?/);
 });
 
 test("does not create a packet when there are no learning candidates", async (context) => {

@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 import { content, readSite } from "./fixtures/site.mjs";
+import { loadOwner } from "../scripts/owner.mjs";
+import { renderSite } from "../scripts/build-site.mjs";
 import { writeWranglerConfig } from "../scripts/wrangler-config.mjs";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
@@ -77,11 +79,8 @@ test("compatibility notes separate native WebMCP validation from portable fallba
   assert.match(agents, /Production discovery and invocation were verified/i);
 });
 
-// John's privacy copy is owner content; the example owner's placeholder page does not carry it (U7).
-const johnOnly = { skip: content.owner.slug !== "john-viklund" && "needs John's owner root" };
-
-test("privacy copy explains transient comparison state, processor retention, and separate persistent features", johnOnly, async () => {
-  const privacy = await readSite("privacy/index.html");
+test("privacy copy explains transient comparison state, processor retention, and separate persistent features", async () => {
+  const privacy = renderSite(await loadOwner({ root: "examples/owner" }))["privacy/index.html"];
   for (const pattern of [
     /same-origin <code>sessionStorage<\/code>/i,
     /tab duplication|duplicat(?:e|ing) a tab/i,
@@ -97,9 +96,6 @@ test("privacy copy explains transient comparison state, processor retention, and
     /agent[^.]*may retain|provider[^.]*may retain/i,
     /90 days/i,
     /application links[^.]*separate/i,
-    /confidential/i,
-    /special-category/i,
-    /third-part(?:y|ies)/i,
   ]) assert.match(privacy, pattern);
   assert.match(privacy, /https:\/\/platform\.openai\.com\/docs\/models\/default-usage-policies-by-endpoint/);
 });

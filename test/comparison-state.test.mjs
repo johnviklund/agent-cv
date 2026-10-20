@@ -210,7 +210,7 @@ function result() {
         requirement: "Lead applied AI products",
         coverage: "documented",
         evidence: [{ evidenceId: "cv.profile", reasonCode: "direct_responsibility" }],
-        questions: ["Which delivery decisions did John own?"],
+        questions: ["Which delivery decisions did Ada own?"],
       }],
     }],
     unmappedRequirements: [{ roleId: "role_01", requirements: [] }],

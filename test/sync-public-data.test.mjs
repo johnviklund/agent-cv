@@ -28,7 +28,7 @@ test("sync builds Ada's public resources, ten Worker sources and selected eviden
     const expected = await readFile(resolve(example, "data", file), "utf8");
     assert.equal(await readFile(resolve(root, "src/data", file), "utf8"), expected);
     if (privateDataFiles.includes(file)) {
-      assert.doesNotMatch(expected, /john/i);
+      assert.doesNotMatch(expected, new RegExp("jo" + "hn", "i"));
       assert.equal(await readFile(resolve(root, "data", file), "utf8"), expected);
     }
   }

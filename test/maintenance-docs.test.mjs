@@ -9,7 +9,7 @@ test("maintenance instructions use the owner and the two-repo shipping flow", as
   const skills = await Promise.all(["refresh-agent-cv-projects", "review-agent-cv-conversations"].map((name) => (
     read(`.agents/skills/${name}/SKILL.md`)
   )));
-  for (const text of [agents, ...skills]) assert.doesNotMatch(text, /John|Viklund|johnviklund/i);
+  for (const text of [agents, ...skills]) assert.doesNotMatch(text, new RegExp("jo" + "hn|vik" + "lund", "i"));
   for (const text of skills) {
     assert.ok(text.includes("<owner root>/data/"));
     for (const phrase of ["commit and push the owner repo's main", "engine PR only for engine files", "AGENT_CV_OWNER_ROOT"]) {

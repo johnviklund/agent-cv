@@ -9,8 +9,8 @@ Patch cycle 2 complete. Next: review cycle 3.
 C2-T1 @ dc7a942 · red checkpoint @ 3399f99
 writer: GPT-6.1 Sol · high
 Baseline: 302 passed, 3 skipped; no failures with subprocess permissions.
-Verification: receipts/c2-t1-verification.md. Pending: push and read CI.
-Uncommitted: workflow records only. No private owner files changed.
+Verification: receipts/c2-t1-verification.md. CI success on 62a53d1; pending: none.
+Uncommitted: none after this record commits. No private owner files changed.
 Cycle 1 tickets: C1-T1 @ 882b97c, C1-T2 @ b16b8bd (see git history of this file).
 
 ## Tickets

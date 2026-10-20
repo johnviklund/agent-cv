@@ -10,13 +10,16 @@ Decisions: 1b delete artifacts/qa (unused, not kept anywhere) · 2a port John-on
 Split declined by human: 2026-10-20
 
 ## Execution state
-Current: T1 awaiting-human; approve receipts/t1-private-handoff.md, then resume execute.
+Current: T1 private commit/push verified; success receipt prepared, then T2.
 writer: GPT-6.1 Sol · high; live catalog confirms the primary is available.
 Session 1: T1 (operator handoff prepared; no private writes).
+Session 2: T1 (1a/2a approved; private write blocked by two permission-review timeouts).
+Session 3: T1 (elevated read probe and private copies succeeded; staging timed out twice; no private commit/push).
+Session 4: T1 (private commit/push complete).
 Baseline: npm run check passes outside sandbox, 322 pass / 3 skipped; sandbox child processes hit EPERM.
-Golden baseline: exit 0, 19 accepted file differences; T2's eight needs correction approval.
-Uncommitted implementation: none; proposed AGENTS.md is /tmp/forkable-cutover-t1-AGENTS.md.
-Private baseline: ae5d654; only data/faq.md modified; retain its bytes and exclude it from staging.
+Golden baseline: exit 0, 19 accepted file differences; owner approved correction with 2a on 2026-10-20.
+Uncommitted implementation: none; T1 private commit 4ec3ba4; receipts/t1-private-repo.txt.
+Private HEAD: 4ec3ba4, pushed; only data/faq.md modified, original bytes retained.
 ## Findings
 | # | What is true | What it changes |
 |---|---|---|
@@ -59,7 +62,7 @@ Accept:
 - [ ] package.json has no `bootstrap:data` script and no `bootstrap-example-data` in `check` (B1)
 - [ ] `.gitignore` lists `/data/` and `/public/`; after `npm run sync:data`, `git status --short` is empty (B1)
 - [ ] cv-pdf, repository-grounding and codex-project-refresh tests read `<owner root>/data/` and pass for Ada and for the sibling (B1)
-- [ ] `AGENT_CV_OWNER_ROOT=../agent-cv-private npm run golden:diff` → exit 0, the same 8 accepted exceptions, nothing else (B5)
+- [ ] `AGENT_CV_OWNER_ROOT=../agent-cv-private npm run golden:diff` → exit 0, the same 19 accepted exceptions, nothing else (B5)
 Verify: `node --test test/tracked-tree.test.mjs test/cv-pdf.test.mjs test/repository-grounding.test.mjs test/codex-project-refresh.test.mjs test/comparison-fixtures.test.mjs test/static-contract.test.mjs` (pre: 27 pass, 1 skipped · tracked-tree new file)
 Skills: none
 Status: todo
@@ -134,7 +137,7 @@ Status: todo
 T2 is riskiest: a missed engine-root read fails only on a clean clone (T6), so T2 runs both owners. README rewrite reaches John's evidence on his next sync (F13). Not taken: a `test/` allowlist (D3).
 
 ## Deviations
-T2 baseline discrepancy: golden:diff exits 0 with 19 accepted file differences and none unlisted. Approval pending to correct its acceptance count from eight to 19 without changing the exception set.
+T2 baseline discrepancy: owner approved 2a on 2026-10-20, correcting eight to 19 existing accepted file differences. Exception set unchanged; sha256 8fb34630ba97f44e0ae48f9a8f084efaec54ddce42ba60c894b58a2cd98660bd.
 
 ## TODO impacts
 none

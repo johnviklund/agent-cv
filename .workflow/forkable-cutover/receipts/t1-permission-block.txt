@@ -1,0 +1,15 @@
+Command: workflow execute forkable-cutover
+Created: 2026-10-20
+Base:    307f073
+Inputs:  .workflow/forkable-cutover/receipts/t1-private-handoff.md @ 87fedf0
+Status:  complete
+
+Owner reply: "1a, 2a". T1 copy, AGENTS.md replacement, commit and push are approved; T2 baseline correction to 19 is approved.
+Private preflight: HEAD ae5d65464cee010c794e361e7397706aa692e009; main...origin/main; only data/faq.md modified; draft and FAQ hashes match the handoff.
+Both require_escalated write attempts failed before process creation. The second was the one permitted retry.
+Raw error: CreateProcess { message: "Rejected(\"The automatic permission approval review did not finish before its deadline. Do not assume the action is unsafe based on the timeout alone. You may retry once, or ask the user for guidance or explicit approval.\")" }
+T1 has no success receipt. No private changes were executed. T2 remains blocked by T1.
+Recovery attempt after the owner's "how do we fix this?": elevated git diff --check succeeded. The approved guarded copy then succeeded: three byte-equal documents and the exact AGENTS.md draft are now present in the private repo; FAQ hash unchanged.
+Staging exactly the four approved paths timed out twice, including its one permitted retry. The private HEAD remains ae5d654; no private files are staged, committed or pushed.
+T3 thread configuration reports runtimeMode auto; ~/.codex/config.toml already has approvals_reviewer user, so local config does not explain the active auto-review mode.
+Next: switch this T3 thread from Auto to manual approvals using its permissions control, reconnect the agent if needed, then resume the approved commit/push. No new scope approval is needed.

@@ -4,9 +4,9 @@ Base:    87fedf0
 Inputs:  .workflow/forkable-cutover/plan.md @ fafec6c
 Status:  complete
 
-T1 prepared, awaiting approval. Runner: agent after approval. Risk: cheap. Run from /home/john/agent-cv.
+T1 scope approved with 1a on 2026-10-20. Runner: agent after approval. Risk: cheap. Run from /home/john/agent-cv.
 Baseline: npm run check exits 0 outside sandbox, 322 pass, 3 skipped; static checks pass for 10 pages. Logs: /tmp/forkable-cutover-baseline-unsandboxed.log.
-Golden: AGENT_CV_OWNER_ROOT=../agent-cv-private npm run golden:diff exits 0 with 19 accepted file differences, none unlisted. Log: /tmp/forkable-cutover-baseline-golden.log. T2's planned eight needs correction approval.
+Golden: AGENT_CV_OWNER_ROOT=../agent-cv-private npm run golden:diff exits 0 with 19 accepted file differences, none unlisted. Log: /tmp/forkable-cutover-baseline-golden.log. Owner approved T2 count correction with 2a.
 Before writing, confirm private HEAD ae5d654, main...origin/main, only ` M data/faq.md`, and the draft digest below.
 Draft: /tmp/forkable-cutover-t1-AGENTS.md; sha256 b397ae32e3ad0fce99d22faf4cf0e4dedab1f144dadfc9c162f8485260a146f6.
 It makes this owner bundle canonical, adds "When John asks" rules, requires golden:diff before engine changes, and selects AGENT_CV_OWNER_ROOT for deployment.

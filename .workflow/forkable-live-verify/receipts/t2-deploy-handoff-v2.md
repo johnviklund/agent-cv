@@ -7,6 +7,8 @@ Status: complete
 ## Approval scope
 Runner: agent after approval. Fresh approval is pending. The earlier approval ended at the failed preflight recorded in receipts/t2-preflight-failure.md.
 
+Approval also covers git push origin main for the verified local commits and workflow receipts. Automatic approval review rejected the first push request because workflow execute did not clearly authorize that exact default-branch push. No push ran. See receipts/t3-push-block.md.
+
 Deploy the current committed engine, including T3 at baff4c1, plus the clean ../agent-cv-private owner bundle to Worker john-viklund-agent-cv, serving https://johnviklund.com. Then run the prepared live check once, including one chat POST and one comparison POST. These consume one request from each monthly cap and may create two 90-day records. No paid retry is included. Read neither admin tokens nor authenticated exports.
 
 ## Ready for approval

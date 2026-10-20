@@ -18,7 +18,7 @@ writer: GPT-6.1 Sol · high
 Baseline: npm run build passed outside sandbox; 321 passed, 2 skipped; sandbox test workers failed.
 Final: npm run build passed, including check; 326 tests passed, 2 skipped; clean-clone sync tests 15/15.
 Current: T2 awaiting-human; receipts/t2-deploy-handoff-v2.md replaces the earlier handoff.
-Pending: fresh approval of T2; no deployment, paid request or rollback ran.
+Pending: explicit approval to push origin/main and run T2; auto-review rejected the push; receipts/t3-push-block.md.
 
 ## Findings
 | # | What is true | What it changes |

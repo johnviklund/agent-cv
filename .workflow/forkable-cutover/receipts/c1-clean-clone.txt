@@ -1,0 +1,15 @@
+Command: workflow execute forkable-cutover
+Created: 2026-10-20
+Base: 8283589
+Inputs: .workflow/forkable-cutover/patch_plan.md @ 40dd85d
+Status: complete
+
+Fresh clone: /tmp/agent-cv-cutover-c1-clean-c9alxern
+Source: local engine HEAD 8283589; clone --no-local; no ignored files copied.
+Environment: AGENT_CV_OWNER_ROOT and AGENT_CV_PRIVATE_ROOT unset; no sibling checkout.
+npm ci --offline: exit 0
+npm run check: exit 0; 320 pass / 3 skipped / 0 fail
+Leak scan: 0 findings
+Static checks: 10 pages pass
+Log: /tmp/forkable-cutover-c1-clean-clone.log
+Mutation worktree /tmp/agent-cv-cutover-c1-t1 removed after verification; no commits made there.

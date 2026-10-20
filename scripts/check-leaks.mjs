@@ -6,6 +6,7 @@ import { resolveOwnerRoot } from "./owner.mjs";
 import { UPSTREAM_URL } from "../site/templates/html.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+export const LEAK_SCAN_DIRS = ["build/site", "public", "src/data"].map((dir) => resolve(root, dir));
 
 export async function scanForLeaks(dirs) {
   const findings = [];
@@ -25,7 +26,7 @@ async function main() {
     return;
   }
   const args = process.argv.slice(2);
-  const dirs = args.length ? args : ["build/site", "public", "src/data"].map((dir) => resolve(root, dir));
+  const dirs = args.length ? args : LEAK_SCAN_DIRS;
   const findings = await scanForLeaks(dirs);
   console.log(`Leak scan: ${findings.length} findings`);
   for (const file of findings) console.error(file);

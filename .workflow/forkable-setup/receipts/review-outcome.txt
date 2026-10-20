@@ -1,0 +1,20 @@
+Review outcome probe, 2026-10-20, HEAD b230b3a
+--- real CLI, B1
+Created owner directory /tmp/tmp.7yPTJTrERy/owner.
+Set AGENT_CV_OWNER_ROOT to this directory.
+Replace Ada Example's content and regenerate the social card before running npm run deploy.
+exit 0
+grace-hopper Grace Hopper https://grace.example grace.example,www.grace.example grace-hopper-agent-cv null
+true
+--- B2 rerun same target
+Target /tmp/tmp.7yPTJTrERy/owner is not empty; choose an empty directory.
+exit 1
+--- B3 no terminal, no --slug
+Missing --slug; supply it when running without a terminal.
+exit 1
+ls: cannot access '/tmp/tmp.7yPTJTrERy/other': No such file or directory
+--- B7 deploy sync on setup output
+0
+Refusing to deploy example content in: assets/og-image.png, data/cv.md, data/experience.md, data/faq.md, data/interests.md, data/meta.md, data/overview.md, data/personal.md, data/projects.md, data/skills.md, site.json. Replace Ada Example's text and regenerate the social image.
+exit 1
+2

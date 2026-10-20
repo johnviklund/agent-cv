@@ -10,17 +10,18 @@ Decisions: 1b delete artifacts/qa (unused, not kept anywhere) · 2a port John-on
 Split declined by human: 2026-10-20
 
 ## Execution state
-Current: T5 todo; T1–T4 complete. Engine checkpoint push deferred to the approved T7 operator gate.
+Current: T6 todo; T1–T5 complete. Engine checkpoint push deferred to the approved T7 operator gate.
 T1 @ 70887fd (engine receipt; private commit 4ec3ba4, pushed).
 T2 @ 129f4c7
 T3 @ cbce676
 T4 @ d859042
+T5 @ 636f2d9
 writer: GPT-6.1 Sol · high; live catalog confirms the primary is available.
 Session 1: T1 (operator handoff prepared; no private writes).
 Session 2: T1 (1a/2a approved; private write blocked by two permission-review timeouts).
 Session 3: T1 (elevated read probe and private copies succeeded; staging timed out twice; no private commit/push).
 Session 4: T1, T2, T3 (private commit/push complete; engine cutover and fixture rewrite verified).
-Session 5: T4 (maintenance/comparison tests verified on both owners).
+Session 5: T4, T5 (fixtures and docs verified; Ada chat recipe exercised).
 Baseline: npm run check passes outside sandbox, 322 pass / 3 skipped; sandbox child processes hit EPERM.
 Golden baseline: exit 0, 19 accepted file differences; owner approved correction with 2a on 2026-10-20.
 Uncommitted implementation: none; T1 private commit 4ec3ba4; receipts/t1-private-repo.txt.
@@ -104,13 +105,14 @@ Delivers: B7 · Blocked by: T1, T2 · Lane: logic
 Budget: code +0 · tests +15 · why: docs are receipts by rule; the test pins the new wording
 Seam: `test/maintenance-docs.test.mjs`
 Accept:
-- [ ] `git grep -iE 'until U8|engine .data/. retains|bootstrap:data|examples/private-data'` in AGENTS.md README.md USERGUIDE.md .agents design.md memory → none (B7)
-- [ ] `git grep -iE 'john|viklund'` in AGENTS.md USERGUIDE.md .agents design.md memory → none (B7)
-- [ ] README opens as the open-source Agent CV engine; John appears only on the maintainer credit line and in `johnviklund/agent-cv`; WebMCP section gone (B7)
-- [ ] verify-agent-cv recipes ask "What does Ada do?"-style owner-neutral questions and still run (B7)
+- [x] `git grep -iE 'until U8|engine .data/. retains|bootstrap:data|examples/private-data'` in AGENTS.md README.md USERGUIDE.md .agents design.md memory → none (B7)
+- [x] `git grep -iE 'john|viklund'` in AGENTS.md USERGUIDE.md .agents design.md memory → none (B7)
+- [x] README opens as the open-source Agent CV engine; John appears only on the maintainer credit line and in `johnviklund/agent-cv`; WebMCP section gone (B7)
+- [x] verify-agent-cv recipes ask "What does Ada do?"-style owner-neutral questions and still run (B7)
 Verify: `node --test test/maintenance-docs.test.mjs test/codex-project-refresh.test.mjs test/codex-conversation-review.test.mjs && ! git grep -qiE 'until U8|bootstrap:data|examples/private-data' -- AGENTS.md README.md USERGUIDE.md .agents design.md memory` (pre: 4 pass · grep rc=1)
 Skills: .agents/skills/verify-agent-cv/SKILL.md
-Status: todo
+Status: done @ 636f2d9
+Writer: GPT-6.1 Sol
 
 ### T6 — the leak check scans the tracked tree and a clean clone builds as Ada
 Delivers: B2, B3, B8 · Blocked by: T2, T3, T4, T5 · Lane: logic

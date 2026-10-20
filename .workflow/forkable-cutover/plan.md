@@ -10,13 +10,13 @@ Decisions: 1b delete artifacts/qa (unused, not kept anywhere) · 2a port John-on
 Split declined by human: 2026-10-20
 
 ## Execution state
-Current: T2 todo; T1 complete.
+Current: T2 verified, ready to commit; T1 complete.
 T1 @ 70887fd (engine receipt; private commit 4ec3ba4, pushed).
 writer: GPT-6.1 Sol · high; live catalog confirms the primary is available.
 Session 1: T1 (operator handoff prepared; no private writes).
 Session 2: T1 (1a/2a approved; private write blocked by two permission-review timeouts).
 Session 3: T1 (elevated read probe and private copies succeeded; staging timed out twice; no private commit/push).
-Session 4: T1 (private commit/push complete).
+Session 4: T1, T2 (private commit/push complete; engine cutover verified).
 Baseline: npm run check passes outside sandbox, 322 pass / 3 skipped; sandbox child processes hit EPERM.
 Golden baseline: exit 0, 19 accepted file differences; owner approved correction with 2a on 2026-10-20.
 Uncommitted implementation: none; T1 private commit 4ec3ba4; receipts/t1-private-repo.txt.
@@ -26,7 +26,7 @@ Private HEAD: 4ec3ba4, pushed; only data/faq.md modified, original bytes retaine
 |---|---|---|
 | F1 | Precondition D2 shipped (forkable-setup wrapped @ fafec6c). `bootstrap:data` remains in package.json:21, the `check` list, AGENTS.md:27, USERGUIDE.md:56,82,109-117. AGENTS.md already says "the owner" elsewhere | T2 deletes script, test and package entries; T5 edits AGENTS.md:23,27 and USERGUIDE |
 | F2 | 181 John lines across 25 test files (brief said ~230); worker.test.mjs is 1,334 lines | T3/T4 swap literals; no prefactor, the structure does not change |
-| F3 | Tests read engine `data/`: cv-pdf.test:28,78,104 · repository-grounding.test:15 · codex-project-refresh.test:14 | T2 points them at `resolveOwnerRoot()` + `data/` |
+| F3 | Tests read engine `data/`: cv-pdf.test:28,78,104 · repository-grounding.test:15 · codex-project-refresh.test:14; execute's full check also found owner-manifests.test:27 copying dynamically assembled engine paths | T2 uses selected owner paths; owner-manifests uses its existing explicit Ada fixture |
 | F4 | comparison-fixtures.test:38 and static-contract.test:74 read `docs/webmcp-challenge-submission.md`; README:39-51 is the WebMCP section linking it | T2 drops the doc assertions with the doc; T5 drops the README section |
 | F5 | 8 tests run only on John's bundle: contact.test:29,45 · repository-grounding:78,95 · static-contract:95 · comparison-core:209 · og-image:86 · site-rendering:20 | Decision 2a: T3/T4 port each to Ada where Ada has the content, else delete; golden diff pins John's bytes |
 | F6 | The upstream slug is product, not a leak: `UPSTREAM_URL` html.mjs:73 (footer credit), README:73 and USERGUIDE:16 fork commands | Allowlist the slug `johnviklund/agent-cv` anywhere, not only the URL |
@@ -139,6 +139,7 @@ T2 is riskiest: a missed engine-root read fails only on a clean clone (T6), so T
 
 ## Deviations
 T2 baseline discrepancy: owner approved 2a on 2026-10-20, correcting eight to 19 existing accepted file differences. Exception set unchanged; sha256 8fb34630ba97f44e0ae48f9a8f084efaec54ddce42ba60c894b58a2cd98660bd.
+T2 also fixes owner-manifests.test.mjs's engine-data copy found by npm run check. Existing assertion changes and counts are recorded in receipts/t2-verification.md; retired document assertions follow F4, while CV assertions use the selected owner and repository prose permits Ada's placeholder source.
 
 ## TODO impacts
 none

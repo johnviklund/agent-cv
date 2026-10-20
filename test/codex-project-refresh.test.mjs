@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { resolve } from "node:path";
+import { resolveOwnerRoot } from "../scripts/owner.mjs";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
@@ -11,7 +13,7 @@ test("makes project freshness an implicitly invoked Codex workflow", async () =>
     read(".agents/skills/refresh-agent-cv-projects/agents/openai.yaml"),
     read("README.md"),
     read("USERGUIDE.md"),
-    read("data/repositories.md"),
+    readFile(resolve(resolveOwnerRoot(), "data/repositories.md"), "utf8"),
   ]);
 
   assert.match(agents, /use the repo-local `refresh-agent-cv-projects` skill automatically/i);
@@ -26,6 +28,6 @@ test("makes project freshness an implicitly invoked Codex workflow", async () =>
   assert.match(metadata, /allow_implicit_invocation: true/);
   assert.match(readme, /Review my project and repository updates, ask me what changed, and update the site/i);
   assert.match(userGuide, /You do not need to remember a script, manifest format, Git command, or deployment command/i);
-  assert.match(repositoryEvidence, /Review my project and repository updates, ask me what changed, and update the site/i);
+  assert.match(repositoryEvidence, /^# .+/m);
   assert.doesNotMatch(repositoryEvidence, /Copy `config\/project-sources\.example\.json`/i);
 });

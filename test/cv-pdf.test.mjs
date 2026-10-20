@@ -10,6 +10,7 @@ import { ADA, JOHN } from "./fixtures/owners.mjs";
 import { content, readSite } from "./fixtures/site.mjs";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
+const ownerCv = await readFile(resolve(content.root, "data/cv.md"), "utf8");
 
 const john = {
   ...JOHN,
@@ -25,17 +26,17 @@ const ADA_CV = [
 const contacts = (html) => html.match(/<p class="contacts">(.*)<\/p>/)[1].replace(/<[^>]+>/g, "");
 
 test("the CV PDF is built from the public CV with contacts and a link back to the site", async () => {
-  const html = buildCvPrintHtml(await read("data/cv.md"), john);
+  const owner = { ...content.owner, links: john.links, contact: john.contact };
+  const html = buildCvPrintHtml(ownerCv, owner);
 
-  assert.match(html, /<h1>John Viklund<\/h1>/);
+  assert.ok(html.includes(`<h1>${owner.name.full}</h1>`));
   assert.match(html, /@page \{ size: Letter;/);
   assert.match(html, /href="mailto:johnwik@gmail\.com"/);
   assert.match(html, /href="https:\/\/x\.com\/johnviklund"/);
   assert.match(html, /href="https:\/\/www\.linkedin\.com\/in\/johnviklund\/"/);
-  assert.match(html, /<footer>[^<]*<a href="https:\/\/johnviklund\.com">/);
-  assert.match(html, /<h2>Capabilities<\/h2>\n<p>[^<]+ · /);
+  assert.ok(html.includes(`<a href="${owner.site.origin}">`));
   assert.doesNotMatch(html, /Selected transformation case studies|Selected applied-AI projects/);
-  assert.match(html, /Generated automatically from John's approved CV data/);
+  assert.ok(html.includes(`Generated automatically from ${owner.name.short}'s approved CV data`));
   assert.doesNotMatch(html, /tel:|@font-face|file:\/\//i);
 });
 
@@ -52,6 +53,7 @@ test("the CV PDF keeps every role bullet, omits projects, and joins capabilities
   assert.match(html, /<li>First<\/li><li>Second<\/li><\/ul>/);
   assert.doesNotMatch(html, /Tool|Does one thing/);
   assert.match(html, /<p>Alpha · Beta<\/p>/);
+  assert.match(html, /<h2>Capabilities<\/h2>\n<p>[^<]+ · /);
   assert.match(html, /Updated 1 May 2026/);
 });
 
@@ -75,7 +77,7 @@ test("deploy always regenerates the ignored PDF", async () => {
 
 test("the CV header, footer and metadata name the selected owner", async () => {
   const cases = [
-    [john, await read("data/cv.md"), "johnviklund.com · johnwik@gmail.com · x.com/johnviklund · linkedin.com/in/johnviklund", "John"],
+    [john, ownerCv, "johnviklund.com · johnwik@gmail.com · x.com/johnviklund · linkedin.com/in/johnviklund", "John"],
     [ada, ADA_CV, "ada.example · ada@ada.example · x.com/adaexample", "Ada"],
   ];
   for (const [owner, markdown, line, short] of cases) {
@@ -101,7 +103,7 @@ test("the printed PDF is named for the owner, fits two pages and carries readabl
   const out = await mkdtemp(resolve(tmpdir(), "agent-cv-pdf-test-"));
   context.after(() => rm(out, { recursive: true, force: true }));
   const homeLink = (await readSite("index.html")).match(/href="\/([^"]+-cv\.pdf)"/)[1];
-  const cases = [[content.owner, await read("data/cv.md"), `${content.owner.slug}-cv.pdf`], [ada, ADA_CV, "ada-example-cv.pdf"]];
+  const cases = [[content.owner, ownerCv, `${content.owner.slug}-cv.pdf`], [ada, ADA_CV, "ada-example-cv.pdf"]];
   for (const [owner, markdown, name] of cases) {
     const { path, pages } = await buildCvPdf({ owner, markdown, dir: out });
     assert.equal(path, resolve(out, name));

@@ -12,13 +12,9 @@ PRD.md
 TODO.md
 config/project-sources.private.json
 
-# Private CV source and generated Worker knowledge. Public Markdown remains tracked.
-data/experience.md
-data/faq.md
-data/interests.md
-data/meta.md
-data/personal.md
-data/skills.md
+# Owner sources and generated public/Worker resources.
+/data/
+/public/
 src/data/
 
 # Private working material and superseded data exports.

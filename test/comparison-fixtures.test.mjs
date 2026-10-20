@@ -32,11 +32,8 @@ test("the three-role video fixture stays compact and has distinct comparison col
   assert.equal(new Set(request.roles.map(({ company }) => company)).size, 3);
 });
 
-test("the documented challenge cost ceiling matches the enforced request caps", async () => {
-  const [config, submission] = await Promise.all([
-    writeWranglerConfig().then(JSON.parse),
-    readFile(new URL("../docs/webmcp-challenge-submission.md", import.meta.url), "utf8"),
-  ]);
+test("the enforced request caps preserve the configured cost ceiling", async () => {
+  const config = JSON.parse(await writeWranglerConfig());
   assert.deepEqual(config.vars, {
     ...config.vars,
     OPENAI_MODEL: "gpt-6-luna",
@@ -52,8 +49,4 @@ test("the documented challenge cost ceiling matches the enforced request caps", 
     + (120 * 100_000 * 0.10 / 1_000_000)
     + (120 * 8_000 * 0.50 / 1_000_000);
   assert.equal(Number(worstCaseCost.toFixed(3)), 34.03);
-  assert.match(submission, /Worst-case configured total: \$34\.03\b/);
-  assert.match(submission, /60 public requests × at most 2 attempts/i);
-  assert.match(submission, /24,000-character private application job description/i);
-  assert.match(submission, /These are billing-safety bounds, not expected English usage/i);
 });

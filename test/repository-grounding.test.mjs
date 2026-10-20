@@ -12,7 +12,7 @@ const publicRepositoryConfig = JSON.parse(await readFile(resolve(content.root, "
 const projectsPage = await readSite("projects/index.html");
 // John's project list is owner content; the example owner lists its own placeholder project.
 const johnOnly = { skip: content.owner.slug !== "john-viklund" && "needs John's owner root" };
-const projectsMarkdown = await readFile(new URL("../data/projects.md", import.meta.url), "utf8");
+const projectsMarkdown = await readFile(resolve(content.root, "data/projects.md"), "utf8");
 
 test("accepts an explicit public-repository allowlist with bounded documentation paths", () => {
   const manifest = validateRepositoryManifest([

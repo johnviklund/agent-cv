@@ -24,7 +24,7 @@ async function workspace(context, ownerFiles = {}) {
   await cp(resolve(ada, "data"), resolve(owner, "data"), { recursive: true });
   await cp(resolve(root, "config/comparison-contract.json"), resolve(engine, "config/comparison-contract.json"));
   for (const file of ["cv.md", "overview.md", "projects.md", "repositories.md"]) {
-    await cp(resolve(root, "data", file), resolve(engine, "data", file));
+    await cp(resolve(ada, "data", file), resolve(engine, "data", file));
   }
   await writeFile(resolve(engine, "config/repositories.json"), JSON.stringify([{ project: "Engine", repository: "engine/fallback", documents: [] }]));
   await writeFile(resolve(engine, "config/comparison-evidence.json"), JSON.stringify({ schemaVersion: 1, items: [{ id: "cv.profile", source: { path: "data/cv.md", headingPath: ["Profile"] } }] }));

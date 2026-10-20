@@ -68,25 +68,13 @@ test("batch entry publishes a downloadable Markdown template", async () => {
 });
 
 test("compatibility notes separate native WebMCP validation from portable fallbacks", async () => {
-  const [agents, readme, submission] = await Promise.all([
-    readSite("AGENTS.md"),
-    read("README.md"),
-    read("docs/webmcp-challenge-submission.md"),
-  ]);
-  for (const resource of [agents, readme, submission]) {
-    assert.match(resource, /ChatGPT Work\/Codex/i);
-    assert.match(resource, /Chrome[^.]*experimental WebMCP/i);
-    assert.match(resource, /browser automation|manual UI/i);
-    assert.match(resource, /HTTP API/i);
-  }
-  assert.match(submission, /Grok/i);
+  const agents = await readSite("AGENTS.md");
+  assert.match(agents, /ChatGPT Work\/Codex/i);
+  assert.match(agents, /Chrome[^.]*experimental WebMCP/i);
+  assert.match(agents, /browser automation|manual UI/i);
+  assert.match(agents, /HTTP API/i);
   assert.doesNotMatch(agents, /certification/i);
-  assert.match(submission, /Production discovery and invocation verified on 30 August/i);
-  assert.match(submission, /four-role rejection without state mutation/i);
   assert.match(agents, /Production discovery and invocation were verified/i);
-  assert.match(readme, /2026-08-30/);
-  assert.match(readme, /WebMCP Challenge/i);
-  assert.match(readme, /pre-existing Agent CV/i);
 });
 
 // John's privacy copy is owner content; the example owner's placeholder page does not carry it (U7).

@@ -10,15 +10,17 @@ Decisions: 1b delete artifacts/qa (unused, not kept anywhere) · 2a port John-on
 Split declined by human: 2026-10-20
 
 ## Execution state
-Current: T4 todo; T1–T3 complete. Engine checkpoint push deferred to the approved T7 operator gate.
+Current: T5 todo; T1–T4 complete. Engine checkpoint push deferred to the approved T7 operator gate.
 T1 @ 70887fd (engine receipt; private commit 4ec3ba4, pushed).
 T2 @ 129f4c7
 T3 @ cbce676
+T4 @ d859042
 writer: GPT-6.1 Sol · high; live catalog confirms the primary is available.
 Session 1: T1 (operator handoff prepared; no private writes).
 Session 2: T1 (1a/2a approved; private write blocked by two permission-review timeouts).
 Session 3: T1 (elevated read probe and private copies succeeded; staging timed out twice; no private commit/push).
 Session 4: T1, T2, T3 (private commit/push complete; engine cutover and fixture rewrite verified).
+Session 5: T4 (maintenance/comparison tests verified on both owners).
 Baseline: npm run check passes outside sandbox, 322 pass / 3 skipped; sandbox child processes hit EPERM.
 Golden baseline: exit 0, 19 accepted file differences; owner approved correction with 2a on 2026-10-20.
 Uncommitted implementation: none; T1 private commit 4ec3ba4; receipts/t1-private-repo.txt.
@@ -89,12 +91,13 @@ Delivers: B4 · Blocked by: T3 · Lane: logic
 Budget: code +0 · tests +90 · why: test-only rewrite
 Seam: the test files in Verify
 Accept:
-- [ ] `git grep -ciE 'john|viklund' -- test` → no output (B4)
-- [ ] repository fixtures use `example/…` slugs; refusal tests still prove the owner name is dropped, read from the fixture (B4)
-- [ ] `AGENT_CV_OWNER_ROOT=examples/owner npm run check` and sibling `npm test` → 0 failures (B4)
+- [x] `git grep -ciE 'john|viklund' -- test` → no output (B4)
+- [x] repository fixtures use `example/…` slugs; refusal tests still prove the owner name is dropped, read from the fixture (B4)
+- [x] `AGENT_CV_OWNER_ROOT=examples/owner npm run check` and sibling `npm test` → 0 failures (B4)
 Verify: `node --test test/project-review.test.mjs test/repository-grounding.test.mjs test/review-conversations.test.mjs test/conversation-review.test.mjs test/comparison-*.test.mjs test/webmcp.test.mjs test/static-contract.test.mjs test/maintenance-docs.test.mjs test/sync-public-data.test.mjs test/check-leaks.test.mjs && ! git grep -qiE 'john|viklund' -- test` (pre: 136 pass, 1 skipped · grep rc=1)
 Skills: none
-Status: todo
+Status: done @ d859042
+Writer: GPT-6.1 Sol
 
 ### T5 — engine docs, skills and memory speak of "the owner"
 Delivers: B7 · Blocked by: T1, T2 · Lane: logic
@@ -142,6 +145,7 @@ Status: todo
 T2 is riskiest: a missed engine-root read fails only on a clean clone (T6), so T2 runs both owners. README rewrite reaches John's evidence on his next sync (F13). Not taken: a `test/` allowlist (D3).
 
 ## Deviations
+T4 retires the personal career-subrole and repository-list snapshots under decision 2a, ports project layout and privacy tests to Ada, and drops three privacy phrases absent from Ada. Assertion changes and counts: receipts/t4-verification.md.
 T2 baseline discrepancy: owner approved 2a on 2026-10-20, correcting eight to 19 existing accepted file differences. Exception set unchanged; sha256 8fb34630ba97f44e0ae48f9a8f084efaec54ddce42ba60c894b58a2cd98660bd.
 T2 also fixes owner-manifests.test.mjs's engine-data copy found by npm run check. Existing assertion changes and counts are recorded in receipts/t2-verification.md; retired document assertions follow F4, while CV assertions use the selected owner and repository prose permits Ada's placeholder source.
 T3 updates four T4 test files that import the renamed fixture, so every ticket commit keeps npm run check passing. Their remaining personal literals stay for T4; receipts/t3-verification.md records assertion counts and the snapshot removals approved by decision 2a.

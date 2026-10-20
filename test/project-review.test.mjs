@@ -163,7 +163,8 @@ test("writes a private local-folder review packet and leaves canonical Markdown 
   await mkdir(resolve(root, "config"), { recursive: true });
   await mkdir(resolve(root, "data"), { recursive: true });
   await mkdir(localProject, { recursive: true });
-  const canonicalPath = resolve(root, "data", "projects.md");
+  await mkdir(resolve(ownerRoot, "data"), { recursive: true });
+  const canonicalPath = resolve(ownerRoot, "data", "projects.md");
   const canonicalContent = "# Projects\n\nNo private project details yet.\n";
   await writeFile(canonicalPath, canonicalContent);
   await writeFile(resolve(localProject, "README.md"), "# Private Project\n\nCurrent local evidence.\n");
@@ -263,7 +264,11 @@ test("rejects an output symlink without modifying its target", async (context) =
 });
 
 test("fetches a complete public GitHub snapshot pinned to one tree SHA", async (context) => {
-  const root = await createGitHubReviewRoot(context);
+  const ownerRoot = await createGitHubReviewRoot(context);
+  const root = resolve(ownerRoot, "engine");
+  await mkdir(resolve(root, "data"), { recursive: true });
+  await writeFile(resolve(root, "data/projects.md"), "## Product Studio\n\n999 tracked files.\n");
+  await writeFile(resolve(ownerRoot, "data/projects.md"), "## Product Studio\n\n777 tracked files.\n");
   const requested = [];
   const fetchImpl = async (url) => {
     requested.push(url);
@@ -277,9 +282,17 @@ test("fetches a complete public GitHub snapshot pinned to one tree SHA", async (
     return new Response("missing", { status: 404 });
   };
 
-  const outputPath = await runProjectReview({ root, ownerRoot: root, fetchImpl, now: new Date("2026-08-15T18:00:00.000Z") });
-  assert.match(await readFile(outputPath, "utf8"), /Tracked files: 1/);
+  const outputPath = await runProjectReview({ root, ownerRoot, fetchImpl, now: new Date("2026-08-15T18:00:00.000Z") });
+  const report = await readFile(outputPath, "utf8");
+  assert.match(report, /Tracked files: 1/);
+  assert.match(report, /reviewed scale of 777 tracked files/);
+  assert.doesNotMatch(report, /999 tracked files/);
   assert.ok(requested.some((url) => url.endsWith("/contents/README.md?ref=abc123")));
+  const manifestPath = resolve(ownerRoot, "project-sources.json");
+  const invalid = JSON.parse(await readFile(manifestPath, "utf8"));
+  invalid.publicRepositories[0].canonicalFiles = ["../data/projects.md"];
+  await writeFile(manifestPath, JSON.stringify(invalid));
+  await assert.rejects(runProjectReview({ root, ownerRoot, fetchImpl }), /canonical file path/);
 });
 
 test("fails before fetching sources when the GitHub allowance is insufficient", async (context) => {

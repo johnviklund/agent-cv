@@ -80,6 +80,15 @@ test("missing or invalid owner manifests fail even when the engine still has con
   }
 });
 
+test("evidence defaults to the owner's sources when engine headings differ", async (context) => {
+  const { engine, owner } = await workspace(context, {
+    "comparison-evidence.json": JSON.stringify({ schemaVersion: 1, items: [{ id: "overview.focus", source: { path: "data/overview.md", headingPath: ["Focus"] } }] }),
+  });
+  await writeFile(resolve(engine, "data/overview.md"), "# Overview\n\n## Old focus\n\nStale engine text.\n");
+  const catalog = await writeComparisonEvidence({ root: engine, ownerRoot: owner });
+  assert.equal(catalog.items[0].text, "Ada designs reliable services and helps teams operate them.");
+});
+
 test("a nonempty owner allowlist fetches only its named repositories and documents", async (context) => {
   const manifest = [{ project: "Alpha", repository: "example/alpha", documents: ["README.md"] }];
   const { engine, owner } = await workspace(context, { "repositories.json": JSON.stringify(manifest) });

@@ -12,13 +12,14 @@ Decisions: 1a (approve T1, T2 as listed) · re-plan 2026-10-20 after T2 prefligh
 Session 1: T1 complete; T2 handoff prepared, awaiting exact-scope approval.
 Session 2: T2 approved via 1a; push succeeded; preflight failed before deployment.
 Session 3: T3 complete; refreshed T2 handoff awaits fresh exact-scope approval.
+Session 4: T2 approved via 1a; push and full preflight resume.
 T1 @ bb6f3f4
 T3 @ baff4c1
 writer: GPT-6.1 Sol · high
 Baseline: npm run build passed outside sandbox; 321 passed, 2 skipped; sandbox test workers failed.
 Final: npm run build passed, including check; 326 tests passed, 2 skipped; clean-clone sync tests 15/15.
 Current: T2 awaiting-human; receipts/t2-deploy-handoff-v2.md replaces the earlier handoff.
-Pending: explicit approval to push origin/main and run T2; auto-review rejected the push; receipts/t3-push-block.md.
+Pending: execute approved push and T2 handoff; owner approved 1a on 2026-10-20, resolving receipts/t3-push-block.md.
 
 ## Findings
 | # | What is true | What it changes |
@@ -83,7 +84,7 @@ Accept:
 Verify: receipt: receipts/live-verification.md — deploy exit 0 · version match · 4/4 sha · pdf ok · health ok · ask completed · compare valid · admin 401 ×2 (pre: no receipt)
 Skills: none
 Status: awaiting-human
-Handoff receipt: receipts/t2-deploy-handoff-v2.md; awaiting fresh approval. Original receipts/t2-deploy-handoff.md approval ended at the failed preflight in receipts/t2-preflight-failure.md; it does not carry over.
+Handoff receipt: receipts/t2-deploy-handoff-v2.md; owner approved 1a on 2026-10-20, including push and full T2 scope. The original approval ended at the failed preflight; this is fresh approval.
 
 ## Deviations
 - T2: sync:owner --deploy exited 1 because its whole-owner scan rejects fictional example-owner references in historical docs/plans. T2 cannot pass as written without a prerequisite correction. Stop and return to plan; the guard was not bypassed. Re-plan: T3.

@@ -5,7 +5,7 @@ Inputs: plan.md @ 6614dd1; receipts/t3-verification.md @ 4122e58
 Status: complete
 
 ## Approval scope
-Runner: agent after approval. Fresh approval is pending. The earlier approval ended at the failed preflight recorded in receipts/t2-preflight-failure.md.
+Runner: agent after approval. The owner selected 1a on 2026-10-20, approving the push and this full deployment handoff, including one chat, one comparison and conditional rollback. The earlier approval ended at the failed preflight recorded in receipts/t2-preflight-failure.md.
 
 Approval also covers git push origin main for the verified local commits and workflow receipts. Automatic approval review rejected the first push request because workflow execute did not clearly authorize that exact default-branch push. No push ran. See receipts/t3-push-block.md.
 

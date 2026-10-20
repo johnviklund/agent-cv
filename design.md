@@ -1,7 +1,7 @@
 <!-- Hallmark · pre-emit critique: P4 H4 E4 S5 R5 V4 · studied: yes · DNA-source: url -->
 # Design — Agent CV
 
-Locked design system for John Viklund's CV. `tokens.css` is canonical; `npm run build:site` publishes its identical copy to `build/site/tokens.css`. Amend this system intentionally.
+Locked design system for the owner's CV. `tokens.css` is canonical; `npm run build:site` publishes its identical copy to `build/site/tokens.css`. Amend this system intentionally.
 
 ## System
 - Genre: modern-minimal, with editorial content and a technical tone.
@@ -9,12 +9,12 @@ Locked design system for John Viklund's CV. `tokens.css` is canonical; `npm run 
 - Homepage: Workbench adapted to a working chat, with a large left-aligned introduction and a bordered interaction area. Stack in reading order on narrow screens.
 - Content pages: Long Document for CV, about and privacy; ruled lists for projects and experience. Preserve existing routes, copy and controllers.
 - Navigation: compact N1b with existing destinations and a CSS disclosure on mobile. Footer: Ft2 inline credits and links, wrapping between complete links.
-- Audience: recruiters, hiring managers and technical peers. Primary action: ask a grounded question about John's work.
+- Audience: recruiters, hiring managers and technical peers. Primary action: ask a grounded question about the owner's work.
 
 ## Provenance
-Studied https://herdr.dev/ on 16 September 2026. John selected this public reference for his own CV brand by asking to lock its DNA and update the CV site. This is structural inspiration, not a reproduction of Herdr's identity, copy, logo or terminal demonstration.
+Studied https://herdr.dev/ on 16 September 2026. The owner selected this public reference for the CV brand by asking to lock its DNA and update the CV site. This is structural inspiration, not a reproduction of Herdr's identity, copy, logo or terminal demonstration.
 
-The source declares Archivo, Inter and JetBrains Mono. The initial source palette used #17171a, #eae8ee and #cba6f7. On 16 September 2026, John requested a distinct colour identity. Agent CV now uses its own warm graphite (#20231f), ivory (#f0efe5) and sea glass (#9ccfbd) palette, converted to OKLCH below. The typography and layout remain locked. Layout rhythm was not verified by the URL-only study. Agent CV's layout must be verified in a browser separately.
+The source declares Archivo, Inter and JetBrains Mono. The initial source palette used #17171a, #eae8ee and #cba6f7. On 16 September 2026, the owner requested a distinct colour identity. Agent CV now uses its own warm graphite (#20231f), ivory (#f0efe5) and sea glass (#9ccfbd) palette, converted to OKLCH below. The typography and layout remain locked. Layout rhythm was not verified by the URL-only study. Agent CV's layout must be verified in a browser separately.
 
 ## Typography and spacing
 Archivo 700–900 for upright headings; Inter 400–700 for prose and controls; JetBrains Mono 400–500 for utility labels and code. Self-host Latin fonts and retain their OFL licenses. Use system fallbacks for other scripts. Display tracking is -0.055em, with a 0.98 line height; prose is 1.7. Use the named four-point spacing scale below.

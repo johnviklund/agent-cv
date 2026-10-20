@@ -18,7 +18,7 @@ Start at `features/README.md`, then open the feature's file. Commands (all print
 
 ```bash
 control open /
-control fill --role textbox --name "Ask about" --value "What does John do?"
+control fill --role textbox --name "Ask about" --value "What does Ada do?"
 control click --role button --name "Send question"
 control wait --text "Chat unavailable"
 control snapshot          # headings, buttons, links, fields, status text

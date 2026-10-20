@@ -20,11 +20,10 @@ This repository contains the public implementation of an owner's Agent CV. Keep 
 
 ## Data boundaries
 
-- The owner's `<owner root>/data/cv.md`, `overview.md`, `projects.md`, and `repositories.md` are canonical public sources. Engine `data/` retains legacy public copies until U8.
+- The owner's `<owner root>/data/cv.md`, `overview.md`, `projects.md`, and `repositories.md` are canonical public sources.
 - The other `data/*.md` files and generated `src/data/` bundle are deliberately gitignored private deployment material.
 - `npm run sync:owner` validates the owner's `owner.json` and `site.json`, then imports exactly those six private files from the owner root: `AGENT_CV_OWNER_ROOT`, else `AGENT_CV_PRIVATE_ROOT` (alias for one release), else the sibling `agent-cv-private` checkout. `sync:private-data` is its alias for one release. It must remain a local build/deploy step, never a runtime fetch, and `deploy` refuses the `examples/owner/` fallback.
 - Never add `.dev.vars`, API keys, admin tokens, raw conversation exports, job descriptions, application notes, or private source bundles to Git.
-- `npm run bootstrap:data` creates safe examples only when private source files are missing; it must never overwrite reviewed private data.
 
 ## Repository grounding
 

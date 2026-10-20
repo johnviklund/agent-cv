@@ -12,7 +12,7 @@ A visitor types a question on the home page and starts a conversation with the o
 
 ## Driving it with control
 Preconditions: baseline.
-- **Ask.** `control open /`, `control fill --role textbox --name "Ask about" --value "What does John do?"`, `control click --role button --name "Send question"` → the conversation shows `YOU` and your question.
+- **Ask.** `control open /`, `control fill --role textbox --name "Ask about" --value "What does Ada do?"`, `control click --role button --name "Send question"` → the conversation shows `YOU` and your question.
 - **Error path (no key).** `control wait --text "Chat unavailable"` → text `The chat service is not configured yet.` and a link `Read the full CV instead`.
 - **Second view.** `control api /api/health` → `"configured": false`.
 - **Start over.** `control click --role button --name "Start over"` → the conversation hides and the home question box returns.

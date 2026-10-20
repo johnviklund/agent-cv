@@ -4,7 +4,7 @@ This guide is for people adapting the public Agent CV into a reviewed, privacy-c
 
 ## Before you start
 
-The application code is reusable under the MIT license. John Viklund's résumé, project claims, identity, contact details, and deployment URLs are not starter content. Replace them with your own reviewed evidence before publishing.
+The application code is reusable under the MIT license. The example owner is fictional. Replace its résumé, project claims, identity, contact details, and deployment URLs with your own reviewed evidence before publishing.
 
 You need Node.js 24, npm, Git, the GitHub CLI, a GitHub account, a Cloudflare account, and an OpenAI API key. Never paste API keys, admin tokens, private repository content, job descriptions, application notes, or raw conversation exports into an issue, commit, or agent prompt that may leave your trusted environment.
 
@@ -51,22 +51,22 @@ Keep `AGENT_CV_OWNER_ROOT` set in each shell you use for this engine. The defaul
 
 | Location | Purpose | Git policy |
 | --- | --- | --- |
-| `data/cv.md`, `overview.md`, `projects.md`, `repositories.md` | Canonical public evidence | Tracked |
-| `data/meta.md`, `experience.md`, `skills.md`, `personal.md`, `interests.md`, `faq.md` | Deployment knowledge that may be private | Ignored |
-| `examples/private-data/` | Generic safe bootstrap placeholders | Tracked |
-| `src/data/` | Generated Worker knowledge bundle | Ignored |
-| `public/*.md` | Generated public Markdown resources | Tracked |
-| `.dev.vars`, `exports/`, `conversation-reviews/` | Local secrets, private archive exports, and conversation review material | Ignored |
+| `<owner root>/data/{cv,overview,projects,repositories}.md` | Canonical public evidence | Tracked in the private owner repository |
+| `<owner root>/data/{meta,experience,skills,personal,interests,faq}.md` | Private deployment knowledge | Tracked in the private owner repository |
+| `examples/owner/` | Fictional safe owner bundle | Tracked in the engine |
+| `data/`, `src/data/` | Imported private knowledge and generated Worker bundle | Ignored in the engine |
+| `public/`, `build/site/` | Generated public resources and served site | Ignored in the engine |
+| `.dev.vars`, `exports/`, `conversation-reviews/` | Local secrets and private review material | Ignored in the engine |
 
-For John's two-repository setup, keep `agent-cv` and the private `agent-cv-private` checkout beside each other, then import the reviewed private knowledge with:
+Keep `agent-cv` and the private owner checkout beside each other, or set `AGENT_CV_OWNER_ROOT` to the owner directory. Import reviewed private knowledge with:
 
 ```sh
-npm run sync:private-data
+npm run sync:owner
 ```
 
-The command reads only the six named private files, validates all of them before changing the local checkout, and never commits or publishes their source Markdown. For another checkout layout, set `AGENT_CV_PRIVATE_ROOT` or run `npm run sync:private-data -- --source /absolute/path/to/agent-cv-private`.
+The command validates the bundle and reads only the six named private files. It never commits or publishes their source Markdown.
 
-Edit canonical files under `data/`, then run:
+Edit canonical files under `<owner root>/data/`, then run:
 
 ```sh
 npm run sync:data
@@ -79,16 +79,16 @@ git check-ignore .dev.vars data/meta.md src/data/meta.md exports/ conversation-r
 git status --short
 ```
 
-Never force-add an ignored private file. `npm run bootstrap:data` must remain non-destructive: customize the created files in `data/`, not the tracked examples, unless you are deliberately improving generic fork defaults.
+Never force-add an ignored private file. Customize the owner bundle created by setup; keep the tracked example fictional.
 
 ## Adapt the fork
 
 Use a feature branch and make these changes as one reviewed identity migration:
 
-1. Replace the four tracked public `data/*.md` sources with your own CV, overview, projects, and repository evidence.
-2. Replace the six ignored private `data/*.md` files with reviewed knowledge for your deployment. Keep instructions in `meta.md` strict about grounding, sensitive requests, and missing facts.
-3. Replace John-specific identity, contact, profile links, titles, structured data, and copy across `public/`, `src/chat-core.js`, `AGENTS.md`, and machine-readable resources.
-4. Replace canonical URLs in HTML, `public/robots.txt`, `public/sitemap.xml`, and the matching assertions in `scripts/check-static.mjs`.
+1. Replace the four public `<owner root>/data/*.md` sources with your own CV, overview, projects, and repository evidence.
+2. Replace the six private `<owner root>/data/*.md` files with reviewed knowledge for your deployment. Keep instructions in `meta.md` strict about grounding, sensitive requests, and missing facts.
+3. Replace example identity, contact and profile links in the owner's `owner.json`, and page copy in `site.json`.
+4. Set canonical URLs through the owner's `owner.json`; the build generates HTML and discovery resources.
 5. Set `deploy.workerName`, `deploy.archiveNamespaceId`, `site.hosts` and `contact.email` in your owner repo's `owner.json`. The generated `wrangler.jsonc` takes them from there; set `contact.email` to `null` if you prefer the contact page's profile-only fallback.
 6. Set your deployed HTTPS origin as `site.origin` in your owner repo's `owner.json`. Both private conversation scripts use this code-controlled destination and refuse the example owner; `conversations:export` may still take an explicit `--url` override.
 7. Put only public repositories and named Markdown or text documents you approve in your owner repo's `repositories.json`, and the comparison evidence selectors in its `comparison-evidence.json`. An empty array (and `{ "schemaVersion": 1, "items": [] }`) is valid if you do not want repository or comparison evidence yet; the engine has no fallback copies.
@@ -98,23 +98,18 @@ Use a feature branch and make these changes as one reviewed identity migration:
 Useful audit:
 
 ```sh
-rg -n "John Viklund|johnviklund|johnwik|john-viklund-agent-cv|agent-cv\.workers\.dev" \
-  --glob '!data/repositories.md' --glob '!public/repositories.md'
+node scripts/check-leaks.mjs
 npm run check
 npm run build
 ```
 
+The leak check always scans tracked engine files. It also scans generated output when the example owner is selected.
+
 Generated repository snapshots may repeat old public source text until you refresh them. Treat those snapshots as untrusted evidence and never use them as the only proof of your contribution.
 
-## Verify a safe fresh-clone bootstrap
+## Verify a safe fresh clone
 
-The automated test creates a clean temporary checkout containing only the bootstrap script and tracked example bundle. It verifies that exactly the six expected files are created from those examples, that the examples contain no original-owner identity or contact details, and that a second run preserves edited private data.
-
-```sh
-node --test test/bootstrap-example-data.test.mjs
-```
-
-For a manual release check, clone your branch into a new directory, run `npm ci`, `npm run bootstrap:data`, and `npm run check`, then inspect the created `data/*.md` files before adding any real private material.
+Clone your branch into a new directory without a sibling owner checkout. Run `npm ci` and `npm run check`. The engine selects `examples/owner`, builds Ada's fictional site, and checks the tracked tree and generated output for personal identity leaks. Use `npm run setup` when you are ready to create your own private bundle.
 
 ## Deploy your fork
 
@@ -190,7 +185,7 @@ The private `/admin/` **Conversation candidates** section remains an optional vi
 
 ## Maintain the site
 
-- Update canonical Markdown under `data/`, run `npm run sync:data`, review generated changes, and run `npm run check`.
+- Update canonical Markdown under `<owner root>/data/`, run `npm run sync:data`, review generated changes, and run `npm run check`.
 - Refresh the owner repo's `repositories.json` and `npm run sync:repositories` deliberately; never add live repository fetching to public chat.
 - Ask Codex to review project updates and update the site; Codex maintains the ignored source manifest and review packet, asks for evidence decisions, and advances timestamps only after approval.
 - Ask Codex to “review my conversation learnings”; use the private admin conversation browser only when you want the optional visual view. Approve exact proposals before canonical changes, and delete the private input files when the review is complete.
@@ -205,4 +200,4 @@ Give the agent access only to the checkout and the public information you want p
 
 A ready-to-use prompt for a fresh fork:
 
-> Adapt this repository into my Agent CV. Read `AGENTS.md` and `USERGUIDE.md` first. Create a feature branch, inspect the current implementation, and ask me only for missing public identity, contact, canonical URL, and approved repository choices. Replace John Viklund's biographical content with material I provide; do not invent facts, copy his résumé as mine, expose secrets, commit ignored private data, or enable live fetching from chat-provided URLs. Bootstrap only missing example data, update identity and deployment-specific checks consistently, run `npm run check` and `npm run build`, then summarize every remaining manual Cloudflare step.
+> Adapt this repository into my Agent CV. Read `AGENTS.md` and `USERGUIDE.md` first. Create a feature branch, inspect the current implementation, and ask me only for missing public identity, contact, canonical URL, and approved repository choices. Run setup to create a private owner bundle, then replace Ada Example's placeholders with material I provide. Do not invent facts, expose secrets, commit ignored private data, or enable live fetching from chat-provided URLs. Update identity in owner.json and site.json, run `npm run check` and `npm run build`, then summarize every remaining manual Cloudflare step.

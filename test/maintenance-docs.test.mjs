@@ -42,3 +42,17 @@ test("fork instructions follow setup, private owner storage, content review and 
     assert.doesNotMatch(body, /bootstrap:data/);
   }
 });
+
+
+test("cutover docs keep owner sources and drop legacy bootstrap instructions", async () => {
+  for (const path of ["AGENTS.md", "README.md", "USERGUIDE.md", "design.md",
+    ".agents/skills/verify-agent-cv/SKILL.md", ".agents/skills/verify-agent-cv/features/ask-chat.md"]) {
+    const text = await read(path);
+    assert.doesNotMatch(text, /until U8|bootstrap:data|examples\/private-data|retains legacy public copies/i, path);
+    const allowed = text.replaceAll("jo" + "hnvik" + "lund/agent-cv", "")
+      .replace(/^Maintained by .* is one deployment\.$/m, "");
+    assert.doesNotMatch(allowed, new RegExp("jo" + "hn|vik" + "lund", "i"), path);
+  }
+  assert.match(await read("README.md"), /open-source .*engine/);
+  assert.match(await read("USERGUIDE.md"), /<owner root>\/data\//);
+});

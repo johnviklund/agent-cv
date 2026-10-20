@@ -1,13 +1,8 @@
 # Agent CV
 
-A chat-first conversational résumé for **John Viklund**, CX AI Lead at Volvo Cars, applied-AI builder, and former AI startup founder. Recruiters, hiring managers, crawlers, and AI agents get the same grounded evidence through a slim web interface, stable Markdown resources, and a bounded streaming API.
+An open-source Agent CV engine for a chat-first conversational résumé. Recruiters, hiring managers, crawlers, and AI agents get reviewed evidence through a slim web interface, stable Markdown resources, and a bounded streaming API.
 
-- **Live site:** [johnviklund.com](https://johnviklund.com/)
-- **Full CV:** [johnviklund.com/cv.md](https://johnviklund.com/cv.md)
-- **Contact:** [johnviklund.com/contact/](https://johnviklund.com/contact/)
-- **For AI agents:** [johnviklund.com/AGENTS.md](https://johnviklund.com/AGENTS.md) and [johnviklund.com/llms.txt](https://johnviklund.com/llms.txt)
-
-John built and maintains this site with coding agents, using the workflow and review skills in his public [j-skills](https://github.com/johnviklund/j-skills) toolkit.
+Maintained by John Viklund. johnviklund.com is one deployment.
 
 ## How it works
 
@@ -34,21 +29,7 @@ Other capabilities include continuous conversations with bounded rolling context
 
 ## For AI agents
 
-Start with [`/AGENTS.md`](https://johnviklund.com/AGENTS.md) for the API contract, limits, and behavioral boundaries, and [`/llms.txt`](https://johnviklund.com/llms.txt) for the resource index. The main endpoints are `POST /api/ask` (grounded conversation), `POST /api/compare` (role comparison), and `GET /api/contact`. Agents working on this repository should read [AGENTS.md](AGENTS.md) instead.
-
-## Role comparison (WebMCP)
-
-A 2026-08-30 extension to the pre-existing Agent CV, built for the [OpenAI WebMCP Challenge](https://openai.com/webmcp-challenge/), the workspace at [`/#compare`](https://johnviklund.com/#compare) places one to three job openings side by side and maps each extracted requirement to a versioned public evidence catalog. It shows which requirements were assessed and exports Markdown or JSON, and it deliberately avoids scores, rankings, recommendations, and hiring decisions.
-
-While open, the home page registers four page-scoped WebMCP tools: `compare_candidate_roles`, `get_comparison_state`, `focus_comparison_cell`, and `clear_role_comparison`. They are browser-page capabilities, not an MCP server or HTTP endpoints.
-
-| Client | Status as of 30 August 2026 |
-| --- | --- |
-| OpenAI ChatGPT Work/Codex built-in browser | Production discovery and invocation verified for all four tools |
-| Chrome experimental WebMCP implementation | Native registration and invocation tested locally |
-| Other agents | Use ordinary browser automation, the manual UI, `/evidence.json`, or the HTTP API (`POST /api/compare`) |
-
-Extraction rules, test fixtures, verification records, and the demo script are in [`docs/webmcp-challenge-submission.md`](docs/webmcp-challenge-submission.md).
+On a deployed site, start with `/AGENTS.md` for the API contract, limits, and behavioral boundaries, and `/llms.txt` for the resource index. The main endpoints are `POST /api/ask` for grounded conversation, `POST /api/compare` for role comparison, and `GET /api/contact`. Agents working on this repository should read [AGENTS.md](AGENTS.md).
 
 ## Run it locally
 
@@ -114,11 +95,11 @@ You need Git, the GitHub CLI, an OpenAI API key, and a Cloudflare account managi
 | --- | --- |
 | `src/` | Cloudflare Worker: chat, comparison, archive, applications, and streaming |
 | `site/` | Page templates and engine assets: browser scripts, styles, fonts, and images |
-| `public/` | Synchronized public Markdown and comparison evidence, copied into the built site |
+| `public/` | Ignored synchronized public Markdown and comparison evidence, copied into the built site |
 | `build/site/` | Generated, ignored site that Wrangler serves; built by `npm run build:site` |
 | `wrangler.jsonc` | Generated, ignored Worker config: `wrangler.base.jsonc` plus the owner's `deploy`, `site.hosts` and `contact.email`; built by `npm run build:wrangler-config` |
-| `<owner root>/data/` | Canonical Markdown sources; engine `data/` retains legacy public copies and ignored private imports |
-| `config/` | Repository allowlist, comparison evidence, and admin origin |
+| `<owner root>/data/` | Canonical public and private Markdown sources in the owner repository |
+| `config/` | Engine schemas and comparison contract; owner manifests stay in the owner repository |
 | `scripts/` | Data synchronization, checks, and maintenance tools |
 | `test/` | Node test suite |
 
@@ -132,10 +113,10 @@ Conversation records, `.dev.vars`, admin tokens, application notes, job descript
 
 ## Maintainer workflow
 
-John's reviewed private sources live in a separate private `agent-cv-private` repository checked out beside this one. `npm run sync:private-data` imports exactly the six approved files and validates the complete set first; `npm run deploy` runs it automatically so a release cannot package stale placeholders. Set `AGENT_CV_PRIVATE_ROOT` for a different location.
+The owner's reviewed sources live in a separate private repository, normally `agent-cv-private` beside this engine. `npm run sync:owner` validates the bundle and imports exactly six private knowledge files; `npm run deploy` runs it automatically. Set `AGENT_CV_OWNER_ROOT` for a different location. Canonical public Markdown stays in the owner repository and is synchronized by `npm run sync:data`.
 
 Two repo-local Codex skills handle routine upkeep. Ask Codex to **"Review my project and repository updates, ask me what changed, and update the site."** to refresh project content with approved evidence, then verify, ship, and check the live result. Ask it to **"review my conversation learnings"** to fetch private chat candidates; the skill groups learning candidates by application and session, suggests classifications, and asks focused questions before creating an approval-gated proposal. The `/admin/` dashboard is an optional view of the same archive.
 
 ## Reuse and license
 
-The application code is available under the [MIT License](LICENSE). John Viklund's résumé content is personal biographical material, not a template; replace it with your own reviewed evidence before publishing a fork. [USERGUIDE.md](USERGUIDE.md) covers setup, data boundaries, deployment, and the complete fork checklist, including a prompt for handing a fresh fork to a coding agent.
+The application code is available under the [MIT License](LICENSE). The example owner is fictional; replace its placeholders with your own reviewed evidence before publishing. [USERGUIDE.md](USERGUIDE.md) covers setup, data boundaries, deployment, and the fork checklist.

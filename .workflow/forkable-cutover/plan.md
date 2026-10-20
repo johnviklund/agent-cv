@@ -10,8 +10,9 @@ Decisions: 1b delete artifacts/qa (unused, not kept anywhere) · 2a port John-on
 Split declined by human: 2026-10-20
 
 ## Execution state
-Current: T2 verified, ready to commit; T1 complete.
+Current: T3 todo; T1 and T2 complete.
 T1 @ 70887fd (engine receipt; private commit 4ec3ba4, pushed).
+T2 @ 129f4c7
 writer: GPT-6.1 Sol · high; live catalog confirms the primary is available.
 Session 1: T1 (operator handoff prepared; no private writes).
 Session 2: T1 (1a/2a approved; private write blocked by two permission-review timeouts).
@@ -59,14 +60,15 @@ Delivers: B1, B5 · Blocked by: T1 · Lane: logic
 Budget: code +10 · tests +40 · why: the tree is asserted by a new test; deleted files are not counted
 Seam: `git ls-files`; new `test/tracked-tree.test.mjs`; `npm run golden:diff`
 Accept:
-- [ ] `git ls-files data public examples/private-data docs artifacts scripts/bootstrap-example-data.mjs test/bootstrap-example-data.test.mjs` → empty (B1)
-- [ ] package.json has no `bootstrap:data` script and no `bootstrap-example-data` in `check` (B1)
-- [ ] `.gitignore` lists `/data/` and `/public/`; after `npm run sync:data`, `git status --short` is empty (B1)
-- [ ] cv-pdf, repository-grounding and codex-project-refresh tests read `<owner root>/data/` and pass for Ada and for the sibling (B1)
-- [ ] `AGENT_CV_OWNER_ROOT=../agent-cv-private npm run golden:diff` → exit 0, the same 19 accepted exceptions, nothing else (B5)
+- [x] `git ls-files data public examples/private-data docs artifacts scripts/bootstrap-example-data.mjs test/bootstrap-example-data.test.mjs` → empty (B1)
+- [x] package.json has no `bootstrap:data` script and no `bootstrap-example-data` in `check` (B1)
+- [x] `.gitignore` lists `/data/` and `/public/`; after `npm run sync:data`, `git status --short` is empty (B1)
+- [x] cv-pdf, repository-grounding and codex-project-refresh tests read `<owner root>/data/` and pass for Ada and for the sibling (B1)
+- [x] `AGENT_CV_OWNER_ROOT=../agent-cv-private npm run golden:diff` → exit 0, the same 19 accepted exceptions, nothing else (B5)
 Verify: `node --test test/tracked-tree.test.mjs test/cv-pdf.test.mjs test/repository-grounding.test.mjs test/codex-project-refresh.test.mjs test/comparison-fixtures.test.mjs test/static-contract.test.mjs` (pre: 27 pass, 1 skipped · tracked-tree new file)
 Skills: none
-Status: todo
+Status: done @ 129f4c7
+Writer: GPT-6.1 Sol
 
 ### T3 — Worker, deploy, site and PDF tests run on Ada and a fictional owner
 Delivers: B4 · Blocked by: T2 · Lane: logic

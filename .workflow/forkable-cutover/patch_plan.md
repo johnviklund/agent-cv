@@ -5,8 +5,9 @@ Inputs:  .workflow/forkable-cutover/review.md @ 40dd85d
 Status:  complete
 
 ## Execution state
-Current: C1-T1 complete; C1-T2 next. Patch cycle 1 · fix C1-1, C1-2.
+Current: C1-T1 and C1-T2 complete; ready for cross-vendor review. Patch cycle 1 · fix C1-1, C1-2.
 C1-T1 @ 009ab1f
+C1-T2 @ 648a24d
 writer: GPT-6.1 Sol · high; live catalog confirms the primary is available.
 Baseline: Ada check 320 pass / 3 skipped / 0 fail outside sandbox; sandbox check fails five child-process test files.
 Uncommitted implementation: none. Pending decision: none.
@@ -30,9 +31,13 @@ Delivers: C1-2 (B4, Outcome) · Blocked by: none · Lane: logic
 Budget: code +0 · tests +0 · why: literal swaps only
 Seam: `test/comparison-evidence.test.mjs`, `test/cv-pdf.test.mjs`, `test/og-image.test.mjs`, `test/site-rendering.test.mjs`
 Accept:
-- [ ] `git grep -niE 'volvo|axient|americas crm' -- test` → no output; replacements are fictional (`Example Motors`, `Sample Co`) (C1-2)
-- [ ] each private `../agent-cv-private/data/cv.md` `###` employer name (Volvo, Tajitsu, Axient, Saltside, StreamServe, OpenText) is absent from `git grep -i` over the tracked tree outside `.workflow/` and `WORKLOG.md` (C1-2)
-- [ ] the four files keep their assertion-site counts; Ada `npm run check` and sibling `npm test` → 0 failures (C1-2)
+- [x] `git grep -niE 'volvo|axient|americas crm' -- test` → no output; replacements are fictional (`Example Motors`, `Sample Co`) (C1-2)
+- [x] each private `../agent-cv-private/data/cv.md` `###` employer name (Volvo, Tajitsu, Axient, Saltside, StreamServe, OpenText) is absent from `git grep -i` over the tracked tree outside `.workflow/` and `WORKLOG.md` (C1-2)
+- [x] the four files keep their assertion-site counts; Ada `npm run check` and sibling `npm test` → 0 failures (C1-2)
 Verify: `node --test test/comparison-evidence.test.mjs test/cv-pdf.test.mjs test/og-image.test.mjs test/site-rendering.test.mjs && ! git grep -qiE 'volvo|axient|americas crm' -- test` (pre: grep finds 8 lines)
 Skills: none
-Status: todo
+Status: done @ 648a24d
+Writer: GPT-6.1 Sol
+
+## Deviations
+C1-T2 changes expected fixture literals at five assertion sites; no assertion removed. Counts remain 21, 31, 12, 53. Details: receipts/c1-t2-verification.md.

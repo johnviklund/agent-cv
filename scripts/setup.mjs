@@ -55,13 +55,21 @@ export async function runSetup({ args = process.argv.slice(2), env = process.env
     const npx = process.platform === "win32" ? "npx.cmd" : "npx";
     const quote = (value) => `'${value.replaceAll("'", "'\\''")}'`;
     const retryEnv = `AGENT_CV_OWNER_ROOT=${quote(target)}`;
-    const step = async (name, retry, action) => {
+    const namespace = `${owner.deploy.workerName}-archive`;
+    const retries = [
+      `npx wrangler kv namespace create ${namespace}; copy the returned id into ${target}/owner.json deploy.archiveNamespaceId`,
+      "npx wrangler secret put OPENAI_API_KEY",
+      "npm run setup:admin",
+    ];
+    const step = async (name, index, action) => {
       try { return await action(); }
-      catch { throw new Error(`${name} failed. Owner directory kept at ${target}. Retry: ${retryEnv} ${retry}`); }
+      catch (error) {
+        const lines = retries.slice(index).map((retry) => `  ${retryEnv} ${retry}`);
+        throw new Error(`${name} failed. Owner directory kept at ${target}. Retry:\n${lines.join("\n")}\nCause: ${error.message}`);
+      }
     };
     await writeWranglerConfig({ engineRoot, env: cloudEnv });
-    const namespace = `${owner.deploy.workerName}-archive`;
-    await step("wrangler kv namespace create", `npx wrangler kv namespace create ${namespace}; copy the returned id into ${target}/owner.json deploy.archiveNamespaceId`, async () => {
+    await step("wrangler kv namespace create", 0, async () => {
       const { stdout } = await run(npx, ["wrangler", "kv", "namespace", "create", namespace], { cwd: engineRoot, env: cloudEnv });
       const id = stdout.match(/"id"\s*:\s*"([a-f0-9]{32})"/i)?.[1];
       if (!id) throw new Error("Namespace response has no id.");
@@ -69,12 +77,12 @@ export async function runSetup({ args = process.argv.slice(2), env = process.env
       await writeFile(resolve(target, "owner.json"), `${JSON.stringify(owner, null, 2)}\n`);
     });
     await writeWranglerConfig({ engineRoot, env: cloudEnv });
-    await step("OPENAI_API_KEY", "npx wrangler secret put OPENAI_API_KEY", async () => {
+    await step("OPENAI_API_KEY", 1, async () => {
       const key = OPENAI_API_KEY || (isTTY && await ask("OpenAI API key", { secret: true }));
       if (!key) throw new Error("Provide OPENAI_API_KEY or run in a terminal.");
       await run(npx, ["wrangler", "secret", "put", "OPENAI_API_KEY"], { cwd: engineRoot, env: cloudEnv, input: `${key}\n` });
     });
-    await step("ADMIN_API_TOKEN", "npm run setup:admin", () => configureAdminSecret({ engineRoot, env: cloudEnv, run }));
+    await step("ADMIN_API_TOKEN", 2, () => configureAdminSecret({ engineRoot, env: cloudEnv, run }));
   }
   return { root: target, owner, message: `Created owner directory ${target}.\nSet AGENT_CV_OWNER_ROOT to this directory.\nReplace Ada Example's content and regenerate the social card before running npm run deploy.` };
 }

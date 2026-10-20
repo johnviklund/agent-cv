@@ -135,7 +135,8 @@ test("setup preserves completed values and names the retry command for each clou
       assert.deepEqual(retries.filter((retry) => error.message.includes(retry)), retries.slice(first));
       const positions = retries.slice(first).map((retry) => error.message.indexOf(retry));
       assert.deepEqual(positions, [...positions].sort((a, b) => a - b));
-      assert.ok(error.message.endsWith(step === "missing-id" ? "Namespace response has no id." : "cloud failure"));
+      const cause = { "missing-id": "Namespace response has no id.", ADMIN_API_TOKEN: "remains in .dev.vars for a retry." }[step] ?? "cloud failure";
+      assert.ok(error.message.endsWith(cause));
       return true;
     });
     const owner = (await loadOwner({ root: f.target })).owner;

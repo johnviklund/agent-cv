@@ -9,13 +9,14 @@ Size: code 218 · tests 232 · ratio 1.06 · largest touched USERGUIDE.md 174, t
 Decisions: 1a links.github set to null by setup · 2a deploy also refuses Ada's og-image bytes · 3a tickets approved 2026-10-20
 
 ## Execution state
-Current: T3 todo · writer: GPT-6.1 Sol
+Current: T4 todo · writer: GPT-6.1 Sol
 T1 @ a61c3ab
 T2 @ ed23bc1
-Session 1: T1, T2
+T3 @ fae8fe6
+Session 1: T1, T2, T3
 Baseline: sandbox check fails in five child-process files; unsandboxed check passes, 303 pass / 3 skipped.
 Contracts: runSetup({args, env, run, ask, isTTY, engineRoot}); runner returns {stdout}.
-Uncommitted: plan execution record only · pending decision: none
+Uncommitted: none after this record commit · pending decision: none
 
 ## Findings
 | # | What is true | What it changes |
@@ -73,13 +74,14 @@ Delivers: B7 · Blocked by: none · Lane: logic
 Budget: code +45 · tests +55 · why: the existing deploy fixture is renamed too (F4)
 Seam: `syncOwner({deploy: true})`
 Accept:
-- [ ] owner with "Ada Example" in `data/cv.md` and `site.json` → rejects naming both files; engine `data/` unchanged (B7)
-- [ ] same owner with `deploy: false` → syncs normally (B7)
-- [ ] owner text clean but `assets/og-image.png` byte-equal to Ada's → rejects naming `assets/og-image.png` (B7)
-- [ ] owner with no "Ada Example" and its own og-image → deploy sync succeeds, slug returned (B7)
+- [x] owner with "Ada Example" in `data/cv.md` and `site.json` → rejects naming both files; engine `data/` unchanged (B7)
+- [x] same owner with `deploy: false` → syncs normally (B7)
+- [x] owner text clean but `assets/og-image.png` byte-equal to Ada's → rejects naming `assets/og-image.png` (B7)
+- [x] owner with no "Ada Example" and its own og-image → deploy sync succeeds, slug returned (B7)
 Verify: `node --test test/sync-owner.test.mjs` (pre: 6 passed)
 Skills: none
-Status: todo
+Status: done @ fae8fe6
+Writer: GPT-6.1 Sol
 
 ### T4 — README and USERGUIDE walk a fork through setup to deploy
 Delivers: B8 · Blocked by: T1, T2, T3 · Lane: mechanical

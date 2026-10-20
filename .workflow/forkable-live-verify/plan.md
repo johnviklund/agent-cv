@@ -1,12 +1,12 @@
 Command: workflow plan forkable-live-verify
 Created: 2026-10-20
-Base:    be08f5b
+Base:    6614dd1
 Inputs:  .workflow/forkable-live-verify/brainstorm.md @ 90434e2
-Status:  complete
+Status:  drafting
 
 Docs read: none in scope (no PRODUCT.md/DESIGN.md user surface changes; AGENTS.md §Verification, §Data boundaries, §Generated resources)
-Size: code 0 · tests 0 · ratio n/a · largest touched: none (new run-folder files only; reused read-only: scripts/owner.mjs 125, scripts/cv-pdf.mjs 123, site/assets/comparison-contract.js) · over 1,000: none
-Decisions: 1a (approve T1, T2 as listed)
+Size: code 100 · tests 175 · ratio 1.75 · largest touched: test/sync-owner.test.mjs 175, scripts/sync-owner.mjs 100, USERGUIDE.md 203 (T3; T1 run-folder only; reused read-only: scripts/owner.mjs 125, scripts/cv-pdf.mjs 123, site/assets/comparison-contract.js) · over 1,000: none
+Decisions: 1a (approve T1, T2 as listed) · re-plan 2026-10-20 after T2 preflight: pending
 
 ## Execution state
 Session 1: T1 complete; T2 handoff prepared, awaiting exact-scope approval.
@@ -17,6 +17,7 @@ Baseline: npm run check passed outside sandbox; sandbox subprocess EPERM only.
 Final: npm run build passed, including check; 321 tests passed, 2 skipped.
 Current: T2 awaiting-human; receipts/t2-preflight-failure.md records the failed Verify.
 Pending: re-plan guard correction; no deployment, paid request or rollback ran.
+Re-plan (Opus 5.5): T3 added as T2's prerequisite; T2 resets to the full preflight.
 
 ## Findings
 | # | What is true | What it changes |
@@ -30,6 +31,9 @@ Pending: re-plan guard correction; no deployment, paid request or rollback ran.
 | F7 | Reuse: `loadOwner` (scripts/owner.mjs:98) gives `site.origin` + `slug`; `countPdfPages` (scripts/cv-pdf.mjs:121); `normalizeComparisonRequest`/`validateComparisonResult` (comparison-contract.js:369,387). SSE parser: `site/assets/stream.js` exports only text-level helpers, no event types → none reusable | Script imports these; writes only a ~10-line SSE type reader |
 | F8 | Brief D4 says "`scripts/`"; engine `scripts/` is generic tracked engine code, and `check-leaks.mjs` skips `.workflow/` (line 23) | Script lives in the run folder: `.workflow/forkable-live-verify/scripts/live-check.mjs`; no engine file changes |
 | F9 | `node --test` (npm test) skips dot folders (checked) | A `_test.mjs` beside the script stays out of `npm test` and CI |
+| F11 | The deploy guard (scripts/sync-owner.mjs:25-40, from fae8fe6) walks the whole owner root except `.git`; the only hit in `agent-cv-private` is `docs/plans/2026-10-18-1358-feat-forkable-agent-cv-plan.md` | The guard over-reaches: docs never deploy. Its origin plan (forkable-setup F5) aimed it at `owner.json`, `site.json`, `data/`, the social image |
+| F12 | What a deploy reads from the owner root: `owner.json`, `site.json` (owner.mjs:104-105), `data/*` (sync-public-data.mjs:25, build-site.mjs:58, build-cv-pdf.mjs:54), `assets/og-image.png` (build-site.mjs:52), `comparison-evidence.json` (build-comparison-evidence.mjs:83), `repositories.json` (sync-github-repositories.mjs:18). Not read: `docs/`, `README.md`, `AGENTS.md`, `golden/`, `conversation-reviews/` | T3 scans exactly these deploy inputs (the four files plus `data/` and `assets/` recursively); a missing one is skipped. Reuse: none found, the walk is the only copy |
+| F13 | `agent-cv-private` has an uncommitted change to `data/faq.md` (contents not read); deploy builds from the working tree | T2 would ship content the owner has not committed; T2 now requires a clean private tree and records its sha |
 | F10 | `wrangler whoami` is logged in; `/usr/bin/chromium` exists for `build:cv-pdf`; deploy refuses the example owner (scripts/owner.mjs:100) | T2 needs no human credential step |
 
 ## Tickets
@@ -49,13 +53,27 @@ Skills: none
 Status: done @ bb6f3f4
 Writer: GPT-6.1 Sol
 
+### T3 — deploy guard scans only deploy inputs
+Delivers: prefactor for T2 · Blocked by: none · Lane: logic
+Budget: code +12 · tests +18 · why: one parametrized case per input class; prefactor T2 is blocked on
+Seam: `syncOwner({ sourceRoot, destinationRoot, deploy: true })` in test/sync-owner.test.mjs; `npm run sync:owner -- --deploy`
+Accept:
+- [ ] "Ada Example" only in `docs/plans/x.md`, `README.md`, `golden/x.html` → deploy sync resolves, slug `fixture-owner`, six private files copied
+- [ ] one case each: "Ada Example" in `data/notes/deep.md`, `repositories.json`, `comparison-evidence.json` → rejects naming that path; engine `data/` unchanged
+- [ ] existing case kept: `data/cv.md` + `site.json` text → rejects naming both; example `assets/og-image.png` → rejects naming it
+- [ ] `AGENT_CV_OWNER_ROOT=../agent-cv-private npm run sync:owner -- --deploy` → exit 0 (dry, copies only the six ignored files)
+- [ ] USERGUIDE.md step 4 says the refusal covers deploy inputs: `grep -c "owner.json, site.json, data/" USERGUIDE.md` → 1
+Verify: `node --test test/sync-owner.test.mjs && AGENT_CV_OWNER_ROOT=../agent-cv-private npm run sync:owner -- --deploy` (pre: 10 passed; sync exit 1 naming docs/plans/2026-10-18-1358-feat-forkable-agent-cv-plan.md)
+Skills: none
+Status: todo
+
 ### T2 — deploy from the cutover engine and verify live
-Delivers: B1, B2, B3, B4, B5, B6, B7 · Blocked by: T1 · Lane: operator · Runner: agent after approval · Risk: irreversible
+Delivers: B1, B2, B3, B4, B5, B6, B7 · Blocked by: T1, T3 · Lane: operator · Runner: agent after approval · Risk: irreversible
 Budget: code +0 · tests +0
 Seam: `npm run deploy`, `wrangler deployments status`, live-check full mode
-Handoff (one approval covers all): `AGENT_CV_OWNER_ROOT=../agent-cv-private` set; (1) `npx wrangler deployments status --name john-viklund-agent-cv` → record previous version (rollback); (2) dry run `npm run sync:owner -- --deploy && npm run build`; (3) `npm run deploy`; (4) status again; (5) `live-check.mjs --out receipts/live-verification.md` (1 chat + 1 compare). Rollback: `npx wrangler rollback <previous version> --name john-viklund-agent-cv`
+Handoff (one approval covers all): `AGENT_CV_OWNER_ROOT=../agent-cv-private` set; (0) `git -C ../agent-cv-private status --porcelain` empty, record its sha; (1) `npx wrangler deployments status --name john-viklund-agent-cv` → record previous version (rollback); (2) dry run `npm run sync:owner -- --deploy && npm run build`; (3) `npm run deploy`; (4) status again; (5) `live-check.mjs --out receipts/live-verification.md` (1 chat + 1 compare). Rollback: `npx wrangler rollback <previous version> --name john-viklund-agent-cv`
 Accept:
-- [ ] dry run exits 0; deploy exits 0; its Version ID == the version at 100% in step 4, ≠ previous (B1)
+- [ ] private tree clean at deploy, sha recorded; dry run exits 0; deploy exits 0; its Version ID == the version at 100% in step 4, ≠ previous (B1)
 - [ ] 4 rows live sha256 == build/site after deploy; PDF 200 · `application/pdf` · 1–2 pages · sha256 == build/site copy (B2, B3)
 - [ ] health exactly `{"ok":true,"configured":true}`; both admin routes 401 (B4, B7)
 - [ ] ask: 200 `text/event-stream`, types ⊆ {delta, completed}, last `response.completed`, answer text non-empty (B5)
@@ -63,23 +81,25 @@ Accept:
 Verify: receipt: receipts/live-verification.md — deploy exit 0 · version match · 4/4 sha · pdf ok · health ok · ask completed · compare valid · admin 401 ×2 (pre: no receipt)
 Skills: none
 Status: awaiting-human
-Handoff receipt: receipts/t2-deploy-handoff.md; approved 1a, preflight failed. See receipts/t2-preflight-failure.md.
+Handoff receipt: receipts/t2-deploy-handoff.md; approved 1a, preflight failed (receipts/t2-preflight-failure.md). After T3, re-issue the handoff with step (0); the earlier approval does not carry over.
 
 ## Deviations
-- T2: sync:owner --deploy exited 1 because its whole-owner scan rejects fictional example-owner references in historical docs/plans. T2 cannot pass as written without a prerequisite correction. Stop and return to plan; the guard was not bypassed.
+- T2: sync:owner --deploy exited 1 because its whole-owner scan rejects fictional example-owner references in historical docs/plans. T2 cannot pass as written without a prerequisite correction. Stop and return to plan; the guard was not bypassed. Re-plan: T3.
 
 ## Coverage
 - Outcome → T2 (receipts/live-verification.md on the live site)
-- B1 → T2 · B2 → T1, T2 · B3 → T1, T2 · B4 → T1, T2 · B5 → T1, T2 · B6 → T2 · B7 → T1, T2
+- T3 → prefactor for T2 (guard) · B1 → T2 · B2 → T1, T2 · B3 → T1, T2 · B4 → T1, T2 · B5 → T1, T2 · B6 → T2 · B7 → T1, T2
 - Out of scope: fork deploy to a throwaway Worker → untouched · admin export with token → untouched · verify-agent-cv live mode → untouched · TODO forkable-maintenance-tooling C1-2 → untouched · cutover P3s C1-3, C1-4, C2-1 → untouched
 
 ## Risks
 T2 is the risk: a deploy that builds from a wrong owner root or stale `src/data` would replace the live site; dry run + version check + rollback line cover it.
 Outside its files: the chat and compare calls spend 2 of the monthly caps and write two 90-day archive records (tagged `live-verify`).
-Not taken: a verify-agent-cv live-target mode (D4).
+Not taken: a verify-agent-cv live-target mode (D4); a `docs/` denylist in the guard (misses the next non-deployed folder).
+T3 narrows a safety guard: its reject cases for every deploy input stay in the test.
 
 ## TODO impacts
 none
 
 ## Product doc impacts
 - No PRODUCT.md, DESIGN.md or ROADMAP.md changes; `design.md` — no changes.
+- USERGUIDE.md step 4: "refuses files containing `Ada Example`" becomes "refuses deploy inputs (owner.json, site.json, data/, assets/, repositories.json, comparison-evidence.json) containing `Ada Example`" (T3).

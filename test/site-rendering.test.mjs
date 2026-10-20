@@ -42,7 +42,7 @@ test("a fictional home renders Ada from structured data", async () => {
   assert.match(html, /data-prompt="What systems has Ada built\?"><span>Explore projects<\/span>/);
   assert.match(html, /<a href="\/ada-example-cv\.pdf">PDF ↓<\/a>/);
   assert.match(html, /<a href="https:\/\/github\.com\/ada-example" rel="noopener noreferrer" target="_blank"><strong>Example library ↗<\/strong>/);
-  assert.doesNotMatch(html.replaceAll(UPSTREAM_URL, ""), /Grace|Sample|gracesample|Volvo|cloudflareinsights/);
+  assert.doesNotMatch(html.replaceAll(UPSTREAM_URL, ""), /Grace|Sample|gracesample|Example Motors|cloudflareinsights/);
 });
 
 test("invalid site sections name site.json and the field", async (context) => {
@@ -132,7 +132,7 @@ test("every fictional page renders Ada's own identity and copy", async () => {
   const pages = renderSite(await ada());
   assert.match(pages["admin/index.html"], /<html[^>]+data-owner-short-name="Ada"/);
   for (const [path, text] of Object.entries(pages)) {
-    assert.doesNotMatch(text.replaceAll(UPSTREAM_URL, ""), /Grace|Sample|gracesample|Volvo|c7d9e434/, path);
+    assert.doesNotMatch(text.replaceAll(UPSTREAM_URL, ""), /Grace|Sample|gracesample|Example Motors|c7d9e434/, path);
   }
   for (const [path, pattern] of [
     ["about/index.html", /<h1>Close to the systems\.<\/h1>[\s\S]*Her work is <strong>invented<\/strong>/],

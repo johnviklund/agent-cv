@@ -67,16 +67,16 @@ test("selects nested public career evidence without reading private experience d
   const manifest = {
     schemaVersion: 1,
     items: [{
-      id: "experience.volvo-americas-crm-transformation",
+      id: "experience.example-motors-platform-rollout",
       source: {
         path: "data/cv.md",
-        headingPath: ["Experience", "Volvo Cars", "Americas CRM transformation"],
+        headingPath: ["Experience", "Example Motors", "Regional platform rollout"],
       },
     }],
   };
   await writeFile(
     resolve(root, "data/cv.md"),
-    "# CV\n\n## Experience\n\n### Volvo Cars\n\n#### Americas CRM transformation\n\nBridged global and local CRM teams.\n\n#### Other role\n\nUnselected.\n",
+    "# CV\n\n## Experience\n\n### Example Motors\n\n#### Regional platform rollout\n\nCoordinated a fictional platform rollout.\n\n#### Other role\n\nUnselected.\n",
   );
   await writeFile(
     resolve(root, "data/experience.md"),
@@ -85,8 +85,8 @@ test("selects nested public career evidence without reading private experience d
 
   const catalog = await buildComparisonEvidenceCatalog({ root, manifest });
 
-  assert.deepEqual(catalog.items.map(({ id }) => id), ["experience.volvo-americas-crm-transformation"]);
-  assert.equal(catalog.items[0].text, "Bridged global and local CRM teams.");
+  assert.deepEqual(catalog.items.map(({ id }) => id), ["experience.example-motors-platform-rollout"]);
+  assert.equal(catalog.items[0].text, "Coordinated a fictional platform rollout.");
   assert.doesNotMatch(JSON.stringify(catalog), /must not enter public comparison evidence/i);
 });
 

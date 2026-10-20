@@ -31,7 +31,7 @@ test("og card names the owner, their headline and domain, and escapes owner text
   assert.match(html, /<h1>Ada <span>Example\.<\/span><\/h1>/);
   assert.match(html, /<p class="deck">Staff engineer, distributed systems\.<\/p>/);
   assert.match(html, /<span class="url">ada\.example<\/span>/);
-  assert.doesNotMatch(html, /Grace|Sample|Volvo|gracesample/);
+  assert.doesNotMatch(html, /Grace|Sample|Example Motors|gracesample/);
 
   for (const [name, changes, expected] of [
     ["tagline and location", { tagline: "Staff engineer at Example" }, "Staff engineer at Example · Lisbon, Portugal"],

@@ -43,7 +43,7 @@ test("the CV PDF is built from the public CV with contacts and a link back to th
 test("the CV PDF keeps every role bullet, omits projects, and joins capabilities", () => {
   const markdown = [
     "# Name", "", "## Experience", "",
-    "### Axient — Manager", "", "- First", "- Second", "",
+    "### Sample Co — Manager", "", "- First", "- Second", "",
     "## Selected applied-AI projects", "", "### Tool", "", "Does one thing. Then more.", "",
     "## Capabilities", "", "- Alpha", "- Beta", "",
     "---", "", "Data last updated: 1 May 2026. More.",

@@ -1,0 +1,14 @@
+Command: workflow execute forkable-cutover
+Created: 2026-10-20
+Base:    a652048
+Inputs:  .workflow/forkable-cutover/plan.md @ fafec6c
+Status:  complete
+
+Clone: /tmp/agent-cv-cutover-clean-_c4mvvka/engine
+Command: git clone --no-hardlinks /home/john/agent-cv <clone>; exit 0.
+Environment: AGENT_CV_OWNER_ROOT and AGENT_CV_PRIVATE_ROOT removed; no sibling agent-cv-private.
+Commands in clone: npm ci, npm run check; both exit 0.
+Selected owner: examples/owner. Leak scan: 0 findings.
+Tests: 323 total, 320 pass, 3 skipped, 0 fail. Static checks pass for 10 pages.
+Log: /tmp/forkable-cutover-t6-clean-clone.log
+SHA256: 3ee3f4d00ba3b622ba9f2320ca54fdf75e7de68f766d9d6f80ebc1010cfadba2

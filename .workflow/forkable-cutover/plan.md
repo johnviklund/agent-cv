@@ -10,18 +10,19 @@ Decisions: 1b delete artifacts/qa (unused, not kept anywhere) · 2a port John-on
 Split declined by human: 2026-10-20
 
 ## Execution state
-Current: T6 todo; T1–T5 complete. Engine checkpoint push deferred to the approved T7 operator gate.
+Current: T7 todo; T1–T6 complete. Engine checkpoint push deferred to the approved T7 operator gate.
 T1 @ 70887fd (engine receipt; private commit 4ec3ba4, pushed).
 T2 @ 129f4c7
 T3 @ cbce676
 T4 @ d859042
 T5 @ 636f2d9
+T6 @ a652048
 writer: GPT-6.1 Sol · high; live catalog confirms the primary is available.
 Session 1: T1 (operator handoff prepared; no private writes).
 Session 2: T1 (1a/2a approved; private write blocked by two permission-review timeouts).
 Session 3: T1 (elevated read probe and private copies succeeded; staging timed out twice; no private commit/push).
 Session 4: T1, T2, T3 (private commit/push complete; engine cutover and fixture rewrite verified).
-Session 5: T4, T5 (fixtures and docs verified; Ada chat recipe exercised).
+Session 5: T4, T5, T6 (both owners and clean clone pass).
 Baseline: npm run check passes outside sandbox, 322 pass / 3 skipped; sandbox child processes hit EPERM.
 Golden baseline: exit 0, 19 accepted file differences; owner approved correction with 2a on 2026-10-20.
 Uncommitted implementation: none; T1 private commit 4ec3ba4; receipts/t1-private-repo.txt.
@@ -119,14 +120,15 @@ Delivers: B2, B3, B8 · Blocked by: T2, T3, T4, T5 · Lane: logic
 Budget: code +40 · tests +45 · why: one fixture repo per allowlist rule
 Seam: `scanForLeaks`/`scanTrackedFiles` and the `scripts/check-leaks.mjs` CLI with no args
 Accept:
-- [ ] this tree, no args, sibling owner → `Leak scan: 0 findings` for tracked files; output scan skipped (B2)
-- [ ] temp git repo with a tracked `notes.txt` containing "Jo"+"hn" → exit 1, stderr names `notes.txt` (B3)
-- [ ] same repo: LICENSE copyright line, README credit line, `johnviklund/agent-cv`, `.workflow/x.md`, `WORKLOG.md`, a NUL-byte file → 0 findings (B2)
-- [ ] outside a git checkout → exit 1 with "not a git checkout" (B2)
-- [ ] `git clone` of HEAD to a temp dir, `npm ci`, `npm run check` → exit 0, `Leak scan: 0 findings` (B8)
+- [x] this tree, no args, sibling owner → `Leak scan: 0 findings` for tracked files; output scan skipped (B2)
+- [x] temp git repo with a tracked `notes.txt` containing "Jo"+"hn" → exit 1, stderr names `notes.txt` (B3)
+- [x] same repo: LICENSE copyright line, README credit line, `johnviklund/agent-cv`, `.workflow/x.md`, `WORKLOG.md`, a NUL-byte file → 0 findings (B2)
+- [x] outside a git checkout → exit 1 with "not a git checkout" (B2)
+- [x] `git clone` of HEAD to a temp dir, `npm ci`, `npm run check` → exit 0, `Leak scan: 0 findings` (B8)
 Verify: `node --test test/check-leaks.test.mjs && node scripts/check-leaks.mjs`; receipt: receipts/t6-clean-clone.txt — check exit 0 (pre: 2 pass · CLI skipped)
 Skills: none
-Status: todo
+Status: done @ a652048
+Writer: GPT-6.1 Sol
 
 ### T7 — push the engine and read CI on the example owner
 Delivers: B4, B8 · Blocked by: T6 · Lane: operator · Runner: agent after approval · Risk: cheap
@@ -147,6 +149,7 @@ Status: todo
 T2 is riskiest: a missed engine-root read fails only on a clean clone (T6), so T2 runs both owners. README rewrite reaches John's evidence on his next sync (F13). Not taken: a `test/` allowlist (D3).
 
 ## Deviations
+T6 scans tracked symlinks as their stored target text, because the engine tracks a skill directory symlink. Receipt: receipts/t6-verification.md.
 T4 retires the personal career-subrole and repository-list snapshots under decision 2a, ports project layout and privacy tests to Ada, and drops three privacy phrases absent from Ada. Assertion changes and counts: receipts/t4-verification.md.
 T2 baseline discrepancy: owner approved 2a on 2026-10-20, correcting eight to 19 existing accepted file differences. Exception set unchanged; sha256 8fb34630ba97f44e0ae48f9a8f084efaec54ddce42ba60c894b58a2cd98660bd.
 T2 also fixes owner-manifests.test.mjs's engine-data copy found by npm run check. Existing assertion changes and counts are recorded in receipts/t2-verification.md; retired document assertions follow F4, while CV assertions use the selected owner and repository prose permits Ada's placeholder source.

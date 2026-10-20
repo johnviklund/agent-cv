@@ -10,7 +10,7 @@ Decisions: 1b delete artifacts/qa (unused, not kept anywhere) · 2a port John-on
 Split declined by human: 2026-10-20
 
 ## Execution state
-Current: T7 todo; T1–T6 complete. Engine checkpoint push deferred to the approved T7 operator gate.
+Current: T7 awaiting-human; T1–T6 complete. Exact push scope: receipts/t7-ci-handoff.md. Engine checkpoint push deferred to the approved T7 operator gate.
 T1 @ 70887fd (engine receipt; private commit 4ec3ba4, pushed).
 T2 @ 129f4c7
 T3 @ cbce676
@@ -138,7 +138,8 @@ Accept:
 - [ ] CI run for the pushed sha → conclusion `success`, log shows `Leak scan: 0 findings` (B4, B8)
 Verify: receipt: receipts/t7-ci.txt — sha · run id · success (pre: no receipt)
 Skills: none
-Status: todo
+Status: awaiting-human
+Writer: GPT-6.1 Sol
 
 ## Coverage
 - Outcome → T6 (clean clone check) · T2 (golden diff) · T7 (CI)

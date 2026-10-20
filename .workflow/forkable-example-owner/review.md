@@ -1,6 +1,6 @@
 Command: workflow review forkable-example-owner
 Created: 2026-10-20
-Base:    5bfcf15
+Base:    83bd48d
 Inputs:  .workflow/forkable-example-owner/plan.md @ e1a571b
 Status:  complete
 
@@ -21,12 +21,9 @@ Escape hatches: none added
 |---|---|---|---|---|
 | C1-2 | P1 | leak scan's default folder list survives mutation | fix now | @ b16b8bd (cycle 2) |
 | C1-3 | P3 | `yaml` devDependency for one test | defer (stays here) | settled cycle 2 |
-
-## Cycle 1 findings
-### P1 — engine `data/` writer and reader left behind after sources moved to the owner root
-- Evidence: T1 moved `sync:data` to read `<ownerRoot>/data/` (`scripts/sync-public-data.mjs:25`), but `scripts/sync-github-repositories.mjs:32` still writes engine `data/repositories.md`, and `package.json` `sync:repositories` then runs `sync:data`, which publishes the owner's old copy. Probe: fresh fetch written to engine `data/repositories.md` → after `syncPublicData`, `public/repositories.md` contains it: false. Same class: `scripts/build-cv-pdf.mjs:54` reads engine `data/cv.md` for the deploy PDF while the site reads the owner's, so the two drift after the next edit. Docs still send edits to engine `data/`: `AGENTS.md:38`, `README.md:84`, `.agents/skills/refresh-agent-cv-projects/SKILL.md:18,39`. Concrete failing input: `npm run sync:repositories` after an allowlist change ships nothing.
-- Disposition: fix now — reopened cycle 2 at P1; human chose a) cycle 3
-- Resolved: — (cycle 2: fixed at 882b97c for the repository writer, the PDF reader and the three named docs; the same class still has open sites, see C2-1)
+| C1-1 / C2-1 | P1 | engine `data/` writers and readers left behind after the move | fix now | @ 882b97c (cycle 2), @ dc7a942 (cycle 3) |
+| C2-2 | P3 | default-folders test depends on the working directory | defer (stays here) | settled cycle 3 |
+| C2-3 | P3 | the PDF's source path has no runnable test without Chromium | defer (stays here) | settled cycle 3 |
 
 ## Pre-existing / environmental
 - 12 tests skip without Chromium (same count in the T4 receipt's clean clone).
@@ -45,24 +42,25 @@ Size (plan Base e1a571b..HEAD): +112 code · +160 tests · ratio 1.43 · net +22
 Reachability: `LEAK_SCAN_DIRS` → check-leaks `main()` (`npm run check`) · guards shown failing: C1-T1 writer, C1-T2 defaults
 Independence: cross-vendor (writer GPT-6.1 Sol / OpenAI · reviewer Opus 5.5 / Anthropic)
 
-## Cycle 2 findings
-### P1 — C2-1 (reopens C1-1): two more tools still read the engine's `data/` copies
-- Evidence: same class as C1-1. (1) `npm run build:evidence` → `writeComparisonEvidence()` with no args reads the owner's manifest but the engine's sources (`scripts/build-comparison-evidence.mjs:84,297`). Probe in a clean worktree: `AGENT_CV_OWNER_ROOT=examples/owner node scripts/build-comparison-evidence.mjs` → exit 1, "overview.focus: missing heading Focus in data/overview.md". On John's root it reads stale engine copies without error. (2) `npm run projects:review` reads `canonicalFiles` from the engine root (`scripts/review-project-sources.mjs:57`), while the refresh skill now says edits go to `<owner root>/data/`; after the next owner edit the review packet shows the old text. (3) Doc: `.agents/skills/review-agent-cv-conversations/SKILL.md:15` still says "currently engine `data/`" (writer noted it, deferred).
-- Breaks no B# and not the Outcome: `sync:data` and `npm run check` pass `sourceRoot` correctly (`scripts/sync-public-data.mjs:42`).
-- Remedy: default `sourceRoot` to the owner root in `writeComparisonEvidence`; read canonical files from `ownerRoot` in `runProjectReview`; fix the skill line and restore its `maintenance-docs` assertion.
-- Disposition: fix now — patch_plan.md C2-T1
-- Resolved: —
-
-### P3 — default-folders test depends on the working directory
-- Evidence: `test/check-leaks.test.mjs:11` resolves the expected folders from `process.cwd()`, not the engine root; run from another folder it goes red with nothing wrong. Harmless under `npm test`.
-- Disposition: defer (stays here)
-- Resolved: —
-
-### P3 — the PDF's source path has no runnable test here
-- Evidence: reverting `scripts/build-cv-pdf.mjs:54` to engine `data/` leaves the suite green, because `test/cv-pdf.test.mjs` skips without Chromium. The plan accepted a grep for this line; noted only.
-- Disposition: defer (stays here)
-- Resolved: —
-
 ## Cycle 2 verdict
 C1-2 resolved. C1-1 fixed at its named sites but reopened as C2-1: `build:evidence` and `projects:review` still read engine `data/`. Open: 1 P1 (C1-1/C2-1), past the two-cycle bound → human decision. P3: 2 new, deferred. P0/P2: 0. Recommend b) defer to TODO.md: it breaks no B# and not the Outcome, and U8 deletes engine `data/`, which ends this class of bug.
 Cycle 3 approved by human: 2026-10-20 (chat: "run a third fix round please"). Patch cycle 2 in patch_plan.md (C2-T1).
+
+## Cycle 3 coverage
+- [x] C2-T1 — acceptance 5/5: evidence default and packet tests pass; clean worktree `AGENT_CV_OWNER_ROOT=examples/owner node scripts/build-comparison-evidence.mjs` exit 0; both skills asserted; red 3399f99, `git diff 3399f99 dc7a942 -- test` empty
+- [x] Mutations at 83bd48d: evidence default → engine root 28 pass / 1 fail · packet read → engine root 27 / 2 · skill line reverted 28 / 1 · `isWithin` guard removed 29 / 0 (C3-1)
+- [x] Class sweep (readers/writers of the four public sources under the engine root): 0 open. Remaining engine `data/` writes are `bootstrap:data` (out of scope) and `sync:owner`'s private imports (intended)
+- [x] Clean worktree at 83bd48d: `AGENT_CV_OWNER_ROOT=examples/owner npm run check` exit 0, Leak scan 0 findings, 294 pass / 12 skip / 0 fail; CI success on 62a53d1 and 83bd48d
+- [x] Escape hatches in fix diff: 0 · `.workflow/` references outside: 0
+Size (plan Base e1a571b..HEAD): +116 code · +186 tests · ratio 1.60 · net +248 · over 1,000: none
+Reachability: none new · guards shown failing: C2-T1 evidence default, packet read
+Independence: cross-vendor (writer GPT-6.1 Sol / OpenAI · reviewer Opus 5.5 / Anthropic)
+
+## Cycle 3 findings
+### P3 — C3-1: the packet's owner-root containment guard cannot fire
+- Evidence: `scripts/review-project-sources.mjs:58`. The manifest validator only accepts the four fixed `data/*.md` names (`scripts/project-review.mjs:133`), so an escaping path is rejected before the guard runs; deleting the guard leaves every test green. The guard predates this run; the new test's `/canonical file path/` matches the validator's message. Harmless defence in depth.
+- Disposition: defer (stays here)
+- Resolved: —
+
+## Cycle 3 verdict
+C1-1/C2-1 resolved @ dc7a942: `build:evidence` and `projects:review` now read the owner's `data/`, and no other tool reads the engine copies of the four public sources. Open fix-now: 0. P0/P1/P2: 0 · P3: 1 new, deferred. Ship as-is → wrap. No verify skill exists; recommend `verify.create` after this run.

@@ -9,7 +9,7 @@ Size: code 1,329 · tests 743 · ratio 0.56 · largest touched pages.mjs 453, bu
 Decisions: 1a drop CI git-diff step, accept dirty public/ locally until U8 · 2a admin and 404 get a credit-only footer · 3a leak scan runs only for examples/owner, else prints skipped · 4a tickets approved
 
 ## Execution state
-T1–T4 and all patch tickets done. Next: review cycle 3.
+T1–T4 and all patch tickets done. Review cycle 3 clean. Next: wrap.
 Pending: none. C2-T1 checkpoint 62a53d1 pushed; CI success, receipt c2-t1-verification.md.
 T1 @ 023e92f · private source copy @ 5699413
 T2 @ 95eae04 · private golden exceptions @ ae5d654

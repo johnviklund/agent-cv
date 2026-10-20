@@ -1,0 +1,12 @@
+T2 verification, 2026-10-20
+Focused: node --test test/setup.test.mjs test/setup-admin.test.mjs test/wrangler-config.test.mjs
+Exit: 0; 38 tests passed. Existing setup-admin assertions unchanged.
+Red: cloud success and four cloud failure cases fail before implementation, exit 1.
+Mutation: leave archiveNamespaceId as zeroes instead of the returned id; setup tests exit 1.
+Main npm run check: exit 0; 317 pass, 3 skipped.
+Example-owner npm run check in /tmp/agent-cv-forkable-setup-check: exit 0; 308 pass, 12 skipped.
+npm run build: exit 0, Wrangler dry-run and package checks passed; nothing deployed.
+Reuse: writeLocalAdminToken and writeWranglerConfig reused; configureAdminSecret extracted.
+New runCommand has two callers: setup and configureAdminSecret.
+Cloud boundary: injected runner only; no real namespace or secrets created.
+Logs: /tmp/forkable-setup-t2-{red,green,mutation,check,example-check,build}.log

@@ -41,9 +41,9 @@ function format(value, indent = "") {
 
 // Writes the selected owner's root wrangler.jsonc and returns its text. The rename keeps a parallel
 // reader from seeing a half-written file.
-export async function writeWranglerConfig({ engineRoot = defaultEngineRoot, deploy = false } = {}) {
+export async function writeWranglerConfig({ engineRoot = defaultEngineRoot, deploy = false, env = process.env } = {}) {
   const [{ owner }, base] = await Promise.all([
-    loadOwner({ deploy, engineRoot }),
+    loadOwner({ deploy, engineRoot, env }),
     readFile(resolve(engineRoot, "wrangler.base.jsonc"), "utf8").then(JSON.parse),
   ]);
   const text = buildWranglerConfig(owner, base);

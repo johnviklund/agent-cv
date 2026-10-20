@@ -79,3 +79,61 @@ test("setup defaults to the sibling agent-cv-private directory", async (t) => {
   await runSetup({ args: flags, engineRoot: engine, run: f.run });
   assert.equal(JSON.parse(await readFile(resolve(f.directory, "agent-cv-private/owner.json"))).slug, "grace-hopper");
 });
+
+const namespaceId = "0123456789abcdef0123456789abcdef";
+async function cloudFixture(t, failAt) {
+  const f = await fixture(t);
+  f.engine = resolve(f.directory, "engine");
+  for (const path of ["examples/owner", "schemas", "wrangler.base.jsonc"]) {
+    await cp(resolve(engineRoot, path), resolve(f.engine, path), { recursive: true });
+  }
+  f.run = async (command, args, options) => {
+    f.calls.push([command, args, options]);
+    if (command === "git") return { stdout: "" };
+    const step = args[1] === "kv" ? "kv" : args.at(-1);
+    if (step === failAt) throw new Error("cloud failure");
+    const config = JSON.parse(await readFile(resolve(f.engine, "wrangler.jsonc")));
+    assert.equal(config.name, "grace-hopper-agent-cv");
+    return { stdout: failAt === "missing-id" ? "Created" : `Created.\n{ "id": "${namespaceId}" }` };
+  };
+  f.invoke = () => runSetup({ args: [...flags.filter((value) => value !== "--skip-cloud"), "--target", f.target],
+    engineRoot: f.engine, env: { OPENAI_API_KEY: "sk-setup-test-private" }, run: f.run, isTTY: false });
+  return f;
+}
+
+test("setup creates the owner archive and pipes both secrets to the selected Worker", async (t) => {
+  const f = await cloudFixture(t);
+  await f.invoke();
+  const cloud = f.calls.filter(([command]) => command !== "git");
+  assert.deepEqual(cloud.map(([, args]) => args), [
+    ["wrangler", "kv", "namespace", "create", "grace-hopper-agent-cv-archive"],
+    ["wrangler", "secret", "put", "OPENAI_API_KEY"],
+    ["wrangler", "secret", "put", "ADMIN_API_TOKEN"],
+  ]);
+  const owner = (await loadOwner({ root: f.target })).owner;
+  assert.equal(owner.deploy.archiveNamespaceId, namespaceId);
+  assert.equal(cloud[1][2].input, "sk-setup-test-private\n");
+  assert.match(cloud[2][2].input, /^[a-f0-9]{64}\n$/);
+  assert.equal(await readFile(resolve(f.engine, ".dev.vars"), "utf8"), `ADMIN_API_TOKEN=${cloud[2][2].input}`);
+  assert.ok(f.calls.every(([, args, options]) => !JSON.stringify([args, options.env]).includes("sk-setup-test-private")));
+  for (const path of await readdir(f.target, { recursive: true, withFileTypes: true })) {
+    if (path.isFile()) assert.ok(!(await readFile(resolve(path.parentPath, path.name), "utf8")).includes("sk-setup-test-private"));
+  }
+  assert.ok(!(await readFile(resolve(f.engine, ".dev.vars"), "utf8")).includes("sk-setup-test-private"));
+});
+
+test("setup preserves completed values and names the retry command for each cloud failure", async (t) => {
+  for (const step of ["kv", "OPENAI_API_KEY", "ADMIN_API_TOKEN", "missing-id"]) await t.test(step, async (t) => {
+    const f = await cloudFixture(t, step);
+    await assert.rejects(f.invoke(), (error) => {
+      assert.match(error.message, step === "kv" || step === "missing-id" ? /kv.*namespace.*create/ : new RegExp(step));
+      assert.match(error.message, /Retry:/);
+      assert.match(error.message, step === "ADMIN_API_TOKEN" ? /npm run setup:admin/ : /npx wrangler/);
+      assert.ok(error.message.includes(f.target));
+      return true;
+    });
+    const owner = (await loadOwner({ root: f.target })).owner;
+    assert.equal(owner.deploy.archiveNamespaceId, ["kv", "missing-id"].includes(step) ? "0".repeat(32) : namespaceId);
+    assert.equal(f.calls.length, { kv: 2, "missing-id": 2, OPENAI_API_KEY: 3, ADMIN_API_TOKEN: 4 }[step]);
+  });
+});

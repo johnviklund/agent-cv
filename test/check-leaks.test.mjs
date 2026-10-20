@@ -4,8 +4,12 @@ import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { spawnSync } from "node:child_process";
-import { scanForLeaks } from "../scripts/check-leaks.mjs";
+import { scanForLeaks, LEAK_SCAN_DIRS } from "../scripts/check-leaks.mjs";
 import { UPSTREAM_URL } from "../site/templates/html.mjs";
+
+test("leak scan defaults cover every engine output folder", () => {
+  assert.deepEqual(LEAK_SCAN_DIRS, ["build/site", "public", "src/data"].map((dir) => resolve(dir)));
+});
 
 test("leak scan allows the upstream URL and rejects owner names in every output folder", async (context) => {
   const root = await mkdtemp(resolve(tmpdir(), "agent-cv-leaks-"));

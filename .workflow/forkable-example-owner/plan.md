@@ -9,19 +9,20 @@ Size: code 1,329 · tests 743 · ratio 0.56 · largest touched pages.mjs 453, bu
 Decisions: 1a drop CI git-diff step, accept dirty public/ locally until U8 · 2a admin and 404 get a credit-only footer · 3a leak scan runs only for examples/owner, else prints skipped · 4a tickets approved
 
 ## Execution state
-T1–T4 done; patch C1-T1 done. Next: C1-T2 at high effort, then review.
-Pending: none. C1-T1 checkpoint 418ac00 pushed; CI success, receipt c1-t1-verification.md.
+T1–T4 and both cycle 1 patch tickets done. Next: review.
+Pending: C1-T2 checkpoint push and CI before handoff; see receipts/c1-t2-verification.md.
 T1 @ 023e92f · private source copy @ 5699413
 T2 @ 95eae04 · private golden exceptions @ ae5d654
 T3 @ 28d4fc6
 T3 @ 150b701 · CI privacy-fixture correction
 T4 @ 83fbf99
-writer: GPT-6.1 Sol · T1 xhigh; T2–T4 high
+writer: GPT-6.1 Sol · T1 xhigh; T2–T4 and C1-T2 high
 Session 1: T1
 Session 2: T2, T3, T4 handoff
 Session 3: T4
 Session 4: C1-T1
-Verification receipts: t1-verification.md, t2-verification.md, t3-verification.md, t4-push-ci.md, c1-t1-verification.md. Private repo untouched in Session 4.
+Session 5: C1-T2
+Verification receipts: t1-verification.md, t2-verification.md, t3-verification.md, t4-push-ci.md, c1-t1-verification.md, c1-t2-verification.md. Private repo untouched in Sessions 4–5.
 
 ## Findings
 | # | What is true | What it changes |
@@ -102,7 +103,6 @@ Writer: GPT-6.1 Sol
 
 ## Risks
 - T1 is the riskiest: it moves where every build reads its sources. If John's private repo lacks the four files, his local `check` breaks; T1 copies them first.
-- `build-cv-pdf.mjs:54` still reads engine `data/cv.md` for deploy. It matches John's copy until U8 (noted, not changed).
 - Not chosen: building Ada in a temp dir inside every `check`. Slower, and it duplicates `golden.mjs`'s temp build.
 
 ## TODO impacts

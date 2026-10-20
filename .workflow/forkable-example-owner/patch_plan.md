@@ -5,11 +5,12 @@ Inputs:  .workflow/forkable-example-owner/review.md @ 8971fcf
 Status:  complete
 
 ## Execution state
-C1-T1 done; C1-T2 ready at high effort.
+C1-T1 and C1-T2 done; next cross-vendor review.
 C1-T1 @ 882b97c · red checkpoints b518c28, 2f96f27
-writer: GPT-6.1 Sol
-Baseline: npm run check passed, 300 pass / 3 skip; sandbox-only EPERM failures avoided with permitted child processes.
-Verification: receipts/c1-t1-verification.md.
+C1-T2 @ b16b8bd · red checkpoint 7f7d85d
+writer: GPT-6.1 Sol · C1-T2 high
+Baseline C1-T2: npm run check passed, 301 pass / 3 skip; no pre-existing failures with permitted child processes.
+Verification: receipts/c1-t1-verification.md, receipts/c1-t2-verification.md.
 Uncommitted files: none. Pending decision: none.
 
 ## Tickets
@@ -33,11 +34,12 @@ Delivers: C1-2 · Blocked by: none · Lane: logic
 Budget: code +2 · tests +4
 Seam: an exported `LEAK_SCAN_DIRS` in `scripts/check-leaks.mjs`, used by `main()`
 Accept:
-- [ ] `test/check-leaks.test.mjs` asserts the default list is exactly `build/site`, `public`, `src/data` resolved from the engine root; emptying it turns the test red (C1-2)
-- [ ] Red commit first: the assertion fails on 8971fcf (export missing); the fix commit leaves test files untouched
+- [x] `test/check-leaks.test.mjs` asserts the default list is exactly `build/site`, `public`, `src/data` resolved from the engine root; emptying it turns the test red (C1-2)
+- [x] Red commit first: the assertion fails on 8971fcf (export missing); the fix commit leaves test files untouched
 Verify: `node --test test/check-leaks.test.mjs` (pre: red)
 Skills: none
-Status: todo
+Status: done @ b16b8bd
+Writer: GPT-6.1 Sol
 
 ## Deviations
 - C1-T1: an existing maintenance-docs test required the obsolete engine path. Corrected it in a second red checkpoint before the fix commit. Source assertions 4 to 5; expanded assertions 13 to 12 because the unrelated conversation skill's obsolete-path assertion was removed. Owner-manifests assertions 14 to 16; its two existing output assertions now read the owner path. No tests changed in 882b97c.

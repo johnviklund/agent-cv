@@ -1,0 +1,12 @@
+T3 verification, 2026-10-20
+Focused: node --test test/sync-owner.test.mjs
+Exit: 0; 10 passed. Text and image cases both fail before implementation.
+Mutations: disable text matching, then image equality independently; each makes setup sync tests exit 1.
+Main npm run build: exit 0; includes npm run check, Wrangler dry-run and package validation.
+Example-owner npm run check in clean worktree: exit 0; 312 pass, 12 skipped.
+Real selected owner syncOwner({deploy:true}) into a temporary destination: passes, six private files; temporary copy removed.
+Latest real npm run setup -- ... --skip-cloud: exit 0, git rev-parse confirms the owner is a repository.
+Existing assertions: unchanged; makeWorkspace now gives the deploy fixture Grace's name, clean site text and its own image.
+Reuse: syncOwner/loadOwner remain the deploy boundary; no new abstraction.
+No deploy or live cloud writes performed.
+Logs: /tmp/forkable-setup-t3-{red,green,mutation-text,mutation-image,build,example-check}.log

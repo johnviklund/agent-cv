@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -21,6 +21,26 @@ export async function syncOwner({ sourceRoot, destinationRoot = root, deploy = f
     env: sourceRoot ? { AGENT_CV_OWNER_ROOT: sourceRoot } : env,
     deploy,
   });
+  if (deploy) {
+    const exampleImage = await readFile(resolve(root, "examples/owner/assets/og-image.png"));
+    const directories = [""];
+    const remaining = [];
+    while (directories.length) {
+      const directory = directories.pop();
+      for (const entry of await readdir(resolve(ownerRoot, directory), { withFileTypes: true })) {
+        if (entry.name === ".git") continue;
+        const path = directory ? `${directory}/${entry.name}` : entry.name;
+        if (entry.isDirectory()) directories.push(path);
+        else if (entry.isFile()) {
+          const content = await readFile(resolve(ownerRoot, path));
+          if (content.includes("Ada Example") || (path === "assets/og-image.png" && content.equals(exampleImage))) {
+            remaining.push(path);
+          }
+        }
+      }
+    }
+    if (remaining.length) throw new Error(`Refusing to deploy example content in: ${remaining.sort().join(", ")}. Replace Ada Example's text and regenerate the social image.`);
+  }
   const sourceData = resolve(ownerRoot, "data");
   const destinationData = resolve(destinationRoot, "data");
   let contents;

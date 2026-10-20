@@ -22,8 +22,10 @@ async function makeWorkspace(context) {
     mkdir(resolve(sourceRoot, "data"), { recursive: true }),
     mkdir(resolve(destinationRoot, "data"), { recursive: true }),
   ]);
-  await writeFile(resolve(sourceRoot, "owner.json"), JSON.stringify({ ...exampleOwner, slug: "fixture-owner" }));
-  await writeFile(resolve(sourceRoot, "site.json"), exampleSite);
+  await writeFile(resolve(sourceRoot, "owner.json"), JSON.stringify({ ...exampleOwner, slug: "fixture-owner", name: { full: "Grace Hopper", short: "Grace" } }));
+  await writeFile(resolve(sourceRoot, "site.json"), exampleSite.replaceAll("Ada Example", "Grace Hopper"));
+  await mkdir(resolve(sourceRoot, "assets"));
+  await writeFile(resolve(sourceRoot, "assets/og-image.png"), "fixture owner image");
 
   return { sourceRoot, destinationRoot };
 }
@@ -138,4 +140,36 @@ test("the generated owner module carries the owner without deploy settings or an
   const { deploy, analytics, ...expected } = exampleOwner;
   assert.deepEqual(owner, expected);
   assert.equal(owner.name.full, "Ada Example");
+});
+
+test("deploy sync rejects remaining example content before copying and allows an owner's own content", async (t) => {
+  for (const content of ["text", "image", "clean"]) await t.test(content, async (t) => {
+    const { sourceRoot, destinationRoot } = await makeWorkspace(t);
+    for (const file of privateDataFiles) {
+      await writeFile(resolve(sourceRoot, "data", file), `new ${file}\n`);
+      await writeFile(resolve(destinationRoot, "data", file), `existing ${file}\n`);
+    }
+    if (content === "text") {
+      await writeFile(resolve(sourceRoot, "data/cv.md"), "Ada Example's CV");
+      await writeFile(resolve(sourceRoot, "site.json"), exampleSite);
+    }
+    if (content === "image") await writeFile(resolve(sourceRoot, "assets/og-image.png"),
+      await readFile(resolve(engineRoot, "examples/owner/assets/og-image.png")));
+    const options = { sourceRoot, destinationRoot, deploy: true };
+    if (content !== "clean") {
+      await assert.rejects(syncOwner(options), (error) => {
+        if (content === "text") {
+          assert.match(error.message, /data\/cv\.md/);
+          assert.match(error.message, /site\.json/);
+        } else assert.match(error.message, /assets\/og-image\.png/);
+        return true;
+      });
+      for (const file of privateDataFiles) {
+        assert.equal(await readFile(resolve(destinationRoot, "data", file), "utf8"), `existing ${file}\n`);
+      }
+    }
+    const result = await syncOwner({ ...options, deploy: content === "clean" });
+    assert.equal(result.owner.slug, "fixture-owner");
+    assert.equal(await readFile(resolve(destinationRoot, "data", privateDataFiles[0]), "utf8"), `new ${privateDataFiles[0]}\n`);
+  });
 });

@@ -2,11 +2,11 @@ Command: workflow plan forkable-live-verify
 Created: 2026-10-20
 Base:    be08f5b
 Inputs:  .workflow/forkable-live-verify/brainstorm.md @ 90434e2
-Status:  drafting
+Status:  complete
 
 Docs read: none in scope (no PRODUCT.md/DESIGN.md user surface changes; AGENTS.md §Verification, §Data boundaries, §Generated resources)
 Size: code 0 · tests 0 · ratio n/a · largest touched: none (new run-folder files only; reused read-only: scripts/owner.mjs 125, scripts/cv-pdf.mjs 123, site/assets/comparison-contract.js) · over 1,000: none
-Decisions: pending
+Decisions: 1a (approve T1, T2 as listed)
 
 ## Execution state
 <filled by execute>

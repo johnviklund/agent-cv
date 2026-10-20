@@ -10,7 +10,13 @@ Decisions: 1b delete artifacts/qa (unused, not kept anywhere) · 2a port John-on
 Split declined by human: 2026-10-20
 
 ## Execution state
-<filled by execute>
+Current: T1 awaiting-human; approve receipts/t1-private-handoff.md, then resume execute.
+writer: GPT-6.1 Sol · high; live catalog confirms the primary is available.
+Session 1: T1 (operator handoff prepared; no private writes).
+Baseline: npm run check passes outside sandbox, 322 pass / 3 skipped; sandbox child processes hit EPERM.
+Golden baseline: exit 0, 19 accepted file differences; T2's eight needs correction approval.
+Uncommitted implementation: none; proposed AGENTS.md is /tmp/forkable-cutover-t1-AGENTS.md.
+Private baseline: ae5d654; only data/faq.md modified; retain its bytes and exclude it from staging.
 ## Findings
 | # | What is true | What it changes |
 |---|---|---|
@@ -25,7 +31,7 @@ Split declined by human: 2026-10-20
 | F9 | `artifacts/qa/` tracks a QA report and 10 screenshots of John's site; a text scan cannot see pixels | Decision 1b: T2 deletes it; T1 does not move it |
 | F10 | verify-agent-cv has landed (tree clean); SKILL.md:21 and features/ask-chat.md:15 ask "What does John do?" | Brief's `.gitignore` out-of-scope item is moot; T2 edits `.gitignore`, T5 the skill |
 | F11 | `public/` (5 files) is sync output yet tracked; `src/data/` is already ignored, so tests already need `sync:data` first | T2 ignores `/public/` and `/data/`; B4's `npm test` runs after a sync, as `npm run check` does |
-| F12 | agent-cv-private `data/{cv,overview,projects,repositories}.md` are byte-identical to engine `data/`; sibling `golden:diff` passes today with 8 accepted exceptions. It also has an uncommitted `data/faq.md` change; its AGENTS.md calls the public repo canonical | B5 is checkable before and after T2; T1 commits named paths only, never `faq.md`, and rewrites its AGENTS.md |
+| F12 | agent-cv-private `data/{cv,overview,projects,repositories}.md` are byte-identical to engine `data/`; execute baseline `golden:diff` passes with 19 accepted file differences, not the planned eight. It also has an uncommitted `data/faq.md` change; its AGENTS.md calls the public repo canonical | B5 is checkable before and after T2; T1 commits named paths only, never `faq.md`, and rewrites its AGENTS.md |
 | F13 | John's `repositories.md`:74 quotes the engine README as evidence | README rewrite reaches John's evidence at his next `sync:repositories`, not in this run; golden unaffected |
 | F14 | Reuse: `scanForLeaks` and `listFiles` (check-leaks.mjs:11, build-site.mjs) · `resolveOwnerRoot` (owner.mjs:18) · `ADA`/`ELISE` (test/fixtures/owners.mjs:27,30) · no git helper in `scripts/` (only `execFileSync` for Chromium) | T6 extends `scanForLeaks`, calls `git ls-files -z` via `execFileSync`; T3 replaces `JOHN` with a fictional `GRACE` beside `ADA` |
 
@@ -41,7 +47,8 @@ Accept:
 - [ ] `data/faq.md` still uncommitted; `git status -sb` shows `main...origin/main` with no ahead count (B6)
 Verify: receipt: receipts/t1-private-repo.txt — commit sha · 3 docs + AGENTS.md · faq.md ` M` · ahead 0 (pre: no receipt)
 Skills: none
-Status: todo
+Status: awaiting-human
+Writer: GPT-6.1 Sol
 
 ### T2 — the engine tree drops John's sources, outputs and bootstrap
 Delivers: B1, B5 · Blocked by: T1 · Lane: logic
@@ -125,6 +132,9 @@ Status: todo
 
 ## Risks
 T2 is riskiest: a missed engine-root read fails only on a clean clone (T6), so T2 runs both owners. README rewrite reaches John's evidence on his next sync (F13). Not taken: a `test/` allowlist (D3).
+
+## Deviations
+T2 baseline discrepancy: golden:diff exits 0 with 19 accepted file differences and none unlisted. Approval pending to correct its acceptance count from eight to 19 without changing the exception set.
 
 ## TODO impacts
 none

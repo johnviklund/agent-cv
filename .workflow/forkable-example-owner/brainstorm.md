@@ -2,7 +2,7 @@ Command: workflow brainstorm forkable-example-owner
 Created: 2026-10-19
 Base:    7c1c018
 Inputs:  none
-Status:  complete
+Status:  done
 
 ## Problem
 Ada Example (`examples/owner/`) has no `data/` folder, and the engine reads the four public sources from John's `data/`. A fork cannot build Ada, cannot prove her output has no trace of John, and the footer credit "Built with Agent CV" does not exist yet. This is run 1 of plan unit U7; `npm run setup` and the README are run 2.

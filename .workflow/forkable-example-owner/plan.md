@@ -2,28 +2,13 @@ Command: workflow plan forkable-example-owner
 Created: 2026-10-19
 Base:    e1a571b
 Inputs:  .workflow/forkable-example-owner/brainstorm.md @ 7c1c018
-Status:  complete
+Status:  done
 
 Docs read: design.md §System (footer Ft2: inline credits and links) · PRODUCT.md absent
 Size: code 1,329 · tests 743 · ratio 0.56 · largest touched pages.mjs 453, build-comparison-evidence.mjs 299, home.mjs 281 · over 1,000: none
 Decisions: 1a drop CI git-diff step, accept dirty public/ locally until U8 · 2a admin and 404 get a credit-only footer · 3a leak scan runs only for examples/owner, else prints skipped · 4a tickets approved
 
-## Execution state
-T1–T4 and all patch tickets done. Review cycle 3 clean. Next: wrap.
-Pending: none. C2-T1 checkpoint 62a53d1 pushed; CI success, receipt c2-t1-verification.md.
-T1 @ 023e92f · private source copy @ 5699413
-T2 @ 95eae04 · private golden exceptions @ ae5d654
-T3 @ 28d4fc6
-T3 @ 150b701 · CI privacy-fixture correction
-T4 @ 83fbf99
-writer: GPT-6.1 Sol · T1 xhigh; T2–T4, C1-T2 and C2-T1 high
-Session 1: T1
-Session 2: T2, T3, T4 handoff
-Session 3: T4
-Session 4: C1-T1
-Session 5: C1-T2
-Session 6: C2-T1
-Verification receipts: t1-verification.md, t2-verification.md, t3-verification.md, t4-push-ci.md, c1-t1-verification.md, c1-t2-verification.md, c2-t1-verification.md. Private repo untouched in Sessions 4–6.
+
 ## Findings
 | # | What is true | What it changes |
 |---|---|---|

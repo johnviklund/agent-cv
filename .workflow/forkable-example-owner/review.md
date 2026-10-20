@@ -2,7 +2,7 @@ Command: workflow review forkable-example-owner
 Created: 2026-10-20
 Base:    83bd48d
 Inputs:  .workflow/forkable-example-owner/plan.md @ e1a571b
-Status:  complete
+Status:  done
 
 ## Coverage
 - [x] T1 — acceptance 5/5 tested and passing (sync-public-data.test 3 tests; golden:diff exit 0 on John's root)

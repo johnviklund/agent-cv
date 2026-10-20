@@ -1,6 +1,16 @@
 # Worklog
 Rolling index of recent work; git is the source of truth.
 
+## 2026-10-20 · forkable-example-owner · Ada's example owner builds the engine in CI and every page credits Agent CV · Opus 5.5
+- Public sources now sync from the owner root; CI builds Ada, scans output for John and fails on a trace; each page footer links to Agent CV.
+- Three patch cycles fixed the repository sync, evidence builder and project review still using engine `data/`, and untested default scan folders.
+- Commits: 023e92f 95eae04 28d4fc6 150b701 83fbf99 882b97c b16b8bd dc7a942
+- Review: ship as-is @ 4cf2630
+- Run: 4 tickets · 6 sessions · 3 review cycles · 6 deviations · 0 findings overturned
+- Seats: 0 none · 2 Opus 5.5 · 3 GPT-6.1 Sol · 4 Opus 5.5
+- Skills: workflow@unversioned
+- Why: a fork must build and test cleanly on its own example owner, with a check that fails if John's identity leaks.
+
 ## 2026-10-19 · forkable-owner-artifacts · social card, CV PDF, Wrangler config, admin origin and manifests come from the owner · Opus 5.5
 - Card and PDF build from owner.json; Wrangler config and the repository and evidence manifests are generated from or read at the owner root.
 - Patch cycle fixed admin setup using another owner's config and config formatting that altered owner variable strings.

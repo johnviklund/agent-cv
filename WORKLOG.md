@@ -1,6 +1,16 @@
 # Worklog
 Rolling index of recent work; git is the source of truth.
 
+## 2026-10-20 · forkable-cutover · the engine tree drops John's sources, docs and test literals; leak check scans every tracked file · Opus 5.5
+- John's public sources and generated files left the engine for the private owner repo; tests, docs and skills run on Ada Example; a clean clone checks green and John's golden diff is unchanged.
+- Patch cycle pinned the leak check's credit-line exceptions to exact text and replaced real employer fixtures with fictional ones.
+- Commits: 70887fd 129f4c7 cbce676 d859042 636f2d9 a652048 a7f2a86 009ab1f 648a24d
+- Review: ship as-is @ 6f83574
+- Run: 7 tickets · 7 sessions · 2 review cycles · 5 deviations · 0 findings overturned
+- Seats: 0 none · 2 GPT-6.1 Sol · 3 GPT-6.1 Sol · 4 Opus 5.5 · 4 Sonnet 5.5 (cycle 2 fallback)
+- Skills: workflow@unversioned
+- Why: a fork must inherit no trace of John, and a tree-wide check must keep it that way.
+
 ## 2026-10-20 · forkable-setup · `npm run setup` creates a fork's owner folder, archive and secrets, and deploy refuses example content · Opus 5.5
 - Setup creates the owner directories, configures the archive and admin secret, and keeps retry state; deploy refuses Ada's text and og-image; docs guide forks end to end.
 - Patch cycle made a failed cloud step list every remaining retry and the cause.

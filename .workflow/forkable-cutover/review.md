@@ -2,7 +2,7 @@ Command: workflow review forkable-cutover
 Created: 2026-10-20
 Base:    230538f
 Inputs:  .workflow/forkable-cutover/plan.md @ fafec6c · patch_plan.md @ 40dd85d
-Status:  complete
+Status:  done
 
 ## Coverage
 - [x] T1 — acceptance 3/3: private 4ec3ba4 pushed, ahead 0, `faq.md` ` M`; 3 docs `cmp`-equal to fafec6c; AGENTS.md:23-27 "When John asks", owner-root deploy and golden rules, no "canonical in the public" line

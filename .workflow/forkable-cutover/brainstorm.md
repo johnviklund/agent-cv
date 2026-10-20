@@ -2,7 +2,7 @@ Command: workflow brainstorm forkable-cutover
 Created: 2026-10-20
 Base:    2df6469
 Inputs:  none
-Status:  complete
+Status:  done
 
 ## Problem
 The engine repo still tracks John's public sources, docs, operator rules and about 230 John-named test lines. A fork inherits them, and the tree-wide leak check (deferred from forkable-example-owner) does not exist yet.

@@ -2,34 +2,14 @@ Command: workflow plan forkable-cutover
 Created: 2026-10-20
 Base:    fafec6c
 Inputs:  .workflow/forkable-cutover/brainstorm.md @ 2df6469
-Status:  complete
+Status:  done
 
 Docs read: none in scope (PRODUCT.md, DESIGN.md absent; design.md is rewritten by T5, not a product guard)
 Size: code 65 · tests 6,340 · ratio 97.5 · largest touched test/worker.test.mjs 1334, test/comparison-core.test.mjs 595 · over 1,000: test/worker.test.mjs (literal swaps only, no prefactor)
 Decisions: 1b delete artifacts/qa (unused, not kept anywhere) · 2a port John-only tests to Ada where Ada has the content, delete the rest · 3a README credit line "Maintained by John Viklund. johnviklund.com is one deployment." · 4a tickets approved 2026-10-20 · 5a one run kept
 Split declined by human: 2026-10-20
 
-## Execution state
-Current: patch cycle 1 complete; ready for cross-vendor review. See patch_plan.md.
-T1 @ 70887fd (engine receipt; private commit 4ec3ba4, pushed).
-T2 @ 129f4c7
-T3 @ cbce676
-T4 @ d859042
-T5 @ 636f2d9
-T6 @ a652048
-T7 @ a7f2a86 (approved push; CI 39446308069 success)
-writer: GPT-6.1 Sol · high; live catalog confirms the primary is available.
-Session 1: T1 (operator handoff prepared; no private writes).
-Session 2: T1 (1a/2a approved; private write blocked by two permission-review timeouts).
-Session 3: T1 (elevated read probe and private copies succeeded; staging timed out twice; no private commit/push).
-Session 4: T1, T2, T3 (private commit/push complete; engine cutover and fixture rewrite verified).
-Session 5: T4, T5, T6 (both owners and clean clone pass).
-Session 6: T7 (1a approved; engine pushed, CI build passes).
-Session 7: C1-T1, C1-T2 (credit-line mutations caught; fictional fixtures pass both owner bundles).
-Baseline: npm run check passes outside sandbox, 322 pass / 3 skipped; sandbox child processes hit EPERM.
-Golden baseline: exit 0, 19 accepted file differences; owner approved correction with 2a on 2026-10-20.
-Uncommitted implementation: none; T1 private commit 4ec3ba4; receipts/t1-private-repo.txt.
-Private HEAD: 4ec3ba4, pushed; only data/faq.md modified, original bytes retained.
+
 ## Findings
 | # | What is true | What it changes |
 |---|---|---|

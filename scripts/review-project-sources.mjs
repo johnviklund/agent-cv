@@ -54,8 +54,8 @@ export async function runProjectReview({
     ...manifest.localFolders,
   ].flatMap((source) => source.canonicalFiles))];
   const canonical = new Map(await Promise.all(canonicalPaths.map(async (path) => {
-    const absolute = resolve(root, path);
-    if (!isWithin(root, absolute)) throw new Error(`Canonical path escapes the repository: ${path}`);
+    const absolute = resolve(ownerRoot, path);
+    if (!isWithin(ownerRoot, absolute)) throw new Error(`Canonical path escapes the owner root: ${path}`);
     return [path, await readFile(absolute, "utf8")];
   })));
 

@@ -2,11 +2,11 @@ Command: workflow plan forkable-live-verify
 Created: 2026-10-20
 Base:    6614dd1
 Inputs:  .workflow/forkable-live-verify/brainstorm.md @ 90434e2
-Status:  drafting
+Status:  complete
 
 Docs read: none in scope (no PRODUCT.md/DESIGN.md user surface changes; AGENTS.md §Verification, §Data boundaries, §Generated resources)
 Size: code 100 · tests 175 · ratio 1.75 · largest touched: test/sync-owner.test.mjs 175, scripts/sync-owner.mjs 100, USERGUIDE.md 203 (T3; T1 run-folder only; reused read-only: scripts/owner.mjs 125, scripts/cv-pdf.mjs 123, site/assets/comparison-contract.js) · over 1,000: none
-Decisions: 1a (approve T1, T2 as listed) · re-plan 2026-10-20 after T2 preflight: pending
+Decisions: 1a (approve T1, T2 as listed) · re-plan 2026-10-20 after T2 preflight: 1a (approve T3, T2 as listed) · 2a (owner commits or discards data/faq.md before T2)
 
 ## Execution state
 Session 1: T1 complete; T2 handoff prepared, awaiting exact-scope approval.

@@ -11,13 +11,14 @@ Decisions: 1a (approve T1, T2 as listed) · re-plan 2026-10-20 after T2 prefligh
 ## Execution state
 Session 1: T1 complete; T2 handoff prepared, awaiting exact-scope approval.
 Session 2: T2 approved via 1a; push succeeded; preflight failed before deployment.
+Session 3: T3 complete; refreshed T2 handoff awaits fresh exact-scope approval.
 T1 @ bb6f3f4
+T3 @ baff4c1
 writer: GPT-6.1 Sol · high
-Baseline: npm run check passed outside sandbox; sandbox subprocess EPERM only.
-Final: npm run build passed, including check; 321 tests passed, 2 skipped.
-Current: T2 awaiting-human; receipts/t2-preflight-failure.md records the failed Verify.
-Pending: re-plan guard correction; no deployment, paid request or rollback ran.
-Re-plan (Opus 5.5): T3 added as T2's prerequisite; T2 resets to the full preflight.
+Baseline: npm run build passed outside sandbox; 321 passed, 2 skipped; sandbox test workers failed.
+Final: npm run build passed, including check; 326 tests passed, 2 skipped; clean-clone sync tests 15/15.
+Current: T2 awaiting-human; receipts/t2-deploy-handoff-v2.md replaces the earlier handoff.
+Pending: fresh approval of T2; no deployment, paid request or rollback ran.
 
 ## Findings
 | # | What is true | What it changes |
@@ -58,14 +59,15 @@ Delivers: prefactor for T2 · Blocked by: none · Lane: logic
 Budget: code +12 · tests +18 · why: one parametrized case per input class; prefactor T2 is blocked on
 Seam: `syncOwner({ sourceRoot, destinationRoot, deploy: true })` in test/sync-owner.test.mjs; `npm run sync:owner -- --deploy`
 Accept:
-- [ ] "Ada Example" only in `docs/plans/x.md`, `README.md`, `golden/x.html` → deploy sync resolves, slug `fixture-owner`, six private files copied
-- [ ] one case each: "Ada Example" in `data/notes/deep.md`, `repositories.json`, `comparison-evidence.json` → rejects naming that path; engine `data/` unchanged
-- [ ] existing case kept: `data/cv.md` + `site.json` text → rejects naming both; example `assets/og-image.png` → rejects naming it
-- [ ] `AGENT_CV_OWNER_ROOT=../agent-cv-private npm run sync:owner -- --deploy` → exit 0 (dry, copies only the six ignored files)
-- [ ] USERGUIDE.md step 4 says the refusal covers deploy inputs: `grep -c "owner.json, site.json, data/" USERGUIDE.md` → 1
+- [x] "Ada Example" only in `docs/plans/x.md`, `README.md`, `golden/x.html` → deploy sync resolves, slug `fixture-owner`, six private files copied
+- [x] one case each: "Ada Example" in `data/notes/deep.md`, `repositories.json`, `comparison-evidence.json` → rejects naming that path; engine `data/` unchanged
+- [x] existing case kept: `data/cv.md` + `site.json` text → rejects naming both; example `assets/og-image.png` → rejects naming it
+- [x] `AGENT_CV_OWNER_ROOT=../agent-cv-private npm run sync:owner -- --deploy` → exit 0 (dry, copies only the six ignored files)
+- [x] USERGUIDE.md step 4 says the refusal covers deploy inputs: `grep -c "owner.json, site.json, data/" USERGUIDE.md` → 1
 Verify: `node --test test/sync-owner.test.mjs && AGENT_CV_OWNER_ROOT=../agent-cv-private npm run sync:owner -- --deploy` (pre: 10 passed; sync exit 1 naming docs/plans/2026-10-18-1358-feat-forkable-agent-cv-plan.md)
 Skills: none
-Status: todo
+Status: done @ baff4c1
+Writer: GPT-6.1 Sol
 
 ### T2 — deploy from the cutover engine and verify live
 Delivers: B1, B2, B3, B4, B5, B6, B7 · Blocked by: T1, T3 · Lane: operator · Runner: agent after approval · Risk: irreversible
@@ -81,7 +83,7 @@ Accept:
 Verify: receipt: receipts/live-verification.md — deploy exit 0 · version match · 4/4 sha · pdf ok · health ok · ask completed · compare valid · admin 401 ×2 (pre: no receipt)
 Skills: none
 Status: awaiting-human
-Handoff receipt: receipts/t2-deploy-handoff.md; approved 1a, preflight failed (receipts/t2-preflight-failure.md). After T3, re-issue the handoff with step (0); the earlier approval does not carry over.
+Handoff receipt: receipts/t2-deploy-handoff-v2.md; awaiting fresh approval. Original receipts/t2-deploy-handoff.md approval ended at the failed preflight in receipts/t2-preflight-failure.md; it does not carry over.
 
 ## Deviations
 - T2: sync:owner --deploy exited 1 because its whole-owner scan rejects fictional example-owner references in historical docs/plans. T2 cannot pass as written without a prerequisite correction. Stop and return to plan; the guard was not bypassed. Re-plan: T3.

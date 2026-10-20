@@ -13,14 +13,15 @@ Session 1: T1 complete; T2 handoff prepared, awaiting exact-scope approval.
 Session 2: T2 approved via 1a; push succeeded; preflight failed before deployment.
 Session 3: T3 complete; refreshed T2 handoff awaits fresh exact-scope approval.
 Session 4: T2 approved via 1a; push, full preflight, deployment and live verification complete.
+Session 5: C1-T1 complete; owner.json guard case and mutation proven; ready for review cycle 2.
 T1 @ bb6f3f4
 T3 @ baff4c1
 T2 @ f1311ed
 writer: GPT-6.1 Sol · high
 Baseline: npm run build passed outside sandbox; 321 passed, 2 skipped; sandbox test workers failed.
 Final: npm run build passed, including check; 326 tests passed, 2 skipped; clean-clone sync tests 15/15.
-Current: all tickets done; receipts/live-verification.md proves deployment and B1–B7.
-Pending: cross-vendor review; active version c082c445-1592-4901-954f-50d7f8ad6b1e at 100%; no retry or rollback.
+Current: all original and patch tickets done; C1-T1 @ 9c8ee13; receipts/c1-t1-verification.md proves the guard test.
+Pending: cross-vendor review cycle 2; no deployment in session 5; original live proof remains receipts/live-verification.md.
 
 ## Findings
 | # | What is true | What it changes |

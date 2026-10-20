@@ -12,14 +12,15 @@ Decisions: 1a (approve T1, T2 as listed) · re-plan 2026-10-20 after T2 prefligh
 Session 1: T1 complete; T2 handoff prepared, awaiting exact-scope approval.
 Session 2: T2 approved via 1a; push succeeded; preflight failed before deployment.
 Session 3: T3 complete; refreshed T2 handoff awaits fresh exact-scope approval.
-Session 4: T2 approved via 1a; push and full preflight resume.
+Session 4: T2 approved via 1a; push, full preflight, deployment and live verification complete.
 T1 @ bb6f3f4
 T3 @ baff4c1
+T2 @ f1311ed
 writer: GPT-6.1 Sol · high
 Baseline: npm run build passed outside sandbox; 321 passed, 2 skipped; sandbox test workers failed.
 Final: npm run build passed, including check; 326 tests passed, 2 skipped; clean-clone sync tests 15/15.
-Current: T2 awaiting-human; receipts/t2-deploy-handoff-v2.md replaces the earlier handoff.
-Pending: execute approved push and T2 handoff; owner approved 1a on 2026-10-20, resolving receipts/t3-push-block.md.
+Current: all tickets done; receipts/live-verification.md proves deployment and B1–B7.
+Pending: cross-vendor review; active version c082c445-1592-4901-954f-50d7f8ad6b1e at 100%; no retry or rollback.
 
 ## Findings
 | # | What is true | What it changes |
@@ -76,14 +77,15 @@ Budget: code +0 · tests +0
 Seam: `npm run deploy`, `wrangler deployments status`, live-check full mode
 Handoff (one approval covers all): `AGENT_CV_OWNER_ROOT=../agent-cv-private` set; (0) `git -C ../agent-cv-private status --porcelain` empty, record its sha; (1) `npx wrangler deployments status --name john-viklund-agent-cv` → record previous version (rollback); (2) dry run `npm run sync:owner -- --deploy && npm run build`; (3) `npm run deploy`; (4) status again; (5) `live-check.mjs --out receipts/live-verification.md` (1 chat + 1 compare). Rollback: `npx wrangler rollback <previous version> --name john-viklund-agent-cv`
 Accept:
-- [ ] private tree clean at deploy, sha recorded; dry run exits 0; deploy exits 0; its Version ID == the version at 100% in step 4, ≠ previous (B1)
-- [ ] 4 rows live sha256 == build/site after deploy; PDF 200 · `application/pdf` · 1–2 pages · sha256 == build/site copy (B2, B3)
-- [ ] health exactly `{"ok":true,"configured":true}`; both admin routes 401 (B4, B7)
-- [ ] ask: 200 `text/event-stream`, types ⊆ {delta, completed}, last `response.completed`, answer text non-empty (B5)
-- [ ] compare: 200 and `validateComparisonResult` passes with the live `/evidence.json` digest; 2 roles in result (B6)
+- [x] private tree clean at deploy, sha recorded; dry run exits 0; deploy exits 0; its Version ID == the version at 100% in step 4, ≠ previous (B1)
+- [x] 4 rows live sha256 == build/site after deploy; PDF 200 · `application/pdf` · 1–2 pages · sha256 == build/site copy (B2, B3)
+- [x] health exactly `{"ok":true,"configured":true}`; both admin routes 401 (B4, B7)
+- [x] ask: 200 `text/event-stream`, types ⊆ {delta, completed}, last `response.completed`, answer text non-empty (B5)
+- [x] compare: 200 and `validateComparisonResult` passes with the live `/evidence.json` digest; 2 roles in result (B6)
 Verify: receipt: receipts/live-verification.md — deploy exit 0 · version match · 4/4 sha · pdf ok · health ok · ask completed · compare valid · admin 401 ×2 (pre: no receipt)
 Skills: none
-Status: awaiting-human
+Status: done @ f1311ed
+Writer: GPT-6.1 Sol
 Handoff receipt: receipts/t2-deploy-handoff-v2.md; owner approved 1a on 2026-10-20, including push and full T2 scope. The original approval ended at the failed preflight; this is fresh approval.
 
 ## Deviations

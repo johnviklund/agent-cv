@@ -10,19 +10,21 @@ Decisions: 1b delete artifacts/qa (unused, not kept anywhere) · 2a port John-on
 Split declined by human: 2026-10-20
 
 ## Execution state
-Current: T7 awaiting-human; T1–T6 complete. Exact push scope: receipts/t7-ci-handoff.md. Engine checkpoint push deferred to the approved T7 operator gate.
+Current: T1–T7 complete; ready for cross-vendor review. T7 CI success: receipts/t7-ci.txt.
 T1 @ 70887fd (engine receipt; private commit 4ec3ba4, pushed).
 T2 @ 129f4c7
 T3 @ cbce676
 T4 @ d859042
 T5 @ 636f2d9
 T6 @ a652048
+T7 @ a7f2a86 (approved push; CI 39446308069 success)
 writer: GPT-6.1 Sol · high; live catalog confirms the primary is available.
 Session 1: T1 (operator handoff prepared; no private writes).
 Session 2: T1 (1a/2a approved; private write blocked by two permission-review timeouts).
 Session 3: T1 (elevated read probe and private copies succeeded; staging timed out twice; no private commit/push).
 Session 4: T1, T2, T3 (private commit/push complete; engine cutover and fixture rewrite verified).
 Session 5: T4, T5, T6 (both owners and clean clone pass).
+Session 6: T7 (1a approved; engine pushed, CI build passes).
 Baseline: npm run check passes outside sandbox, 322 pass / 3 skipped; sandbox child processes hit EPERM.
 Golden baseline: exit 0, 19 accepted file differences; owner approved correction with 2a on 2026-10-20.
 Uncommitted implementation: none; T1 private commit 4ec3ba4; receipts/t1-private-repo.txt.
@@ -135,10 +137,10 @@ Delivers: B4, B8 · Blocked by: T6 · Lane: operator · Runner: agent after appr
 Budget: code +0 · tests +0
 Seam: `git push origin main`; `gh run watch`
 Accept:
-- [ ] CI run for the pushed sha → conclusion `success`, log shows `Leak scan: 0 findings` (B4, B8)
+- [x] CI run for the pushed sha → conclusion `success`, log shows `Leak scan: 0 findings` (B4, B8)
 Verify: receipt: receipts/t7-ci.txt — sha · run id · success (pre: no receipt)
 Skills: none
-Status: awaiting-human
+Status: done @ a7f2a86
 Writer: GPT-6.1 Sol
 
 ## Coverage

@@ -1,0 +1,17 @@
+Command: workflow execute forkable-cutover
+Created: 2026-10-20
+Base:    a7f2a86
+Inputs:  .workflow/forkable-cutover/plan.md @ fafec6c
+Status:  complete
+
+Approval: owner replied "1a approved" to pushing main at a7f2a86 and verifying CI, without deployment.
+Push: git push origin main; exit 0; remote advanced 87fedf0..a7f2a86.
+Pushed SHA: a7f2a86107f7015b2f7f17be162df59a63bb90d3
+CI run: 39446308069
+URL: https://github.com/johnviklund/agent-cv/actions/runs/39446308069
+Conclusion: success; status completed.
+Verification: npm run build on examples/owner passes. Leak scan: 0 findings.
+Tests: 323 total, 320 pass, 3 skipped, 0 fail. Static checks pass for 10 pages.
+Worker packaging: dry-run completes; package checks pass. No deployment performed.
+Log: /tmp/forkable-cutover-t7-ci.log
+Log SHA256: ccee975a463439e64d57ac31cf2e3aae088782b9bd9c15e37952843e92f8eafb

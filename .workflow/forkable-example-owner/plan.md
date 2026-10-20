@@ -10,7 +10,7 @@ Decisions: 1a drop CI git-diff step, accept dirty public/ locally until U8 · 2a
 
 ## Execution state
 T1–T4 and both cycle 1 patch tickets done. Next: review.
-Pending: C1-T2 checkpoint push and CI before handoff; see receipts/c1-t2-verification.md.
+Pending: none. C1-T2 checkpoint 5076849 pushed; CI success, receipt c1-t2-verification.md.
 T1 @ 023e92f · private source copy @ 5699413
 T2 @ 95eae04 · private golden exceptions @ ae5d654
 T3 @ 28d4fc6

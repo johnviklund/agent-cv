@@ -21,4 +21,6 @@ Status:  complete
 - Noticed: none. The conversation-review instruction issue noted under C1-T1 remains deferred.
 
 ## Push and CI
-Pending checkpoint push and CI verification. No owner-repository changes or deployment.
+- Engine main pushed from d86c8ba to 5076849c485d6334b696e98ed4980e9a0d7d992f. No owner-repository changes or deployment.
+- GitHub Actions run 39376005637 completed with conclusion `success` on that SHA, including `npm run build`: https://github.com/johnviklund/agent-cv/actions/runs/39376005637.
+- Both patch tickets are done. Next: cross-vendor review of cycle 1 fixes.

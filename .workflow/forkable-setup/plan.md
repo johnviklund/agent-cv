@@ -9,7 +9,12 @@ Size: code 218 · tests 232 · ratio 1.06 · largest touched USERGUIDE.md 174, t
 Decisions: 1a links.github set to null by setup · 2a deploy also refuses Ada's og-image bytes · 3a tickets approved 2026-10-20
 
 ## Execution state
-<filled by execute>
+Current: T2 todo · writer: GPT-6.1 Sol
+T1 @ a61c3ab
+Session 1: T1
+Baseline: sandbox check fails in five child-process files; unsandboxed check passes, 303 pass / 3 skipped.
+Contracts: runSetup({args, env, run, ask, isTTY, engineRoot}); runner returns {stdout}.
+Uncommitted: plan execution record only · pending decision: none
 
 ## Findings
 | # | What is true | What it changes |
@@ -36,15 +41,16 @@ Delivers: B1, B2, B3, B6 · Blocked by: none · Lane: logic
 Budget: code +130 · tests +110
 Seam: `runSetup({args, env, run, ask, isTTY})` exported from `scripts/setup.mjs`; `npm run setup`
 Accept:
-- [ ] B1's flags with `--skip-cloud` → `owner.json` slug grace-hopper, names Grace Hopper/Grace, origin `https://grace.example`, worker grace-hopper-agent-cv, `links.github` null (B1)
-- [ ] same run → target's other files byte-equal `examples/owner/`; runner recorded `git init` in target; output contains `npm run deploy` (B1)
-- [ ] non-empty target → exit 1 naming the directory; its files unchanged (B2)
-- [ ] `--slug Grace` → exit 1 naming `slug`; target not created (B2)
-- [ ] no `--domain`: isTTY true → `ask` answers it; isTTY false → exit 1 naming `--domain`, nothing written (B3)
-- [ ] real `npm run setup -- ... --skip-cloud` into a temp dir, then `AGENT_CV_OWNER_ROOT=<it> npm run check` in a clean worktree → exit 0 (B6)
+- [x] B1's flags with `--skip-cloud` → `owner.json` slug grace-hopper, names Grace Hopper/Grace, origin `https://grace.example`, worker grace-hopper-agent-cv, `links.github` null (B1)
+- [x] same run → target's other files byte-equal `examples/owner/`; runner recorded `git init` in target; output contains `npm run deploy` (B1)
+- [x] non-empty target → exit 1 naming the directory; its files unchanged (B2)
+- [x] `--slug Grace` → exit 1 naming `slug`; target not created (B2)
+- [x] no `--domain`: isTTY true → `ask` answers it; isTTY false → exit 1 naming `--domain`, nothing written (B3)
+- [x] real `npm run setup -- ... --skip-cloud` into a temp dir, then `AGENT_CV_OWNER_ROOT=<it> npm run check` in a clean worktree → exit 0 (B6)
 Verify: `node --test test/setup.test.mjs` (pre: new file); B6 receipt: receipts/t1-b6-check.txt — check exit 0
 Skills: none
-Status: todo
+Status: done @ a61c3ab
+Writer: GPT-6.1 Sol
 
 ### T2 — setup creates the archive namespace and sets both secrets
 Delivers: B4, B5 · Blocked by: T1 · Lane: logic

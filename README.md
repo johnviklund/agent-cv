@@ -52,18 +52,61 @@ Extraction rules, test fixtures, verification records, and the demo script are i
 
 ## Run it locally
 
-Requires Node.js 24, an OpenAI API key, and (for deployment) a Cloudflare account plus Chromium, which prints `/<slug>-cv.pdf` from `<owner root>/data/cv.md` on every deploy.
+Requires Node.js 24. To preview the safe example owner:
 
 ```sh
 npm ci
-cp .dev.vars.example .dev.vars   # then set OPENAI_API_KEY
-npm run bootstrap:data           # copies placeholders for missing private data files
+cp .dev.vars.example .dev.vars   # then set your local OPENAI_API_KEY
+export AGENT_CV_OWNER_ROOT="$PWD/examples/owner"
 npm run dev                      # http://localhost:8787
 ```
 
-`npm run bootstrap:data` copies generic placeholders from `examples/private-data/` only where a private data file is missing; it never overwrites reviewed data. Run the full verification with `npm run check`, and `npm run build` for Worker packaging changes.
+Run `npm run check` for verification and `npm run build` for a Worker packaging dry run. To use your own content, follow the setup below.
 
-Deploying a fork needs its own Cloudflare setup: a KV namespace, OpenAI and admin secrets, your own worker name, archive namespace, hosts, contact email and limits in your owner repo's `owner.json`, and a custom domain with matching canonical metadata. Follow [Deploy your fork](USERGUIDE.md#deploy-your-fork) in the user guide before running `npm run deploy`.
+## Create your own Agent CV
+
+You need Git, the GitHub CLI, an OpenAI API key, and a Cloudflare account managing your domain. Deployment also needs Chromium to print your CV PDF.
+
+1. Fork the engine and run setup:
+
+   ```sh
+   gh repo fork johnviklund/agent-cv --clone
+   cd agent-cv
+   npm ci
+   npx wrangler login
+   npm run setup
+   export AGENT_CV_OWNER_ROOT="$(cd ../agent-cv-private && pwd)"
+   ```
+
+   Setup asks for your name, slug, domain, and OpenAI key. It creates the sibling owner directory, archive namespace, and Worker secrets. The admin token stays in ignored `.dev.vars`; add your local OpenAI key there separately to use the chat during development.
+
+   Use `--skip-cloud` for local setup only, or `--target /absolute/empty/directory` for another owner location. Set `AGENT_CV_OWNER_ROOT` to that location. Setup refuses a non-empty target; after a cloud failure, use its printed retry command.
+
+2. Keep the owner directory in a private repository. Replace `YOUR-LOGIN` below with your GitHub login:
+
+   ```sh
+   git -C "$AGENT_CV_OWNER_ROOT" add .
+   git -C "$AGENT_CV_OWNER_ROOT" commit -m "Initialize owner bundle"
+   gh repo create YOUR-LOGIN/agent-cv-private --private --source "$AGENT_CV_OWNER_ROOT" --remote origin --push
+   ```
+
+3. Replace Ada's placeholder prose and remaining identity fields using the [content-rewrite prompt](USERGUIDE.md#set-up-a-local-checkout). Keep canonical edits in the owner directory. Review them, regenerate your social image, and deploy:
+
+   ```sh
+   npm run build:og-image
+   npm run build
+   npm run deploy
+   ```
+
+   Deploy refuses remaining `Ada Example` text and the unchanged example social image. Follow [Deploy your fork](USERGUIDE.md#deploy-your-fork) if you skipped cloud setup. Commit reviewed owner changes to the private repository.
+
+4. Keep the engine current from its upstream remote:
+
+   ```sh
+   git pull upstream main
+   ```
+
+   Keep your owner repository separate when updating the engine. Run the checks again after resolving any merge conflicts.
 
 ## Repository map
 

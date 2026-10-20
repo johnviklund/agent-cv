@@ -1,0 +1,14 @@
+T4 verification, 2026-10-20
+Writer: GPT-6.1 Sol, medium
+Baseline npm run check: exit 0; 321 passed, 3 skipped.
+Red: new fork-docs case fails on missing README section, exit 1.
+Focused node --test test/maintenance-docs.test.mjs: exit 0; 2 passed.
+Final npm run check: exit 0; 322 passed, 3 skipped; static checks pass for 10 pages.
+Documented unattended setup command: exit 0; expected Grace owner and real Git repository confirmed in /tmp, then removed.
+The smoke test uses --skip-cloud; no repository creation, secrets, deployment, or other cloud writes performed.
+Local gh repo fork/create help confirms upstream/origin behavior and private --source/--push flags.
+Mutation: none, documentation/mechanical ticket.
+Reuse: extended existing maintenance-docs test; no helper or runtime code added.
+Existing assertions: unchanged. Older bootstrap/data-boundary sections and John-specific descriptions remain for forkable-cutover.
+Prior push approval resolved: owner approved seven T1–T3 commits; origin/main is 799e681; CI run 39385569110 passed.
+Logs: /tmp/forkable-setup-t4-{baseline,red,green,check}.log

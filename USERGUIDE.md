@@ -6,26 +6,46 @@ This guide is for people adapting the public Agent CV into a reviewed, privacy-c
 
 The application code is reusable under the MIT license. John Viklund's résumé, project claims, identity, contact details, and deployment URLs are not starter content. Replace them with your own reviewed evidence before publishing.
 
-You need Node.js, npm, a Cloudflare account, an OpenAI API key, and a GitHub account only if you want repository evidence. Never paste API keys, admin tokens, private repository content, job descriptions, application notes, or raw conversation exports into an issue, commit, or agent prompt that may leave your trusted environment.
+You need Node.js 24, npm, Git, the GitHub CLI, a GitHub account, a Cloudflare account, and an OpenAI API key. Never paste API keys, admin tokens, private repository content, job descriptions, application notes, or raw conversation exports into an issue, commit, or agent prompt that may leave your trusted environment.
 
 ## Set up a local checkout
 
+Fork the engine and authenticate Wrangler with the Cloudflare account that manages your domain:
+
 ```sh
-git clone https://github.com/johnviklund/agent-cv.git
+gh repo fork johnviklund/agent-cv --clone
 cd agent-cv
 npm ci
-cp .dev.vars.example .dev.vars
-npm run bootstrap:data
-npm run check
+npx wrangler login
+npm run setup
+export AGENT_CV_OWNER_ROOT="$(cd ../agent-cv-private && pwd)"
 ```
 
-Add your local `OPENAI_API_KEY` to `.dev.vars`. The bootstrap command copies six generic files from `examples/private-data/` only when their matching private `data/*.md` files do not exist. Run it again at any time: reviewed files are preserved.
+Setup prompts for your name, slug, domain, and OpenAI key. It copies the example owner into `../agent-cv-private`, initialises Git, creates your archive namespace, and sets both Worker secrets. It saves the admin token in ignored `.dev.vars`. Add your local OpenAI key there separately if you want local chat.
 
-For local development:
+For unattended local setup, supply every identity flag:
 
 ```sh
+npm run setup -- --name "Grace Hopper" --slug grace-hopper --domain grace.example --skip-cloud --target /absolute/empty/owner-directory
+```
+
+Set `AGENT_CV_OWNER_ROOT` to that absolute owner path when using `--target`. Setup refuses a non-empty directory. `--skip-cloud` leaves Cloudflare unchanged; complete [Deploy your fork](#deploy-your-fork) before publishing. If a cloud step fails, the copied owner and earlier completed values stay; follow the printed retry command.
+
+Use this content-rewrite prompt with your coding agent:
+
+> Replace Ada Example's placeholders with my reviewed information in the selected owner directory's `data/`, `owner.json`, and `site.json`. Read `AGENTS.md` and this guide first. Ask me for missing facts, public identity, contact details, domain, and approved repository choices. Preserve the JSON schemas and use only evidence I approve. Keep private knowledge in the private owner repository and secrets in ignored local files. Run `npm run sync:data`, regenerate the social image with `npm run build:og-image`, and run `npm run check` and `npm run build`. Stop for my review before deployment.
+
+Keep the owner bundle in a private repository. Replace `YOUR-LOGIN` with your GitHub login:
+
+```sh
+git -C "$AGENT_CV_OWNER_ROOT" add .
+git -C "$AGENT_CV_OWNER_ROOT" commit -m "Initialize reviewed owner bundle"
+gh repo create YOUR-LOGIN/agent-cv-private --private --source "$AGENT_CV_OWNER_ROOT" --remote origin --push
+npm run check
 npm run dev
 ```
+
+Keep `AGENT_CV_OWNER_ROOT` set in each shell you use for this engine. The default sibling directory also works without it. Save future reviewed content changes in the private owner repository.
 
 ## Understand the data boundary
 
@@ -98,39 +118,53 @@ For a manual release check, clone your branch into a new directory, run `npm ci`
 
 ## Deploy your fork
 
-1. Authenticate Wrangler with the Cloudflare account that will own the deployment.
-2. Create a KV namespace and place its returned ID in `deploy.archiveNamespaceId` in your `owner.json`:
+Use the [content-rewrite prompt](#set-up-a-local-checkout) and review the result before publishing. `npm run setup` normally creates the archive namespace and configures both secrets. A failed cloud step prints its retry command; rerunning setup against the existing directory is refused.
+
+1. Select your owner directory and authenticate the account that manages your domain:
 
    ```sh
-   npx wrangler kv namespace create ARCHIVE
+   export AGENT_CV_OWNER_ROOT="/absolute/path/to/agent-cv-private"
+   npx wrangler login
    ```
 
-3. Generate the Wrangler config for your owner, so the secret commands below target your Worker and not one from an earlier `wrangler.jsonc`:
+2. If you used `npm run setup -- --skip-cloud` with the identity flags, complete the cloud steps manually. Generate your owner's config first, then create a namespace named for your Worker:
 
    ```sh
    npm run build:wrangler-config -- --deploy
+   npx wrangler kv namespace create your-slug-agent-cv-archive
    ```
 
-   This validates your `owner.json` and refuses the example owner. `npm run setup:admin` regenerates it too.
-
-4. Configure the OpenAI secret:
+   Replace `your-slug-agent-cv-archive` with your Worker's name plus `-archive`. Save the returned ID as `deploy.archiveNamespaceId` in the owner's `owner.json`, then regenerate the config and set secrets:
 
    ```sh
+   npm run build:wrangler-config -- --deploy
    npx wrangler secret put OPENAI_API_KEY
-   ```
-
-5. Generate and configure the private admin token:
-
-   ```sh
    npm run setup:admin
    ```
 
-   This writes the same token to ignored `.dev.vars` with private file permissions and to Cloudflare without printing it.
+   Enter the OpenAI key at the secret prompt. Admin setup saves the same generated token to ignored `.dev.vars` and Cloudflare. These commands regenerate or read the selected owner's config, so keep `AGENT_CV_OWNER_ROOT` set.
 
-6. Review `OPENAI_MODEL`, reasoning effort, request cap, retention and contact email in your `owner.json` (`deploy.vars` overrides the engine defaults in `wrangler.base.jsonc`), and the rate limit and binding values in `wrangler.base.jsonc`. `npm run build:wrangler-config` writes the merged, ignored `wrangler.jsonc`; every npm script that reads it regenerates it first.
-7. Run `npm run build` for the Worker packaging dry run. In the two-repository setup, run `npm run sync:private-data` first so this dry run uses the reviewed private sources.
-8. Deploy with `npm run deploy`. Deployment automatically imports the six reviewed files from the sibling private repository and stops if that source is missing or incomplete.
-9. Set your custom domain, then update canonical metadata, discovery resources, export URL, and static checks together. Run `npm run check` again.
+3. Review the owner's `owner.json` and `site.json`: identity, contact, profile links, origin, hosts, Worker name, namespace ID, and model limits. `deploy.vars` overrides the engine defaults in `wrangler.base.jsonc`. Leave the generated `wrangler.jsonc` to the build scripts.
+4. Replace all remaining example content. Deployment refuses files containing `Ada Example` and a social image identical to the example. Regenerate your social image:
+
+   ```sh
+   npm run build:og-image
+   ```
+
+   Review and commit the owner changes, including `assets/og-image.png`, to the private repository. Then build and deploy:
+
+   ```sh
+   npm run build
+   npm run deploy
+   ```
+
+   The build runs the checks and Worker packaging dry run. Deploy imports the six private knowledge files, builds the site and CV PDF, and publishes the Worker with your custom domain routes. Chromium is required for the image and PDF commands.
+
+5. Check the live pages, raw Markdown, chat, contact page, and comparison workspace against your approved content. Keep engine updates separate from owner content:
+
+   ```sh
+   git pull upstream main
+   ```
 
 The public chat should fail closed if its model secret or budget binding is missing. Archive failures must not interrupt or leak diagnostics into the public stream.
 

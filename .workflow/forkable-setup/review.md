@@ -2,7 +2,7 @@ Command: workflow review forkable-setup
 Created: 2026-10-20
 Base:    4872ec6
 Inputs:  .workflow/forkable-setup/plan.md @ eb6247a
-Status:  complete
+Status:  done
 
 ## Coverage
 - [x] T1 — acceptance 6/6 tested and passing (`test/setup.test.mjs`; B6 via receipts/t1-b6-check.txt)

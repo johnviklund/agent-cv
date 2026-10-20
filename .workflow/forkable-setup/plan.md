@@ -2,24 +2,11 @@ Command: workflow plan forkable-setup
 Created: 2026-10-20
 Base:    eb6247a
 Inputs:  .workflow/forkable-setup/brainstorm.md @ f116aed
-Status:  complete
+Status:  done
 
 Docs read: none in scope (PRODUCT.md, DESIGN.md absent)
 Size: code 218 · tests 232 · ratio 1.06 · largest touched USERGUIDE.md 174, test/sync-owner.test.mjs 141 · over 1,000: none
 Decisions: 1a links.github set to null by setup · 2a deploy also refuses Ada's og-image bytes · 3a tickets approved 2026-10-20
-
-## Execution state
-Current: all tickets done; next review · writer: GPT-6.1 Sol
-T1 @ a61c3ab
-T2 @ ed23bc1
-T3 @ fae8fe6
-T4 @ 55ac8cb
-Session 1: T1, T2, T3
-Session 2: T4
-Session 3: C1-T1 (patch cycle 1)
-Baseline: sandbox check fails in five child-process files; unsandboxed check passes, 303 pass / 3 skipped.
-Contracts: runSetup({args, env, run, ask, isTTY, engineRoot}); runner returns {stdout}.
-Uncommitted: none after this record commit · pending decision: approve the two T4 commits for push to origin/main; auto-review rejected scope beyond the earlier seven-commit approval.
 
 ## Findings
 | # | What is true | What it changes |

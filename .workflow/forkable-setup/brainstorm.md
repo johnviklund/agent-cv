@@ -2,7 +2,7 @@ Command: workflow brainstorm forkable-setup
 Created: 2026-10-20
 Base:    f116aed
 Inputs:  none
-Status:  complete
+Status:  done
 
 ## Problem
 `forkable-cutover` deletes `bootstrap:data`, the only fork on-ramp, and that script only fills the legacy engine `data/`. A new owner today must hand-copy `examples/owner/`, create the KV namespace and set secrets with no guide that matches the owner-root model.

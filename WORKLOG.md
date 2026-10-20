@@ -1,6 +1,16 @@
 # Worklog
 Rolling index of recent work; git is the source of truth.
 
+## 2026-10-20 · forkable-setup · `npm run setup` creates a fork's owner folder, archive and secrets, and deploy refuses example content · Opus 5.5
+- Setup creates the owner directories, configures the archive and admin secret, and keeps retry state; deploy refuses Ada's text and og-image; docs guide forks end to end.
+- Patch cycle made a failed cloud step list every remaining retry and the cause.
+- Commits: a61c3ab ed23bc1 fae8fe6 55ac8cb d48f63b 136c1f3
+- Review: ship as-is @ 4872ec6
+- Run: 4 tickets · 3 sessions · 2 review cycles · 0 deviations · 0 findings overturned
+- Seats: 0 none · 2 Opus 5.5 · 3 GPT-6.1 Sol · 4 GPT-6 Astra
+- Skills: workflow@unversioned
+- Why: a fork owner needs one guided command to reach a deployable site without publishing the example owner.
+
 ## 2026-10-20 · forkable-example-owner · Ada's example owner builds the engine in CI and every page credits Agent CV · Opus 5.5
 - Public sources now sync from the owner root; CI builds Ada, scans output for John and fails on a trace; each page footer links to Agent CV.
 - Three patch cycles fixed the repository sync, evidence builder and project review still using engine `data/`, and untested default scan folders.

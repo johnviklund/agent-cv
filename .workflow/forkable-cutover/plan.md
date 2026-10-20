@@ -2,11 +2,12 @@ Command: workflow plan forkable-cutover
 Created: 2026-10-20
 Base:    fafec6c
 Inputs:  .workflow/forkable-cutover/brainstorm.md @ 2df6469
-Status:  drafting
+Status:  complete
 
 Docs read: none in scope (PRODUCT.md, DESIGN.md absent; design.md is rewritten by T5, not a product guard)
 Size: code 65 · tests 6,340 · ratio 97.5 · largest touched test/worker.test.mjs 1334, test/comparison-core.test.mjs 595 · over 1,000: test/worker.test.mjs (literal swaps only, no prefactor)
-Decisions: 1b delete artifacts/qa (unused, not kept anywhere) · 2a port John-only tests to Ada where Ada has the content, delete the rest · 3a README credit line "Maintained by John Viklund. johnviklund.com is one deployment." · 4a tickets approved 2026-10-20
+Decisions: 1b delete artifacts/qa (unused, not kept anywhere) · 2a port John-only tests to Ada where Ada has the content, delete the rest · 3a README credit line "Maintained by John Viklund. johnviklund.com is one deployment." · 4a tickets approved 2026-10-20 · 5a one run kept
+Split declined by human: 2026-10-20
 
 ## Execution state
 <filled by execute>

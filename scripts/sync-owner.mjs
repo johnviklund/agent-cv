@@ -28,6 +28,7 @@ export async function syncOwner({ sourceRoot, destinationRoot = root, deploy = f
     while (directories.length) {
       const directory = directories.pop();
       for (const entry of await readdir(resolve(ownerRoot, directory), { withFileTypes: true })) {
+        if (!directory && !["owner.json", "site.json", "data", "assets", "repositories.json", "comparison-evidence.json"].includes(entry.name)) continue;
         if (entry.name === ".git") continue;
         const path = directory ? `${directory}/${entry.name}` : entry.name;
         if (entry.isDirectory()) directories.push(path);

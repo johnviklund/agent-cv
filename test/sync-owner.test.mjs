@@ -173,3 +173,27 @@ test("deploy sync rejects remaining example content before copying and allows an
     assert.equal(await readFile(resolve(destinationRoot, "data", privateDataFiles[0]), "utf8"), `new ${privateDataFiles[0]}\n`);
   });
 });
+
+test("deploy sync scans deploy inputs and ignores historical documentation", async (t) => {
+  for (const path of [null, "data/notes/deep.md", "repositories.json", "comparison-evidence.json"]) await t.test(path ?? "docs only", async (t) => {
+    const { sourceRoot, destinationRoot } = await makeWorkspace(t);
+    for (const file of privateDataFiles) {
+      await writeFile(resolve(sourceRoot, "data", file), `new ${file}\n`);
+      await writeFile(resolve(destinationRoot, "data", file), `existing ${file}\n`);
+    }
+    for (const file of ["docs/plans/x.md", "README.md", "golden/x.html", ...(path ? [path] : [])]) {
+      await mkdir(dirname(resolve(sourceRoot, file)), { recursive: true });
+      await writeFile(resolve(sourceRoot, file), "Ada Example");
+    }
+    const operation = syncOwner({ sourceRoot, destinationRoot, deploy: true });
+    if (path) await assert.rejects(operation, (error) => { assert.ok(error.message.includes(path)); return true; });
+    else {
+      const result = await operation;
+      assert.equal(result.owner.slug, "fixture-owner");
+      assert.deepEqual(result.files, privateDataFiles);
+    }
+    for (const file of privateDataFiles) {
+      assert.equal(await readFile(resolve(destinationRoot, "data", file), "utf8"), `${path ? "existing" : "new"} ${file}\n`);
+    }
+  });
+});

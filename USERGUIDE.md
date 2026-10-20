@@ -140,7 +140,7 @@ Use the [content-rewrite prompt](#set-up-a-local-checkout) and review the result
    Enter the OpenAI key at the secret prompt. Admin setup saves the same generated token to ignored `.dev.vars` and Cloudflare. These commands regenerate or read the selected owner's config, so keep `AGENT_CV_OWNER_ROOT` set.
 
 3. Review the owner's `owner.json` and `site.json`: identity, contact, profile links, origin, hosts, Worker name, namespace ID, and model limits. `deploy.vars` overrides the engine defaults in `wrangler.base.jsonc`. Leave the generated `wrangler.jsonc` to the build scripts.
-4. Replace all remaining example content. Deployment refuses files containing `Ada Example` and a social image identical to the example. Regenerate your social image:
+4. Replace all remaining example content. Deployment refuses deploy inputs (owner.json, site.json, data/, assets/, repositories.json, comparison-evidence.json) containing `Ada Example` and a social image identical to the example. Regenerate your social image:
 
    ```sh
    npm run build:og-image

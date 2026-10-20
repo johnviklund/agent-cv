@@ -81,6 +81,8 @@ test("no-argument CLI scans tracked files with bounded credit exceptions", async
   for (const [path, text] of [
     ["notes.txt", name], ["LICENSE", `Copyright (c) 2026 ${name} ${surname}\n${name}\n`],
     ["README.md", `${allowed["README.md"]}${surname}\n`],
+    ["LICENSE", `${allowed["LICENSE"].trimEnd()} ${surname}\n`],
+    ["README.md", `${allowed["README.md"].trimEnd()} ${surname}\n`],
   ]) {
     await writeFile(resolve(dir, path), text);
     git("add", path);

@@ -6,7 +6,7 @@ Status:  drafting
 
 Docs read: none in scope (PRODUCT.md, DESIGN.md absent; design.md is rewritten by T5, not a product guard)
 Size: code 65 · tests 6,340 · ratio 97.5 · largest touched test/worker.test.mjs 1334, test/comparison-core.test.mjs 595 · over 1,000: test/worker.test.mjs (literal swaps only, no prefactor)
-Decisions: pending — 1 artifacts/qa · 2 John-only tests · 3 README credit · 4 ticket list
+Decisions: 1b delete artifacts/qa (unused, not kept anywhere) · 2a port John-only tests to Ada where Ada has the content, delete the rest · 3a README credit line "Maintained by John Viklund. johnviklund.com is one deployment." · 4a tickets approved 2026-10-20
 
 ## Execution state
 <filled by execute>
@@ -17,11 +17,11 @@ Decisions: pending — 1 artifacts/qa · 2 John-only tests · 3 README credit ·
 | F2 | 181 John lines across 25 test files (brief said ~230); worker.test.mjs is 1,334 lines | T3/T4 swap literals; no prefactor, the structure does not change |
 | F3 | Tests read engine `data/`: cv-pdf.test:28,78,104 · repository-grounding.test:15 · codex-project-refresh.test:14 | T2 points them at `resolveOwnerRoot()` + `data/` |
 | F4 | comparison-fixtures.test:38 and static-contract.test:74 read `docs/webmcp-challenge-submission.md`; README:39-51 is the WebMCP section linking it | T2 drops the doc assertions with the doc; T5 drops the README section |
-| F5 | 8 tests run only on John's bundle: contact.test:29,45 · repository-grounding:78,95 · static-contract:95 · comparison-core:209 · og-image:86 · site-rendering:20 | Decision 2 |
+| F5 | 8 tests run only on John's bundle: contact.test:29,45 · repository-grounding:78,95 · static-contract:95 · comparison-core:209 · og-image:86 · site-rendering:20 | Decision 2a: T3/T4 port each to Ada where Ada has the content, else delete; golden diff pins John's bytes |
 | F6 | The upstream slug is product, not a leak: `UPSTREAM_URL` html.mjs:73 (footer credit), README:73 and USERGUIDE:16 fork commands | Allowlist the slug `johnviklund/agent-cv` anywhere, not only the URL |
 | F7 | check-leaks.mjs:22 returns early unless the owner is `examples/owner`, and scans only output dirs; its regex is itself a John literal | T6: tracked scan always runs, output scan stays Ada-only; `scripts/check-leaks.mjs` is allowlisted; its test builds names by concatenation (D3) |
 | F8 | B8's `git archive` has no `.git`, so `git ls-files` cannot run there | B8 uses `git clone` of local HEAD into a temp dir (memory: test-on-example-owner-bundle); the scan exits 1 "not a git checkout" outside git; CI's actions/checkout has `.git`. Binaries (NUL byte) are skipped |
-| F9 | `artifacts/qa/` tracks a QA report and 10 screenshots of John's site; a text scan cannot see pixels | Decision 1 |
+| F9 | `artifacts/qa/` tracks a QA report and 10 screenshots of John's site; a text scan cannot see pixels | Decision 1b: T2 deletes it; T1 does not move it |
 | F10 | verify-agent-cv has landed (tree clean); SKILL.md:21 and features/ask-chat.md:15 ask "What does John do?" | Brief's `.gitignore` out-of-scope item is moot; T2 edits `.gitignore`, T5 the skill |
 | F11 | `public/` (5 files) is sync output yet tracked; `src/data/` is already ignored, so tests already need `sync:data` first | T2 ignores `/public/` and `/data/`; B4's `npm test` runs after a sync, as `npm run check` does |
 | F12 | agent-cv-private `data/{cv,overview,projects,repositories}.md` are byte-identical to engine `data/`; sibling `golden:diff` passes today with 8 accepted exceptions. It also has an uncommitted `data/faq.md` change; its AGENTS.md calls the public repo canonical | B5 is checkable before and after T2; T1 commits named paths only, never `faq.md`, and rewrites its AGENTS.md |
@@ -30,15 +30,15 @@ Decisions: pending — 1 artifacts/qa · 2 John-only tests · 3 README credit ·
 
 ## Tickets
 
-### T1 — agent-cv-private holds John's docs, QA record and operator rules
+### T1 — agent-cv-private holds John's docs and operator rules
 Delivers: B6 · Blocked by: none · Lane: operator · Runner: agent after approval · Risk: cheap
 Budget: code +0 · tests +0
 Seam: `git -C ../agent-cv-private`
 Accept:
-- [ ] private HEAD adds `docs/webmcp-challenge-submission.md`, both `docs/plans/*.md` and `artifacts/qa/**`, byte-equal to engine copies (B6)
+- [ ] private HEAD adds `docs/webmcp-challenge-submission.md` and both `docs/plans/*.md`, byte-equal to engine copies; no `artifacts/` (B6)
 - [ ] private `AGENTS.md` has "When John asks" operator rules: deploy with `AGENT_CV_OWNER_ROOT`, `golden:diff` before engine changes; no "canonical in the public repo" line (B6)
 - [ ] `data/faq.md` still uncommitted; `git status -sb` shows `main...origin/main` with no ahead count (B6)
-Verify: receipt: receipts/t1-private-repo.txt — commit sha · 4 paths + 11 qa files · faq.md ` M` · ahead 0 (pre: no receipt)
+Verify: receipt: receipts/t1-private-repo.txt — commit sha · 3 docs + AGENTS.md · faq.md ` M` · ahead 0 (pre: no receipt)
 Skills: none
 Status: todo
 

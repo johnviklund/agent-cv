@@ -80,6 +80,8 @@ test("owner sync refuses an invalid owner or a deploy of the example owner befor
   const cases = [
     [async ({ sourceRoot }) => writeFile(resolve(sourceRoot, "owner.json"), JSON.stringify({ ...exampleOwner, slug: "" })),
       (options) => syncOwner(options), /^owner\.json: slug /],
+    [async ({ sourceRoot }) => writeFile(resolve(sourceRoot, "owner.json"), JSON.stringify({ ...exampleOwner, slug: "fixture-owner", name: { full: "Ada Example", short: "Ada" } })),
+      (options) => syncOwner({ ...options, deploy: true }), /^Refusing to deploy example content in: owner\.json\./],
     [async () => {}, ({ destinationRoot }) => syncOwner({ destinationRoot, deploy: true, env: { AGENT_CV_OWNER_ROOT: resolve(engineRoot, "examples/owner") } }),
       /^Refusing to deploy the example owner/],
     [async () => {}, ({ sourceRoot, destinationRoot }) => syncOwner({ sourceRoot: resolve(engineRoot, "examples/owner"), destinationRoot, deploy: true }),

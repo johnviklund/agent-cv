@@ -9,7 +9,14 @@ Size: code 0 · tests 0 · ratio n/a · largest touched: none (new run-folder fi
 Decisions: 1a (approve T1, T2 as listed)
 
 ## Execution state
-<filled by execute>
+Session 1: T1 complete; T2 handoff prepared, awaiting exact-scope approval.
+T1 @ bb6f3f4
+writer: GPT-6.1 Sol · high
+Baseline: npm run check passed outside sandbox; sandbox subprocess EPERM only.
+Final: npm run build passed, including check; 321 tests passed, 2 skipped.
+Current: T2 awaiting-human; receipts/t2-deploy-handoff.md names commands and rollback.
+Pending: approve git push origin main, deployment and one chat plus one comparison request.
+Remote handoff: automatic approval review rejected the push; local commits remain ahead.
 
 ## Findings
 | # | What is true | What it changes |
@@ -32,14 +39,15 @@ Delivers: prefactor for T2 (checks for B2, B3, B4, B5, B7) · Blocked by: none �
 Budget: code +130 · tests +40
 Seam: `node .workflow/forkable-live-verify/scripts/live-check.mjs [--get-only] --out <receipt>`; `readSseTypes` exported for the self-test
 Accept:
-- [ ] self-test: stream of deltas + `response.completed` → pass; adds `response.output_item.added` → fail naming that type; no `response.completed` → fail (B5)
-- [ ] `--get-only` on live → exit 0; receipt shows 4 rows `live sha256 == build/site sha256` for llms.txt, cv.md, sitemap.xml, AGENTS.md (B2)
-- [ ] same receipt: `/<slug>-cv.pdf` 200 · `application/pdf` · pages 1–2 by `countPdfPages` (B3)
-- [ ] same receipt: health body exactly `{"ok":true,"configured":true}`; both admin routes 401 with no token (B4, B7)
-- [ ] `--get-only` sends no POST (receipt lists every request: 8 GETs, 0 POSTs)
+- [x] self-test: stream of deltas + `response.completed` → pass; adds `response.output_item.added` → fail naming that type; no `response.completed` → fail (B5)
+- [x] `--get-only` on live → exit 0; receipt shows 4 rows `live sha256 == build/site sha256` for llms.txt, cv.md, sitemap.xml, AGENTS.md (B2)
+- [x] same receipt: `/<slug>-cv.pdf` 200 · `application/pdf` · pages 1–2 by `countPdfPages` (B3)
+- [x] same receipt: health body exactly `{"ok":true,"configured":true}`; both admin routes 401 with no token (B4, B7)
+- [x] `--get-only` sends no POST (receipt lists every request: 8 GETs, 0 POSTs)
 Verify: `node --test .workflow/forkable-live-verify/scripts/live-check_test.mjs && node .workflow/forkable-live-verify/scripts/live-check.mjs --get-only --out .workflow/forkable-live-verify/receipts/live-baseline.md` (pre: new file)
 Skills: none
-Status: todo
+Status: done @ bb6f3f4
+Writer: GPT-6.1 Sol
 
 ### T2 — deploy from the cutover engine and verify live
 Delivers: B1, B2, B3, B4, B5, B6, B7 · Blocked by: T1 · Lane: operator · Runner: agent after approval · Risk: irreversible
@@ -54,7 +62,8 @@ Accept:
 - [ ] compare: 200 and `validateComparisonResult` passes with the live `/evidence.json` digest; 2 roles in result (B6)
 Verify: receipt: receipts/live-verification.md — deploy exit 0 · version match · 4/4 sha · pdf ok · health ok · ask completed · compare valid · admin 401 ×2 (pre: no receipt)
 Skills: none
-Status: todo
+Status: awaiting-human
+Handoff receipt: receipts/t2-deploy-handoff.md; approval pending.
 
 ## Coverage
 - Outcome → T2 (receipts/live-verification.md on the live site)

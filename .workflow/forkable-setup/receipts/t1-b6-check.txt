@@ -1,0 +1,14 @@
+T1 B6 check, 2026-10-20
+Base: fb5a20a plus T1 scripts/setup.mjs, test/setup.test.mjs and package.json
+Clean detached worktree: /tmp/agent-cv-forkable-setup-check
+Dependencies: symlink to engine node_modules; no ignored data copied.
+Command: npm run setup -- --name 'Grace Hopper' --slug grace-hopper --domain grace.example --skip-cloud --target /tmp/agent-cv-forkable-setup-owner
+Exit: 0; git status confirms a new repository with no commits.
+Command: AGENT_CV_OWNER_ROOT=/tmp/agent-cv-forkable-setup-owner npm run check
+Exit: 0; tests 314, pass 302, fail 0, skipped 12; static checks pass for 10 pages.
+Full log: /tmp/forkable-setup-t1-b6.log
+Main checkout check: exit 0; tests 314, pass 311, skipped 3.
+Focused setup tests: exit 0; 8 passed.
+Red: missing scripts/setup.mjs, exit 1.
+Mutation: preserve Ada's links.github instead of clearing it; setup tests exit 1.
+Baseline: sandbox check fails in 5 child-process test files; outside sandbox passes 303 with 3 skipped.

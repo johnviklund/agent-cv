@@ -10,14 +10,14 @@ Decisions: 1b delete artifacts/qa (unused, not kept anywhere) · 2a port John-on
 Split declined by human: 2026-10-20
 
 ## Execution state
-Current: T3 todo; T1 and T2 complete.
+Current: T3 verified, ready to commit; T1 and T2 complete.
 T1 @ 70887fd (engine receipt; private commit 4ec3ba4, pushed).
 T2 @ 129f4c7
 writer: GPT-6.1 Sol · high; live catalog confirms the primary is available.
 Session 1: T1 (operator handoff prepared; no private writes).
 Session 2: T1 (1a/2a approved; private write blocked by two permission-review timeouts).
 Session 3: T1 (elevated read probe and private copies succeeded; staging timed out twice; no private commit/push).
-Session 4: T1, T2 (private commit/push complete; engine cutover verified).
+Session 4: T1, T2, T3 (private commit/push complete; engine cutover and fixture rewrite verified).
 Baseline: npm run check passes outside sandbox, 322 pass / 3 skipped; sandbox child processes hit EPERM.
 Golden baseline: exit 0, 19 accepted file differences; owner approved correction with 2a on 2026-10-20.
 Uncommitted implementation: none; T1 private commit 4ec3ba4; receipts/t1-private-repo.txt.
@@ -142,6 +142,7 @@ T2 is riskiest: a missed engine-root read fails only on a clean clone (T6), so T
 ## Deviations
 T2 baseline discrepancy: owner approved 2a on 2026-10-20, correcting eight to 19 existing accepted file differences. Exception set unchanged; sha256 8fb34630ba97f44e0ae48f9a8f084efaec54ddce42ba60c894b58a2cd98660bd.
 T2 also fixes owner-manifests.test.mjs's engine-data copy found by npm run check. Existing assertion changes and counts are recorded in receipts/t2-verification.md; retired document assertions follow F4, while CV assertions use the selected owner and repository prose permits Ada's placeholder source.
+T3 updates four T4 test files that import the renamed fixture, so every ticket commit keeps npm run check passing. Their remaining personal literals stay for T4; receipts/t3-verification.md records assertion counts and the snapshot removals approved by decision 2a.
 
 ## TODO impacts
 none

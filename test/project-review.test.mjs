@@ -9,7 +9,7 @@ import {
   validateProjectSourceManifest,
 } from "../scripts/project-review.mjs";
 import { runProjectReview } from "../scripts/review-project-sources.mjs";
-import { JOHN } from "./fixtures/owners.mjs";
+import { GRACE } from "./fixtures/owners.mjs";
 
 const manifest = {
   schemaVersion: 1,
@@ -86,7 +86,7 @@ test("renders a private approval queue without mutating canonical content", () =
     ["data/cv.md", "### Product Studio\n\nApproximately 999 tracked files."],
   ]);
   const markdown = renderProjectReview({
-    owner: JOHN,
+    owner: GRACE,
     manifest: validateProjectSourceManifest(manifest),
     canonical,
     sources: [{
@@ -131,7 +131,7 @@ test("keeps private repository identifiers out of proposal text while retaining 
     localFolders: [],
   });
   const markdown = renderProjectReview({
-    owner: JOHN,
+    owner: GRACE,
     manifest: privateManifest,
     canonical: new Map([["data/projects.md", "# Projects\n"]]),
     sources: [{
@@ -192,7 +192,7 @@ test("writes a private local-folder review packet and leaves canonical Markdown 
   assert.match(report, /Local folder:/);
   assert.ok(report.includes(`Local folder: ${localProject}`));
   assert.match(report, /requires Ada's review/);
-  assert.doesNotMatch(report, /John|Viklund/);
+  assert.doesNotMatch(report, /Grace|Sample/);
   assert.match(report, /Add a curated project section/);
   assert.equal(await readFile(canonicalPath, "utf8"), canonicalContent);
 });

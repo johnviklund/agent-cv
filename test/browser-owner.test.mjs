@@ -16,15 +16,15 @@ const withIdentity = (slug, full, short) => ({ ...example, owner: { ...example.o
 
 const OWNERS = [
   {
-    source: withIdentity("john-viklund", "John Viklund", "John"),
-    owner: { name: "John Viklund", shortName: "John", slug: "john-viklund", lang: "en" },
-    label: "JOHN'S AGENT",
-    busy: "John's agent is still answering. Wait for the response before opening role comparison.",
-    title: "Agent Engineer at Signal — John Viklund",
-    documented: "John's public CV or project record directly documents relevant experience.",
-    gap: "The public CV does not document evidence for this requirement. This is not a claim that John lacks the capability.",
-    questions: "Questions to ask John",
-    download: "john-viklund-role-comparison.md",
+    source: withIdentity("grace-sample", "Grace Sample", "Grace"),
+    owner: { name: "Grace Sample", shortName: "Grace", slug: "grace-sample", lang: "en" },
+    label: "GRACE'S AGENT",
+    busy: "Grace's agent is still answering. Wait for the response before opening role comparison.",
+    title: "Agent Engineer at Signal — Grace Sample",
+    documented: "Grace's public CV or project record directly documents relevant experience.",
+    gap: "The public CV does not document evidence for this requirement. This is not a claim that Grace lacks the capability.",
+    questions: "Questions to ask Grace",
+    download: "grace-sample-role-comparison.md",
   },
   {
     source: example,
@@ -101,7 +101,7 @@ test("rendered home and application pages give the browser the owner's chat, app
   }
 });
 
-const COMPARE_DESCRIPTION = "Compare one to three roles with John's published evidence. The supplied job titles, company names, and descriptions are sent to this site's comparison API and OpenAI for analysis before a result is shown on the page.";
+const COMPARE_DESCRIPTION = "Compare one to three roles with Grace's published evidence. The supplied job titles, company names, and descriptions are sent to this site's comparison API and OpenAI for analysis before a result is shown on the page.";
 
 async function registeredTools(owner) {
   const tools = [];
@@ -121,11 +121,11 @@ async function registeredTools(owner) {
 }
 
 test("WebMCP keeps its four tools and schemas while the comparison description names the selected owner", async () => {
-  const [john, ada] = await Promise.all(OWNERS.slice(0, 2).map(({ owner }) => registeredTools(owner)));
+  const [grace, ada] = await Promise.all(OWNERS.slice(0, 2).map(({ owner }) => registeredTools(owner)));
   const contract = (tools) => tools.map(({ name, inputSchema }) => ({ name, inputSchema }));
 
-  assert.deepEqual(john.map(({ name }) => name), ["compare_candidate_roles", "get_comparison_state", "focus_comparison_cell", "clear_role_comparison"]);
-  assert.deepEqual(contract(ada), contract(john));
-  assert.equal(john[0].description, COMPARE_DESCRIPTION);
-  assert.equal(ada[0].description, COMPARE_DESCRIPTION.replace("John's", "Ada's"));
+  assert.deepEqual(grace.map(({ name }) => name), ["compare_candidate_roles", "get_comparison_state", "focus_comparison_cell", "clear_role_comparison"]);
+  assert.deepEqual(contract(ada), contract(grace));
+  assert.equal(grace[0].description, COMPARE_DESCRIPTION);
+  assert.equal(ada[0].description, COMPARE_DESCRIPTION.replace("Grace's", "Ada's"));
 });

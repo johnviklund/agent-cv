@@ -1,16 +1,16 @@
 import { readFileSync } from "node:fs";
 
 // Owner identities for Worker and deploy-config tests; only the fields they read.
-export const JOHN = {
-  name: { full: "John Viklund", short: "John" },
+export const GRACE = {
+  name: { full: "Grace Sample", short: "Grace" },
   site: {
-    origin: "https://johnviklund.com",
-    hosts: ["johnviklund.com", "www.johnviklund.com", "john-viklund-agent-cv.agent-cv.workers.dev"],
+    origin: "https://grace.example",
+    hosts: ["grace.example", "www.grace.example", "grace-sample-agent-cv.agent-cv.workers.dev"],
   },
-  contact: { email: "johnwik@gmail.com" },
+  contact: { email: "grace@grace.example" },
   deploy: {
-    workerName: "john-viklund-agent-cv",
-    archiveNamespaceId: "66eaa9b0f9724e31980aec66972ad219",
+    workerName: "grace-sample-agent-cv",
+    archiveNamespaceId: "11111111111111111111111111111111",
     vars: {
       OPENAI_MODEL: "gpt-6-luna",
       OPENAI_REASONING_EFFORT: "none",

@@ -8,7 +8,7 @@ import {
   renderConversationCandidatePacket,
   runConversationReview,
 } from "../scripts/review-conversations.mjs";
-import { ADA, JOHN } from "./fixtures/owners.mjs";
+import { ADA, GRACE } from "./fixtures/owners.mjs";
 
 const failedTurn = {
   turnId: "turn_failed001",
@@ -129,7 +129,7 @@ test("renders all archive-derived fields inside escaped untrusted records", () =
     applicationLabel: "Lead <script> · Acme",
     sessions: [{ sessionId: "session_example1", turns: [{ ...failedTurn, reviewReasons: ["failed", "not_helpful", "unanswered"] }] }],
   }];
-  const packet = renderConversationCandidatePacket({ owner: JOHN, groups, generatedAt: new Date("2026-08-15T12:00:00.000Z") });
+  const packet = renderConversationCandidatePacket({ owner: GRACE, groups, generatedAt: new Date("2026-08-15T12:00:00.000Z") });
 
   const recordStart = packet.indexOf("<untrusted_conversation_record>");
   const recordEnd = packet.indexOf("</untrusted_conversation_record>");
@@ -144,11 +144,11 @@ test("renders all archive-derived fields inside escaped untrusted records", () =
 });
 
 test("conversation packet handling rules name the selected owner", () => {
-  for (const owner of [ADA, JOHN]) {
+  for (const owner of [ADA, GRACE]) {
     const groups = [{ applicationLabel: "General site", sessions: [{ turns: [{ ...failedTurn, question: "What changed?" }] }] }];
     const packet = renderConversationCandidatePacket({ owner, groups });
     assert.ok(packet.includes(`Interview ${owner.name.short}`));
-    if (owner === ADA) assert.doesNotMatch(packet, /John|Viklund/);
+    if (owner === ADA) assert.doesNotMatch(packet, /Grace|Sample/);
   }
 });
 

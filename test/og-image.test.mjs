@@ -10,7 +10,7 @@ import { promisify } from "node:util";
 
 import { buildCardHtml } from "../scripts/build-og-image.mjs";
 import { buildSite } from "../scripts/build-site.mjs";
-import { loadOwner, resolveOwnerRoot } from "../scripts/owner.mjs";
+import { loadOwner } from "../scripts/owner.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const example = resolve(root, "examples/owner");
@@ -31,7 +31,7 @@ test("og card names the owner, their headline and domain, and escapes owner text
   assert.match(html, /<h1>Ada <span>Example\.<\/span><\/h1>/);
   assert.match(html, /<p class="deck">Staff engineer, distributed systems\.<\/p>/);
   assert.match(html, /<span class="url">ada\.example<\/span>/);
-  assert.doesNotMatch(html, /John|Viklund|Volvo|johnviklund/);
+  assert.doesNotMatch(html, /Grace|Sample|Volvo|gracesample/);
 
   for (const [name, changes, expected] of [
     ["tagline and location", { tagline: "Staff engineer at Example" }, "Staff engineer at Example · Lisbon, Portugal"],
@@ -78,16 +78,4 @@ test("og card CLI writes the selected owner's card, buildSite publishes those by
 test("og cards live in each owner root, never in the engine assets", () => {
   assert.equal(existsSync(resolve(root, "site/assets/og-image.png")), false);
   assert.equal(existsSync(resolve(example, "assets/og-image.png")), true);
-});
-
-// Real Chromium; npm run check never launches it. Run with AGENT_CV_CHROMIUM_TESTS=1 and John's owner root.
-test("og card CLI regenerates John's committed card byte for byte", {
-  skip: (!process.env.AGENT_CV_CHROMIUM_TESTS && "set AGENT_CV_CHROMIUM_TESTS=1")
-    || (!existsSync(resolve(resolveOwnerRoot(), "golden")) && "needs John's owner root"),
-}, async (context) => {
-  const ownerRoot = resolve(await tempDir(context), "owner");
-  await cp(resolveOwnerRoot(), ownerRoot, { recursive: true, filter: (path) => !path.includes("/golden") && !path.includes("/.git") });
-  const committed = await readFile(resolve(ownerRoot, "assets/og-image.png"));
-  await run(process.execPath, [resolve(root, "scripts/build-og-image.mjs")], { env: { ...process.env, AGENT_CV_OWNER_ROOT: ownerRoot } });
-  assert.ok((await readFile(resolve(ownerRoot, "assets/og-image.png"))).equals(committed));
 });

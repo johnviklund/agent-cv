@@ -1,7 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
-import { createHash } from "node:crypto";
 import { cp, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, resolve } from "node:path";
@@ -9,22 +8,28 @@ import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 
 import { buildWranglerConfig } from "../scripts/wrangler-config.mjs";
-import { ADA, JOHN } from "./fixtures/owners.mjs";
+import { ADA, GRACE } from "./fixtures/owners.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const run = promisify(execFile);
 const base = JSON.parse(await readFile(resolve(root, "wrangler.base.jsonc"), "utf8"));
-const digest = (text) => `sha256:${createHash("sha256").update(text).digest("hex")}`;
 
-test("John's generated Wrangler config has the bytes of the config it replaces", () => {
-  // The digest golden-exceptions.json records for John's wrangler.jsonc after the build/site change.
-  assert.equal(digest(buildWranglerConfig(JOHN, base)), "sha256:e93980a5d237f3b3902c5a91f54f4c2eeab577ebe313e429159688a3256941ce");
+test("a custom-domain owner keeps her worker, archive, hosts and variables", () => {
+  const config = JSON.parse(buildWranglerConfig(GRACE, base));
+  assert.equal(config.name, "grace-sample-agent-cv");
+  assert.deepEqual(config.routes, [
+    { pattern: "grace.example", custom_domain: true },
+    { pattern: "www.grace.example", custom_domain: true },
+  ]);
+  assert.deepEqual(config.kv_namespaces, [{ binding: "ARCHIVE", id: "11111111111111111111111111111111" }]);
+  assert.equal(config.vars.CONTACT_EMAIL, "grace@grace.example");
+  assert.equal(config.vars.COMPARISON_MONTHLY_REQUEST_CAP, "60");
 });
 
 test("another owner's config takes her worker, archive, hosts and vars and keeps every binding rule", () => {
   const owner = { ...ADA, site: { ...ADA.site, hosts: [...ADA.site.hosts, "ada-example-agent-cv.ada.workers.dev"] } };
   const ada = JSON.parse(buildWranglerConfig(owner, base));
-  const john = JSON.parse(buildWranglerConfig(JOHN, base));
+  const grace = JSON.parse(buildWranglerConfig(GRACE, base));
 
   assert.equal(ada.name, "ada-example-agent-cv");
   assert.deepEqual(ada.kv_namespaces, [{ binding: "ARCHIVE", id: "00000000000000000000000000000000" }]);
@@ -34,8 +39,8 @@ test("another owner's config takes her worker, archive, hosts and vars and keeps
   ]);
   assert.deepEqual(ada.vars, { ...base.vars, MONTHLY_REQUEST_CAP: "1000" });
   const shared = ({ name, routes, kv_namespaces, vars, ...rest }) => rest;
-  assert.deepEqual(shared(ada), shared(john));
-  assert.equal(john.kv_namespaces[0].binding, ada.kv_namespaces[0].binding);
+  assert.deepEqual(shared(ada), shared(grace));
+  assert.equal(grace.kv_namespaces[0].binding, ada.kv_namespaces[0].binding);
 });
 
 test("CONTACT_EMAIL follows contact.email, whatever deploy.vars says", async (t) => {
@@ -70,8 +75,8 @@ async function engineCopy(context) {
 
 test("entry points write the selected owner's config over an absent or another owner's file", async (t) => {
   for (const script of ["scripts/wrangler-config.mjs", "scripts/check-worker-package.mjs"]) {
-    for (const existing of [null, buildWranglerConfig(JOHN, base)]) {
-      await t.test(`${script} · ${existing ? "John's config present" : "no config"}`, async (context) => {
+    for (const existing of [null, buildWranglerConfig(GRACE, base)]) {
+      await t.test(`${script} · ${existing ? "Grace's config present" : "no config"}`, async (context) => {
         const engine = await engineCopy(context);
         if (existing) await writeFile(resolve(engine, "wrangler.jsonc"), existing);
         const env = { ...process.env, AGENT_CV_OWNER_ROOT: resolve(root, "examples/owner") };

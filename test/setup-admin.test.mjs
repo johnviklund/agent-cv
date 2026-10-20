@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 
 import { buildWranglerConfig } from "../scripts/wrangler-config.mjs";
-import { JOHN } from "./fixtures/owners.mjs";
+import { GRACE } from "./fixtures/owners.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const run = promisify(execFile);
@@ -40,8 +40,8 @@ const setupAdmin = ({ engine, env }, ownerRoot) => run(process.execPath, [resolv
   { cwd: engine, env: { ...env, AGENT_CV_OWNER_ROOT: ownerRoot } });
 
 test("setup:admin hands Wrangler the selected owner's worker over an absent or another owner's config", async (t) => {
-  for (const existing of [null, buildWranglerConfig(JOHN, base)]) {
-    await t.test(existing ? "John's config present" : "no config", async (context) => {
+  for (const existing of [null, buildWranglerConfig(GRACE, base)]) {
+    await t.test(existing ? "Grace's config present" : "no config", async (context) => {
       const fixture = await setupFixture(context);
       if (existing) await writeFile(resolve(fixture.engine, "wrangler.jsonc"), existing);
       await setupAdmin(fixture, fixture.owner);

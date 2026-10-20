@@ -7,7 +7,7 @@ import {
   groupConversationCandidates,
   settleConversationPageRequest,
 } from "../site/assets/conversation-review.js";
-import { ADA, JOHN } from "./fixtures/owners.mjs";
+import { ADA, GRACE } from "./fixtures/owners.mjs";
 
 test("conversation review reasons identify each actionable archive signal", () => {
   assert.deepEqual(conversationReviewReasons({ outcome: "failed", answer: "" }), ["failed", "unanswered"]);
@@ -66,7 +66,7 @@ test("private briefs require reviewed classifications and fence transcript conte
   assert.throws(() => buildConversationReviewBrief({ groups, classifications: new Map() }), /Classify every candidate/);
 
   const brief = buildConversationReviewBrief({
-    owner: { shortName: JOHN.name.short },
+    owner: { shortName: GRACE.name.short },
     groups,
     classifications: new Map([["turn_gap", "missing_fact"]]),
     generatedAt: new Date("2026-08-15T13:00:00.000Z"),
@@ -86,10 +86,10 @@ test("private briefs require reviewed classifications and fence transcript conte
 
 test("downloaded brief handling rules name the selected owner", () => {
   const groups = groupConversationCandidates([turn({ outcome: "failed" })], [], new Set(["failed"]));
-  for (const owner of [ADA, JOHN]) {
+  for (const owner of [ADA, GRACE]) {
     const brief = buildConversationReviewBrief({ owner: { shortName: owner.name.short }, groups, classifications: new Map([["turn_default", "missing_fact"]]) });
     assert.ok(brief.includes(`Interview ${owner.name.short}`));
-    if (owner === ADA) assert.doesNotMatch(brief, /John|Viklund/);
+    if (owner === ADA) assert.doesNotMatch(brief, /Grace|Sample/);
   }
 });
 

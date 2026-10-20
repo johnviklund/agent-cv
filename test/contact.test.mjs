@@ -5,11 +5,18 @@ import { join } from "node:path";
 import { handleRequest } from "../src/worker.js";
 import { writeWranglerConfig } from "../scripts/wrangler-config.mjs";
 import { content, readSite, siteDir } from "./fixtures/site.mjs";
+import { loadOwner } from "../scripts/owner.mjs";
+import { renderSite } from "../scripts/build-site.mjs";
+import { fileURLToPath } from "node:url";
 
-const contactPage = await readSite("contact/index.html");
+const example = await loadOwner({ root: fileURLToPath(new URL("../examples/owner", import.meta.url)) });
+const contactPages = renderSite({ ...example, owner: {
+  ...example.owner,
+  contact: { email: "ada@ada.example" },
+  links: { ...example.owner.links, linkedin: "https://www.linkedin.com/in/adaexample/", x: "https://x.com/adaexample" },
+} });
+const contactPage = contactPages["contact/index.html"];
 const workerConfig = JSON.parse(await writeWranglerConfig());
-// John's contact channels are owner content; the example owner configures none of them.
-const johnOnly = { skip: content.owner.slug !== "john-viklund" && "needs John's owner root" };
 const publicTree = (await readTree(siteDir))
   .map(({ path, source }) => `${path}\n${source}`)
   .join("\n");
@@ -26,10 +33,10 @@ async function readTree(directory) {
   return files.flat();
 }
 
-test("contact page promotes the deliberate public channels", johnOnly, () => {
+test("contact page promotes the deliberate public channels", () => {
   assert.match(contactPage, /href=["']https:\/\/www\.linkedin\.com\/in\/[^"'\s/?#]+\/["'][^>]*\brel=["'](?:[^"']*\s)?me(?:\s[^"']*)?["']/i);
-  assert.match(contactPage, /href=["']mailto:johnwik@gmail\.com["']/i);
-  assert.match(contactPage, /href=["']https:\/\/x\.com\/johnviklund["'][^>]*\brel=["'](?:[^"']*\s)?me(?:\s[^"']*)?["']/i);
+  assert.match(contactPage, /href=["']mailto:ada@ada\.example["']/i);
+  assert.match(contactPage, /href=["']https:\/\/x\.com\/adaexample["'][^>]*\brel=["'](?:[^"']*\s)?me(?:\s[^"']*)?["']/i);
   assert.doesNotMatch(contactPage, /temporarily unavailable/i);
 });
 
@@ -42,7 +49,7 @@ test("deployable public files exclude unselected contact channels", () => {
   assert.doesNotMatch(publicTree, /\b(?:\d{2,4}[ .-]){2,3}\d{3,4}\b/);
 });
 
-test("contact endpoint can report no configured email without removing the static direct route", johnOnly, async () => {
+test("contact endpoint can report no configured email without removing the static direct route", async () => {
   const response = await handleRequest(
     new Request("https://example.test/api/contact"),
     {},
@@ -51,7 +58,7 @@ test("contact endpoint can report no configured email without removing the stati
 
   assert.equal(response.status, 200);
   assert.deepEqual(await response.json(), { email: null });
-  assert.match(contactPage, /href=["']mailto:johnwik@gmail\.com["']/i);
+  assert.match(contactPage, /href=["']mailto:ada@ada\.example["']/i);
 });
 
 test("agent guidance keeps the published email when the endpoint returns null", { skip: !content.owner.contact.email && "the owner publishes no email" }, async () => {

@@ -15,9 +15,6 @@ import { spawnSync } from "node:child_process";
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const example = resolve(root, "examples/owner");
 const ada = () => loadOwner({ root: example });
-// John's frozen pre-template output (npm run golden:capture) lives in his owner root, never in CI.
-const frozen = (path) => readFile(resolve(resolveOwnerRoot(), "golden/site", path), "utf8").catch(() => null);
-const noFrozen = !(await frozen("index.html")) && "needs John's frozen golden snapshot";
 
 async function tempDir(context) {
   const dir = await mkdtemp(resolve(tmpdir(), "agent-cv-site-"));
@@ -45,7 +42,7 @@ test("a fictional home renders Ada from structured data", async () => {
   assert.match(html, /data-prompt="What systems has Ada built\?"><span>Explore projects<\/span>/);
   assert.match(html, /<a href="\/ada-example-cv\.pdf">PDF ↓<\/a>/);
   assert.match(html, /<a href="https:\/\/github\.com\/ada-example" rel="noopener noreferrer" target="_blank"><strong>Example library ↗<\/strong>/);
-  assert.doesNotMatch(html.replaceAll(UPSTREAM_URL, ""), /John|Viklund|johnviklund|Volvo|cloudflareinsights/);
+  assert.doesNotMatch(html.replaceAll(UPSTREAM_URL, ""), /Grace|Sample|gracesample|Volvo|cloudflareinsights/);
 });
 
 test("invalid site sections name site.json and the field", async (context) => {
@@ -130,30 +127,12 @@ test("rendered home keeps its CSP hash", async () => {
   assert.match(pages["_headers"], /^\/ada-example-cv\.pdf\n.*filename="ada-example-cv\.pdf"/ms);
 });
 
-test("rendered home keeps John's published controller contracts", { skip: noFrozen }, async () => {
-  const contract = (html) => ({
-    ids: [...html.matchAll(/\sid="([^"]+)"/g)].map((match) => match[1]),
-    // The analytics beacon is configuration, not a controller hook.
-    // The analytics beacon is configuration and the owner attributes postdate the snapshot (T5).
-    data: [...new Set([...html.matchAll(/\s(data-[a-z-]+)/g)].map((match) => match[1]))].filter((name) => name !== "data-cf-beacon" && !name.startsWith("data-owner-")).sort(),
-    nav: [...html.matchAll(/<nav[^>]*>([\s\S]*?)<\/nav>/g)].map((match) => [...match[1].matchAll(/href="([^"]+)"/g)].length),
-    scripts: [...html.matchAll(/<script[^>]*src="([^"]+)"/g)].map((match) => match[1]).filter((src) => src.startsWith("/")),
-  });
-  const pages = renderSite(await ada());
-  // The published page is John's; the fictional page must expose the same hooks to the browser code.
-  const expected = contract(await frozen("index.html"));
-  const actual = contract(pages["index.html"]);
-  assert.deepEqual(actual.ids, expected.ids);
-  assert.deepEqual(actual.data, expected.data);
-  assert.deepEqual(actual.scripts, expected.scripts);
-  assert.deepEqual(actual.nav.slice(0, 2), expected.nav.slice(0, 2));
-});
 
 test("every fictional page renders Ada's own identity and copy", async () => {
   const pages = renderSite(await ada());
   assert.match(pages["admin/index.html"], /<html[^>]+data-owner-short-name="Ada"/);
   for (const [path, text] of Object.entries(pages)) {
-    assert.doesNotMatch(text.replaceAll(UPSTREAM_URL, ""), /John|Viklund|johnviklund|Volvo|c7d9e434/, path);
+    assert.doesNotMatch(text.replaceAll(UPSTREAM_URL, ""), /Grace|Sample|gracesample|Volvo|c7d9e434/, path);
   }
   for (const [path, pattern] of [
     ["about/index.html", /<h1>Close to the systems\.<\/h1>[\s\S]*Her work is <strong>invented<\/strong>/],
@@ -179,15 +158,6 @@ test("unsafe inline links in page prose fail with their site.json field", async 
   }
 });
 
-test("discovery files keep John's published API and tool names", { skip: noFrozen }, async () => {
-  const pages = renderSite(await ada());
-  for (const name of ["llms.txt", "AGENTS.md"]) {
-    const engine = await frozen(name);
-    for (const contract of [...engine.matchAll(/`((?:POST|GET) \/api\/[a-z/:]+|[a-z]+_[a-z_]+)`/g)].map((match) => match[1])) {
-      assert.ok(pages[name].includes(contract), `${name}: ${contract}`);
-    }
-  }
-});
 
 test("discovery files keep the engine contract and follow the owner's origin, slug and updatedAt", async () => {
   const { owner, site } = await ada();
@@ -268,6 +238,6 @@ test("a clean build holds every page and engine asset, and a rebuild drops stale
 test("generated site output stays out of Git while the engine assets are tracked", () => {
   const ignored = (path) => spawnSync("git", ["check-ignore", "-q", path], { cwd: root }).status === 0;
   assert.equal(ignored("build/site/index.html"), true);
-  assert.equal(ignored("build/site/john-viklund-cv.pdf"), true);
+  assert.equal(ignored("build/site/grace-sample-cv.pdf"), true);
   assert.equal(ignored("site/assets/app.js"), false);
 });

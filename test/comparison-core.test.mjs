@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { parseRoleBatch, buildRoleRequirementPreview } from "../site/assets/comparison-transfer.js";
 import { PLAIN_LINE_BATCH, PLAIN_LINE_REQUIREMENT_COUNTS } from "./fixtures/requirement-sections.mjs";
-import { JOHN } from "./fixtures/owners.mjs";
+import { GRACE } from "./fixtures/owners.mjs";
 import { EVIDENCE_CATALOG as evidenceCatalog } from "./fixtures/evidence-catalog.mjs";
 import generatedCatalog from "../src/data/comparison-evidence.js";
 import generatedOwner from "../src/data/owner.js";
@@ -262,7 +262,7 @@ test("new career subroles are available as bounded comparison evidence", { skip:
 
 test("a valid provider draft becomes a deterministic canonical comparison", () => {
   const draft = validDraft();
-  const result = canonicalizeComparisonDraft(draft, validateComparisonPayload({ roles: ROLES }).roles, evidenceCatalog, undefined, JOHN);
+  const result = canonicalizeComparisonDraft(draft, validateComparisonPayload({ roles: ROLES }).roles, evidenceCatalog, undefined, GRACE);
 
   assert.deepEqual(result.roles.map(({ id }) => id), ["role_01", "role_02"]);
   assert.equal(result.rows[0].id, "row_01");
@@ -274,7 +274,7 @@ test("a valid provider draft becomes a deterministic canonical comparison", () =
     evidenceId: evidenceCatalog.items[0].id,
     reasonCode: "direct_responsibility",
   }]);
-  assert.deepEqual(result.rows[0].cells[1].questions, ["Which parts of this work did John own directly?"]);
+  assert.deepEqual(result.rows[0].cells[1].questions, ["Which parts of this work did Grace own directly?"]);
   assert.equal(validateComparisonResult(result), true);
   assert.equal(validateBrowserComparisonResult(result), true);
   assert.deepEqual(BROWSER_COMPARISON_CONTRACT, COMPARISON_CONTRACT);
@@ -384,13 +384,13 @@ test("provider question kinds become fixed neutral server-authored questions", (
 test("provider conclusions fail closed without rejecting ordinary role terminology", () => {
   const roles = validateComparisonPayload({ roles: ROLES }).roles;
   const prohibited = [
-    "John fit: 99/100",
+    "Grace fit: 99/100",
     "Candidate match is 95%",
     "Score: 9/10",
-    "John scores 99%",
+    "Grace scores 99%",
     "Role ranking: first choice",
-    "John ranks first",
-    "Recommendation: hire John",
+    "Grace ranks first",
+    "Recommendation: hire Grace",
     "Best-fit role",
     "Hiring decision: yes",
     "The candidate is an excellent match",
@@ -398,7 +398,7 @@ test("provider conclusions fail closed without rejecting ordinary role terminolo
   for (const conclusion of prohibited) {
     const labelDraft = validDraft();
     labelDraft.rows[0].label = conclusion;
-    assert.throws(() => canonicalizeComparisonDraft(labelDraft, roles, evidenceCatalog, undefined, JOHN));
+    assert.throws(() => canonicalizeComparisonDraft(labelDraft, roles, evidenceCatalog, undefined, GRACE));
 
   }
 

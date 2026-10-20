@@ -25,7 +25,7 @@ function golden(...args) {
   return goldenAt(root, {}, ...args);
 }
 
-// Runs the CLI of the engine at `engine` from `cwd`, with an owner root kept out of John's checkout.
+// Runs the CLI of the engine at `engine` from `cwd`, with an owner root kept out of Grace's checkout.
 function goldenAt(engine, { cwd = root, ownerRoot }, ...args) {
   const env = ownerRoot ? { ...process.env, AGENT_CV_OWNER_ROOT: ownerRoot } : process.env;
   return run(process.execPath, [resolve(engine, "scripts/golden.mjs"), ...args], { cwd, env })

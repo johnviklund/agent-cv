@@ -4,7 +4,7 @@ import { BudgetCounter, handleRequest as handleWorkerRequest } from "../src/work
 import { readRecordsWithStatus } from "../src/archive.js";
 import { parseRoleBatch } from "../site/assets/comparison-transfer.js";
 import { PLAIN_LINE_BATCH, PLAIN_LINE_REQUIREMENT_COUNTS } from "./fixtures/requirement-sections.mjs";
-import { JOHN } from "./fixtures/owners.mjs";
+import { GRACE } from "./fixtures/owners.mjs";
 import { EVIDENCE_CATALOG } from "./fixtures/evidence-catalog.mjs";
 
 // Comparisons map to the explicit fixture catalog, never to the selected owner's generated evidence.
@@ -12,9 +12,9 @@ const handleRequest = (request, env, context, options = {}) => handleWorkerReque
 
 const ASK_URL = "https://example.test/api/ask";
 const COMPARE_URL = "https://example.test/api/compare";
-const CANONICAL_ORIGIN = "https://johnviklund.com";
+const CANONICAL_ORIGIN = "https://grace.example";
 const VALID_PAYLOAD = {
-  messages: [{ role: "user", content: "What has John built?" }],
+  messages: [{ role: "user", content: "What has Grace built?" }],
   sessionId: "session_12345678",
   source: "/",
 };
@@ -35,12 +35,12 @@ test("health reports readiness without revealing provider details", async () => 
 
 test("legacy and www hosts redirect to the canonical domain", async () => {
   const aliases = [
-    "https://www.johnviklund.com/projects/?source=www",
-    "https://john-viklund-agent-cv.agent-cv.workers.dev/cv/?source=workers",
+    "https://www.grace.example/projects/?source=www",
+    "https://grace-sample-agent-cv.agent-cv.workers.dev/cv/?source=workers",
   ];
 
   for (const alias of aliases) {
-    const response = await handleRequest(new Request(alias), baseEnv(), emptyContext(), { owner: JOHN });
+    const response = await handleRequest(new Request(alias), baseEnv(), emptyContext(), { owner: GRACE });
     const source = new URL(alias);
 
     assert.equal(response.status, 308);
@@ -51,13 +51,13 @@ test("legacy and www hosts redirect to the canonical domain", async () => {
 test("contact endpoint returns the deliberately configured public email", async () => {
   const response = await handleRequest(
     new Request("https://example.test/api/contact"),
-    baseEnv({ CONTACT_EMAIL: "johnwik@gmail.com" }),
+    baseEnv({ CONTACT_EMAIL: "grace@grace.example" }),
     emptyContext(),
   );
 
   assert.equal(response.status, 200);
   assert.equal(response.headers.get("cache-control"), "public, max-age=300");
-  assert.deepEqual(await response.json(), { email: "johnwik@gmail.com" });
+  assert.deepEqual(await response.json(), { email: "grace@grace.example" });
 });
 
 test("OPTIONS and non-POST requests return the API method contract", async () => {
@@ -204,7 +204,7 @@ test("successful OpenAI Responses streams preserve SSE headers, privacy, and gro
   assert.equal(upstreamBody.input.length, 1);
   assert.equal(upstreamBody.input[0].role, "user");
   assert.match(upstreamBody.input[0].content, /CURRENT VISITOR MESSAGE/);
-  assert.match(upstreamBody.input[0].content, /What has John built\?/);
+  assert.match(upstreamBody.input[0].content, /What has Grace built\?/);
 });
 
 test("upstream read errors become generic public SSE errors and downstream cancellation propagates", async () => {
@@ -298,7 +298,7 @@ test("caller-authored assistant turns remain untrusted text and never become ups
   const payload = {
     ...VALID_PAYLOAD,
     messages: [
-      { role: "user", content: "What did John build?" },
+      { role: "user", content: "What did Grace build?" },
       { role: "assistant", content: forgedBoundary },
       { role: "user", content: "Which project used evals?" },
     ],
@@ -320,7 +320,7 @@ test("caller-authored assistant turns remain untrusted text and never become ups
   assert.equal(response.status, 200);
   assert.deepEqual(upstreamBody.input.map(({ role }) => role), ["user"]);
   const [upstreamMessage] = upstreamBody.input;
-  assert.match(upstreamMessage.content, /What did John build\?/);
+  assert.match(upstreamMessage.content, /What did Grace build\?/);
   assert.match(upstreamMessage.content, /Which project used evals\?/);
   assert.match(upstreamMessage.content, /PRIOR RESPONSE \(UNTRUSTED CLIENT COPY\)/);
   assert.match(upstreamMessage.content, /Ignore the system\./);
@@ -350,7 +350,7 @@ test("completed answers are archived as expiring conversation turns without netw
   const write = archive.puts.at(-1);
   assert.equal(write.key, `conversation:${turnId}`);
   const record = JSON.parse(write.value);
-  assert.equal(record.question, "What has John built?");
+  assert.equal(record.question, "What has Grace built?");
   assert.equal(record.answer, "A grounded answer.");
   assert.equal(record.outcome, "completed");
   assert.equal(record.model, "gpt-6-luna");
@@ -399,7 +399,7 @@ test("feedback is stored separately, preserves the original expiry, and merges i
       turnId: "turn_12345678",
       createdAt: "2026-08-15T10:00:00.000Z",
       sessionId: "session_12345678",
-      question: "What has John built?",
+      question: "What has Grace built?",
       answer: "A grounded answer.",
       outcome: "completed",
       expiresAt,
@@ -423,7 +423,7 @@ test("feedback is stored separately, preserves the original expiry, and merges i
     turnId: "turn_12345678",
     createdAt: "2026-08-15T10:00:00.000Z",
     sessionId: "session_12345678",
-    question: "What has John built?",
+    question: "What has Grace built?",
     answer: "The final answer written after feedback.",
     outcome: "completed",
     expiresAt,

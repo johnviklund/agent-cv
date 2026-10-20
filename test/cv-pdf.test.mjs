@@ -6,16 +6,16 @@ import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { buildCvPdf } from "../scripts/build-cv-pdf.mjs";
 import { buildCvPrintHtml, countPdfPages } from "../scripts/cv-pdf.mjs";
-import { ADA, JOHN } from "./fixtures/owners.mjs";
+import { ADA, GRACE } from "./fixtures/owners.mjs";
 import { content, readSite } from "./fixtures/site.mjs";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 const ownerCv = await readFile(resolve(content.root, "data/cv.md"), "utf8");
 
-const john = {
-  ...JOHN,
-  links: { linkedin: "https://www.linkedin.com/in/johnviklund/", x: "https://x.com/johnviklund", github: "https://github.com/johnviklund" },
-  contact: { email: "johnwik@gmail.com" },
+const grace = {
+  ...GRACE,
+  links: { linkedin: "https://www.linkedin.com/in/gracesample/", x: "https://x.com/gracesample", github: "https://github.com/gracesample" },
+  contact: { email: "grace@grace.example" },
 };
 const ada = { ...ADA, links: { ...ADA.links, x: "https://x.com/adaexample" }, contact: { email: "ada@ada.example" } };
 const ADA_CV = [
@@ -26,14 +26,14 @@ const ADA_CV = [
 const contacts = (html) => html.match(/<p class="contacts">(.*)<\/p>/)[1].replace(/<[^>]+>/g, "");
 
 test("the CV PDF is built from the public CV with contacts and a link back to the site", async () => {
-  const owner = { ...content.owner, links: john.links, contact: john.contact };
+  const owner = { ...content.owner, links: grace.links, contact: grace.contact };
   const html = buildCvPrintHtml(ownerCv, owner);
 
   assert.ok(html.includes(`<h1>${owner.name.full}</h1>`));
   assert.match(html, /@page \{ size: Letter;/);
-  assert.match(html, /href="mailto:johnwik@gmail\.com"/);
-  assert.match(html, /href="https:\/\/x\.com\/johnviklund"/);
-  assert.match(html, /href="https:\/\/www\.linkedin\.com\/in\/johnviklund\/"/);
+  assert.match(html, /href="mailto:grace@grace\.example"/);
+  assert.match(html, /href="https:\/\/x\.com\/gracesample"/);
+  assert.match(html, /href="https:\/\/www\.linkedin\.com\/in\/gracesample\/"/);
   assert.ok(html.includes(`<a href="${owner.site.origin}">`));
   assert.doesNotMatch(html, /Selected transformation case studies|Selected applied-AI projects/);
   assert.ok(html.includes(`Generated automatically from ${owner.name.short}'s approved CV data`));
@@ -77,7 +77,7 @@ test("deploy always regenerates the ignored PDF", async () => {
 
 test("the CV header, footer and metadata name the selected owner", async () => {
   const cases = [
-    [john, ownerCv, "johnviklund.com · johnwik@gmail.com · x.com/johnviklund · linkedin.com/in/johnviklund", "John"],
+    [grace, ownerCv, "grace.example · grace@grace.example · x.com/gracesample · linkedin.com/in/gracesample", "Grace"],
     [ada, ADA_CV, "ada.example · ada@ada.example · x.com/adaexample", "Ada"],
   ];
   for (const [owner, markdown, line, short] of cases) {
@@ -87,7 +87,7 @@ test("the CV header, footer and metadata name the selected owner", async () => {
     assert.match(html, new RegExp(`<footer>Generated automatically from ${short}'s approved CV data at <a href="${owner.site.origin}">`));
   }
   const adaHtml = buildCvPrintHtml(ADA_CV, ada);
-  assert.doesNotMatch(adaHtml, /John|johnviklund|johnwik/);
+  assert.doesNotMatch(adaHtml, /Grace|gracesample|gracewik/);
 });
 
 test("an owner without an email gets no email link or empty separator", () => {
@@ -112,7 +112,7 @@ test("the printed PDF is named for the owner, fits two pages and carries readabl
     assert.match(text, new RegExp(owner.name.full));
     assert.doesNotMatch(execFileSync("pdffonts", [path], { encoding: "utf8" }), /Type 3/);
     assert.doesNotMatch((await readFile(path)).toString("latin1"), /\/home\/|\/Users\/|file:\/\//);
-    if (owner === ada) assert.doesNotMatch(text, /John|johnviklund/);
+    if (owner === ada) assert.doesNotMatch(text, /Grace|gracesample/);
   }
   assert.equal(homeLink, `${content.owner.slug}-cv.pdf`);
 });

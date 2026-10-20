@@ -30,3 +30,4 @@ build/
 
 # Generated from wrangler.base.jsonc and the owner (npm run build:wrangler-config).
 /wrangler.jsonc
+.verify-evidence/

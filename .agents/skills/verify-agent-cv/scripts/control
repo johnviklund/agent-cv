@@ -1,0 +1,199 @@
+#!/usr/bin/env node
+// Control CLI for driving the Agent CV site the way a visitor does.
+// Starts its own wrangler dev server and headless Chromium, drives it over CDP, prints JSON.
+import { spawn, execFileSync } from "node:child_process";
+import { existsSync, mkdirSync, readFileSync, writeFileSync, rmSync, openSync } from "node:fs";
+import { resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
+const SCRATCH = "/tmp/agent-cv-verify";
+const STATE = resolve(SCRATCH, "state.json");
+const DEFAULT_OUT = resolve(REPO, ".verify-evidence");
+
+const HELP = `control — drive the Agent CV site (JSON output)
+
+  control up [--port 8791] [--cdp-port 9333]     build, start wrangler dev + headless Chromium
+  control doctor                                  read-only health check; exit 0 only when worth driving
+  control down                                    stop only what 'up' started; evidence is kept
+  control open PATH                               e.g. open /  or  open /cv/
+  control click --role R --name N [--nth K]      real mouse click on the Kth (default 1st) element with that ARIA role and name
+  control fill --role R --name N --value V        focus, clear and type into a field
+  control press KEY                               Enter, Tab, Escape
+  control snapshot [--out DIR]                    visible headings, links, buttons, fields, status text
+  control shot NAME [--out DIR]                   screenshot to DIR/NAME.png
+  control eval 'JS EXPRESSION'                    read a value from the page (read-only checks)
+  control api PATH [--method M] [--body JSON]     call the local server directly (second view of state)
+  control wait --text T [--timeout 10]            wait until visible text contains T
+
+Example: control up && control open / && control fill --role textbox --name "Ask a question" --value hi && control shot home
+--out defaults to ${DEFAULT_OUT}. Chat answers need OPENAI_API_KEY in .dev.vars; without it, ask returns an error.`;
+
+const argv = process.argv.slice(2);
+const cmd = argv[0];
+const flags = {};
+const pos = [];
+for (let i = 1; i < argv.length; i++) {
+  if (argv[i].startsWith("--")) flags[argv[i].slice(2)] = argv[i + 1]?.startsWith("--") || argv[i + 1] === undefined ? true : argv[++i];
+  else pos.push(argv[i]);
+}
+const out = (o) => console.log(JSON.stringify(o, null, 2));
+const fail = (msg, code = 1) => { out({ ok: false, error: msg }); process.exit(code); };
+const state = () => (existsSync(STATE) ? JSON.parse(readFileSync(STATE, "utf8")) : null);
+const alive = (pid) => { try { process.kill(pid, 0); return true; } catch { return false; } };
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+async function until(fn, ms, what) {
+  const end = Date.now() + ms;
+  while (Date.now() < end) { try { const v = await fn(); if (v) return v; } catch {} await sleep(300); }
+  throw new Error(`timed out waiting for ${what}`);
+}
+
+async function up() {
+  if (state() && alive(state().wrangler)) fail(`already up on port ${state().port}: run 'control down' first`);
+  const port = Number(flags.port || 8791), cdp = Number(flags["cdp-port"] || 9333);
+  for (const p of [port, cdp, port + 540]) {
+    try { await fetch(`http://127.0.0.1:${p}/`); fail(`port ${p} busy: pass --port/--cdp-port or free it`); } catch (e) { if (e.message?.startsWith?.("port")) throw e; }
+  }
+  mkdirSync(SCRATCH, { recursive: true });
+  for (const s of ["sync:data", "build:site", "build:wrangler-config"]) execFileSync("npm", ["run", s], { cwd: REPO, stdio: "ignore" });
+  const log = openSync(resolve(SCRATCH, "wrangler.log"), "w");
+  const env = { ...process.env, WRANGLER_LOG_PATH: `${SCRATCH}/logs`, WRANGLER_CACHE_DIR: `${SCRATCH}/cache` };
+  const w = spawn("npx", ["wrangler", "dev", "--config", "wrangler.jsonc", "--port", String(port), "--inspector-port", String(port + 540), "--persist-to", `${SCRATCH}/state`], { cwd: REPO, env, stdio: ["ignore", log, log], detached: true });
+  w.unref();
+  const profile = resolve(SCRATCH, "profile");
+  rmSync(profile, { recursive: true, force: true });
+  const chrome = process.env.CHROME_PATH || "chromium";
+  const c = spawn(chrome, ["--headless=new", `--remote-debugging-port=${cdp}`, `--user-data-dir=${profile}`, "--no-first-run", "--window-size=1280,900", "about:blank"], { stdio: "ignore", detached: true });
+  c.unref();
+  writeFileSync(STATE, JSON.stringify({ wrangler: w.pid, chrome: c.pid, port, cdp, repoHead: execFileSync("git", ["rev-parse", "--short", "HEAD"], { cwd: REPO }).toString().trim() }));
+  try {
+    await until(async () => (await fetch(`http://127.0.0.1:${port}/api/health`)).ok, 90000, "wrangler ready");
+    await until(async () => (await fetch(`http://127.0.0.1:${cdp}/json/version`)).ok, 20000, "Chromium ready");
+  } catch (e) { await down(true); fail(`${e.message}. See ${SCRATCH}/wrangler.log. Is 'chromium' installed (or set CHROME_PATH)?`); }
+  out({ ok: true, id: `agent-cv@${state().repoHead}`, url: `http://127.0.0.1:${port}`, cdp });
+}
+
+async function down(quiet) {
+  const s = state();
+  if (!s) { if (!quiet) out({ ok: true, note: "nothing to stop" }); return; }
+  for (const pid of [s.wrangler, s.chrome]) { try { process.kill(-pid, "SIGTERM"); } catch { try { process.kill(pid, "SIGTERM"); } catch {} } }
+  await sleep(1000);
+  rmSync(SCRATCH, { recursive: true, force: true });
+  if (!quiet) out({ ok: true, stopped: [s.wrangler, s.chrome], evidenceKept: true });
+}
+
+async function doctor() {
+  const s = state(); const checks = {};
+  checks.state = !!s;
+  if (s) {
+    checks.wranglerProcess = alive(s.wrangler); checks.chromeProcess = alive(s.chrome);
+    try { const h = await (await fetch(`http://127.0.0.1:${s.port}/api/health`)).json(); checks.health = h.ok === true; checks.aiConfigured = h.configured; } catch { checks.health = false; }
+    try { checks.browser = (await fetch(`http://127.0.0.1:${s.cdp}/json/version`)).ok; } catch { checks.browser = false; }
+    checks.builtAt = s.repoHead;
+    checks.sameRevision = s.repoHead === execFileSync("git", ["rev-parse", "--short", "HEAD"], { cwd: REPO }).toString().trim();
+  }
+  const ok = checks.state && checks.wranglerProcess && checks.chromeProcess && checks.health && checks.browser;
+  out({ ok: !!ok, checks, note: checks.aiConfigured === false ? "chat answers unavailable: OPENAI_API_KEY not set (error path only)" : undefined });
+  process.exit(ok ? 0 : 1);
+}
+
+// --- CDP ---
+let ws, nextId = 1; const pending = new Map();
+async function connect() {
+  const s = state(); if (!s) fail("not up: run 'control up'");
+  let pages = await (await fetch(`http://127.0.0.1:${s.cdp}/json/list`)).json();
+  let page = pages.find((p) => p.type === "page");
+  if (!page) page = await (await fetch(`http://127.0.0.1:${s.cdp}/json/new?about:blank`, { method: "PUT" })).json();
+  ws = new WebSocket(page.webSocketDebuggerUrl);
+  await new Promise((r, j) => { ws.onopen = r; ws.onerror = () => j(new Error("CDP connect failed: run 'control doctor'")); });
+  ws.onmessage = (m) => { const d = JSON.parse(m.data); if (d.id && pending.has(d.id)) { const { r, j } = pending.get(d.id); pending.delete(d.id); d.error ? j(new Error(d.error.message)) : r(d.result); } };
+  return s;
+}
+const send = (method, params = {}) => new Promise((r, j) => { const id = nextId++; pending.set(id, { r, j }); ws.send(JSON.stringify({ id, method, params })); });
+const evalJS = async (expr) => {
+  const r = await send("Runtime.evaluate", { expression: expr, returnByValue: true, awaitPromise: true });
+  if (r.exceptionDetails) throw new Error(r.exceptionDetails.exception?.description || "page script failed");
+  return r.result.value;
+};
+
+// In-page finder: explicit/implicit role + accessible name; visible only.
+const FIND = `(role, name, nth) => {
+  const implicit = (e) => e.getAttribute('role') || ({A:'link',BUTTON:'button',TEXTAREA:'textbox',SELECT:'combobox',SUMMARY:'button',H1:'heading',H2:'heading',H3:'heading'}[e.tagName]) ||
+    (e.tagName==='INPUT' ? ({checkbox:'checkbox',radio:'radio',submit:'button',button:'button',file:'file'}[e.type] || 'textbox') : '');
+  const nameOf = (e) => (e.getAttribute('aria-label') || (e.getAttribute('aria-labelledby')||'').split(' ').map(i=>document.getElementById(i)?.textContent||'').join(' ') ||
+    (e.id && document.querySelector('label[for="'+e.id+'"]')?.textContent) || e.closest('label')?.textContent || e.textContent || e.placeholder || e.value || '').replace(/\\s+/g,' ').trim();
+  const visible = (e) => { const r = e.getBoundingClientRect(); const s = getComputedStyle(e); return r.width>0 && r.height>0 && s.visibility!=='hidden' && !e.closest('[hidden]'); };
+  const all = [...document.querySelectorAll('a[href],button,input,textarea,select,summary,[role],h1,h2,h3')].filter(visible);
+  const hits = all.filter(e => implicit(e)===role);
+  const exact = hits.filter(e => nameOf(e).toLowerCase()===name.toLowerCase());
+  const part = hits.filter(e => nameOf(e).toLowerCase().includes(name.toLowerCase()));
+  return { el: (exact.length ? exact : part)[nth || 0], count: (exact.length ? exact : part).length, names: hits.map(nameOf).slice(0,15) };
+}`;
+async function locate(role, name) {
+  const nth = Number(flags.nth || 1) - 1;
+  const r = await evalJS(`(() => { const f = ${FIND}; const {el,count,names} = f(${JSON.stringify(role)}, ${JSON.stringify(name)}, ${nth});
+    if (!el) return {found:false, names}; el.scrollIntoView({block:'center'}); const b = el.getBoundingClientRect(); return {found:true, count, x:b.x+b.width/2, y:b.y+b.height/2}; })()`);
+  if (!r.found) fail(`no visible ${role} named "${name}". ${role}s on the page: ${JSON.stringify(r.names)}`);
+  return r;
+}
+const mouse = async (x, y) => { for (const type of ["mouseMoved", "mousePressed", "mouseReleased"]) await send("Input.dispatchMouseEvent", { type, x, y, button: "left", clickCount: 1 }); };
+
+async function drive() {
+  const s = await connect();
+  await send("Page.enable"); await send("Runtime.enable");
+  await send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
+  const outDir = resolve(flags.out && flags.out !== true ? flags.out : DEFAULT_OUT);
+  if (cmd === "open") {
+    const path = pos[0] || "/"; await send("Page.navigate", { url: `http://127.0.0.1:${s.port}${path}` });
+    await until(() => evalJS("document.readyState==='complete'"), 15000, "page load"); await sleep(400);
+    out({ ok: true, url: await evalJS("location.href"), title: await evalJS("document.title") });
+  } else if (cmd === "click") {
+    if (!flags.role || !flags.name) fail("click needs --role and --name. Example: control click --role button --name 'Send question'");
+    const t = await locate(flags.role, flags.name); await mouse(t.x, t.y); await sleep(500);
+    out({ ok: true, clicked: `${flags.role} "${flags.name}"`, matches: t.count, url: await evalJS("location.href") });
+  } else if (cmd === "fill") {
+    if (!flags.role || !flags.name || flags.value === undefined) fail("fill needs --role, --name and --value");
+    const t = await locate(flags.role, flags.name); await mouse(t.x, t.y);
+    await evalJS("document.activeElement.select && document.activeElement.select()");
+    await send("Input.insertText", { text: String(flags.value) });
+    out({ ok: true, filled: `${flags.role} "${flags.name}"`, now: await evalJS("document.activeElement.value") });
+  } else if (cmd === "press") {
+    const key = pos[0]; const codes = { Enter: 13, Tab: 9, Escape: 27 };
+    if (!codes[key]) fail("press supports Enter, Tab, Escape");
+    for (const type of ["keyDown", "keyUp"]) await send("Input.dispatchKeyEvent", { type, key, code: key, windowsVirtualKeyCode: codes[key], ...(key === "Enter" && type === "keyDown" ? { text: "\r" } : {}) });
+    await sleep(500); out({ ok: true, pressed: key });
+  } else if (cmd === "snapshot") {
+    const snap = await evalJS(`(() => { const f = ${FIND}; const vis = (e)=>{const r=e.getBoundingClientRect();return r.width>0&&r.height>0&&!e.closest('[hidden]')&&getComputedStyle(e).visibility!=='hidden'};
+      const txt = (e)=> (e.getAttribute('aria-label')||e.textContent||e.placeholder||'').replace(/\\s+/g,' ').trim().slice(0,100);
+      const pick = (sel)=>[...document.querySelectorAll(sel)].filter(vis).map(txt).filter(Boolean);
+      return { url: location.href, title: document.title, headings: pick('h1,h2,h3'), buttons: pick('button,summary'), links: pick('a[href]'),
+        fields: [...document.querySelectorAll('input,textarea,select')].filter(vis).map(e=>({label:txt(e)||e.name||e.id, value:e.value})),
+        status: pick('[role=status],[role=alert],[aria-live]') }; })()`);
+    mkdirSync(outDir, { recursive: true }); writeFileSync(resolve(outDir, `snapshot-${Date.now()}.json`), JSON.stringify(snap, null, 2));
+    out({ ok: true, ...snap });
+  } else if (cmd === "shot") {
+    const name = pos[0]; if (!name) fail("shot needs a NAME. Example: control shot home-before");
+    const r = await send("Page.captureScreenshot", { format: "png" }); mkdirSync(outDir, { recursive: true });
+    const file = resolve(outDir, `${name}.png`); writeFileSync(file, Buffer.from(r.data, "base64")); out({ ok: true, file });
+  } else if (cmd === "eval") {
+    out({ ok: true, value: await evalJS(pos[0]) });
+  } else if (cmd === "wait") {
+    const timeout = Number(flags.timeout || 10) * 1000;
+    try { await until(() => evalJS(`document.body.innerText.includes(${JSON.stringify(flags.text)})`), timeout, `text "${flags.text}"`); out({ ok: true }); }
+    catch (e) { fail(`${e.message}. Run 'control snapshot' to see what is visible.`); }
+  }
+  ws.close();
+}
+
+async function api() {
+  const s = state(); if (!s) fail("not up: run 'control up'");
+  const r = await fetch(`http://127.0.0.1:${s.port}${pos[0]}`, { method: flags.method || "GET", headers: { "content-type": "application/json" }, body: flags.body && flags.body !== true ? flags.body : undefined });
+  const text = await r.text(); let body; try { body = JSON.parse(text); } catch { body = text.slice(0, 2000); }
+  out({ ok: true, status: r.status, body });
+}
+
+const table = { up, doctor, down: () => down(false), api };
+if (!cmd || cmd === "--help" || flags.help) console.log(HELP);
+else if (table[cmd]) await table[cmd]();
+else if (["open", "click", "fill", "press", "snapshot", "shot", "eval", "wait"].includes(cmd)) { await drive().catch((e) => fail(e.message)); process.exit(0); }
+else fail(`unknown command '${cmd}'. Run 'control --help'.`);

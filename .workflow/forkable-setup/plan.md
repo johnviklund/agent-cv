@@ -9,14 +9,16 @@ Size: code 218 · tests 232 · ratio 1.06 · largest touched USERGUIDE.md 174, t
 Decisions: 1a links.github set to null by setup · 2a deploy also refuses Ada's og-image bytes · 3a tickets approved 2026-10-20
 
 ## Execution state
-Current: T4 todo · writer: GPT-6.1 Sol
+Current: all tickets done; next review · writer: GPT-6.1 Sol
 T1 @ a61c3ab
 T2 @ ed23bc1
 T3 @ fae8fe6
+T4 @ 55ac8cb
 Session 1: T1, T2, T3
+Session 2: T4
 Baseline: sandbox check fails in five child-process files; unsandboxed check passes, 303 pass / 3 skipped.
 Contracts: runSetup({args, env, run, ask, isTTY, engineRoot}); runner returns {stdout}.
-Uncommitted: none after this record commit · pending decision: approve push to origin/main; automatic approval review rejected the remote default-branch write.
+Uncommitted: none after this record commit · pending decision: approve the two T4 commits for push to origin/main; auto-review rejected scope beyond the earlier seven-commit approval.
 
 ## Findings
 | # | What is true | What it changes |
@@ -88,12 +90,13 @@ Delivers: B8 · Blocked by: T1, T2, T3 · Lane: mechanical
 Budget: code +0 · tests +30 · why: docs ticket, the test is its only code
 Seam: `test/maintenance-docs.test.mjs` reading README.md and USERGUIDE.md
 Accept:
-- [ ] README has `## Create your own Agent CV` with `npm run setup`, `gh repo create`, `--private`, `AGENT_CV_OWNER_ROOT`, `npm run deploy`, `git pull upstream main` (B8)
-- [ ] USERGUIDE "Set up a local checkout" and "Deploy your fork" contain `npm run setup` and the content-rewrite prompt (B8)
-- [ ] README "Run it locally", "Create your own Agent CV", and those two USERGUIDE sections contain no `bootstrap:data` (B8)
+- [x] README has `## Create your own Agent CV` with `npm run setup`, `gh repo create`, `--private`, `AGENT_CV_OWNER_ROOT`, `npm run deploy`, `git pull upstream main` (B8)
+- [x] USERGUIDE "Set up a local checkout" and "Deploy your fork" contain `npm run setup` and the content-rewrite prompt (B8)
+- [x] README "Run it locally", "Create your own Agent CV", and those two USERGUIDE sections contain no `bootstrap:data` (B8)
 Verify: `node --test test/maintenance-docs.test.mjs` (pre: 1 passed)
 Skills: /home/john/.claude/skills/plain/SKILL.md
-Status: todo
+Status: done @ 55ac8cb
+Writer: GPT-6.1 Sol
 
 ## Coverage
 - Outcome → T1 (owner directory and CLI output), T2 (KV id and secrets), T3 (deploy warning), T4 (docs)

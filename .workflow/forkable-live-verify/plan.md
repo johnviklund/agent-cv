@@ -10,13 +10,13 @@ Decisions: 1a (approve T1, T2 as listed)
 
 ## Execution state
 Session 1: T1 complete; T2 handoff prepared, awaiting exact-scope approval.
+Session 2: T2 approved via 1a; push succeeded; preflight failed before deployment.
 T1 @ bb6f3f4
 writer: GPT-6.1 Sol · high
 Baseline: npm run check passed outside sandbox; sandbox subprocess EPERM only.
 Final: npm run build passed, including check; 321 tests passed, 2 skipped.
-Current: T2 awaiting-human; receipts/t2-deploy-handoff.md names commands and rollback.
-Pending: approve git push origin main, deployment and one chat plus one comparison request.
-Remote handoff: automatic approval review rejected the push; local commits remain ahead.
+Current: T2 awaiting-human; receipts/t2-preflight-failure.md records the failed Verify.
+Pending: re-plan guard correction; no deployment, paid request or rollback ran.
 
 ## Findings
 | # | What is true | What it changes |
@@ -63,7 +63,10 @@ Accept:
 Verify: receipt: receipts/live-verification.md — deploy exit 0 · version match · 4/4 sha · pdf ok · health ok · ask completed · compare valid · admin 401 ×2 (pre: no receipt)
 Skills: none
 Status: awaiting-human
-Handoff receipt: receipts/t2-deploy-handoff.md; approval pending.
+Handoff receipt: receipts/t2-deploy-handoff.md; approved 1a, preflight failed. See receipts/t2-preflight-failure.md.
+
+## Deviations
+- T2: sync:owner --deploy exited 1 because its whole-owner scan rejects fictional example-owner references in historical docs/plans. T2 cannot pass as written without a prerequisite correction. Stop and return to plan; the guard was not bypassed.
 
 ## Coverage
 - Outcome → T2 (receipts/live-verification.md on the live site)

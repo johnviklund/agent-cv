@@ -5,8 +5,8 @@ Inputs: plan.md @ be08f5b; receipts/t1-verification.md @ e87e101
 Status: complete
 
 ## Approval scope
-Runner: agent after approval. Approval is pending.
-Remote handoff approval is also pending for `git push origin main`. Automatic approval review rejected the initial combined save-and-push command because pushing to the default branch needed explicit authorization. That command did not run. Local preparation continues separately.
+Runner: agent after approval. The owner approved option `1a` on 2026-10-20, covering push and the full handoff below.
+The earlier automatic push rejection is resolved. Push succeeded; the approved preflight then failed before deployment. See `receipts/t2-preflight-failure.md`. No deployment or paid request ran.
 Deploy the current cutover engine plus `../agent-cv-private` to Worker `john-viklund-agent-cv`, serving `https://johnviklund.com`. Then run the prepared live check once, including one chat POST and one comparison POST. These consume one request from each monthly cap. Do not retry a paid request without new approval. Read neither admin tokens nor authenticated exports.
 
 ## Preflight already completed

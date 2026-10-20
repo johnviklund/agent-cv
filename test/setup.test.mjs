@@ -130,6 +130,12 @@ test("setup preserves completed values and names the retry command for each clou
       assert.match(error.message, /Retry:/);
       assert.match(error.message, step === "ADMIN_API_TOKEN" ? /npm run setup:admin/ : /npx wrangler/);
       assert.ok(error.message.includes(f.target));
+      const retries = ["npx wrangler kv namespace create", "npx wrangler secret put OPENAI_API_KEY", "npm run setup:admin"];
+      const first = { kv: 0, "missing-id": 0, OPENAI_API_KEY: 1, ADMIN_API_TOKEN: 2 }[step];
+      assert.deepEqual(retries.filter((retry) => error.message.includes(retry)), retries.slice(first));
+      const positions = retries.slice(first).map((retry) => error.message.indexOf(retry));
+      assert.deepEqual(positions, [...positions].sort((a, b) => a - b));
+      assert.ok(error.message.endsWith(step === "missing-id" ? "Namespace response has no id." : "cloud failure"));
       return true;
     });
     const owner = (await loadOwner({ root: f.target })).owner;

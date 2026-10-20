@@ -16,6 +16,7 @@ T3 @ fae8fe6
 T4 @ 55ac8cb
 Session 1: T1, T2, T3
 Session 2: T4
+Session 3: C1-T1 (patch cycle 1)
 Baseline: sandbox check fails in five child-process files; unsandboxed check passes, 303 pass / 3 skipped.
 Contracts: runSetup({args, env, run, ask, isTTY, engineRoot}); runner returns {stdout}.
 Uncommitted: none after this record commit · pending decision: approve the two T4 commits for push to origin/main; auto-review rejected scope beyond the earlier seven-commit approval.

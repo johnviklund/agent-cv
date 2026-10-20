@@ -16,7 +16,7 @@ T3 @ fae8fe6
 Session 1: T1, T2, T3
 Baseline: sandbox check fails in five child-process files; unsandboxed check passes, 303 pass / 3 skipped.
 Contracts: runSetup({args, env, run, ask, isTTY, engineRoot}); runner returns {stdout}.
-Uncommitted: none after this record commit · pending decision: none
+Uncommitted: none after this record commit · pending decision: approve push to origin/main; automatic approval review rejected the remote default-branch write.
 
 ## Findings
 | # | What is true | What it changes |

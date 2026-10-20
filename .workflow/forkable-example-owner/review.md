@@ -25,7 +25,7 @@ Escape hatches: none added
 ## Cycle 1 findings
 ### P1 — engine `data/` writer and reader left behind after sources moved to the owner root
 - Evidence: T1 moved `sync:data` to read `<ownerRoot>/data/` (`scripts/sync-public-data.mjs:25`), but `scripts/sync-github-repositories.mjs:32` still writes engine `data/repositories.md`, and `package.json` `sync:repositories` then runs `sync:data`, which publishes the owner's old copy. Probe: fresh fetch written to engine `data/repositories.md` → after `syncPublicData`, `public/repositories.md` contains it: false. Same class: `scripts/build-cv-pdf.mjs:54` reads engine `data/cv.md` for the deploy PDF while the site reads the owner's, so the two drift after the next edit. Docs still send edits to engine `data/`: `AGENTS.md:38`, `README.md:84`, `.agents/skills/refresh-agent-cv-projects/SKILL.md:18,39`. Concrete failing input: `npm run sync:repositories` after an allowlist change ships nothing.
-- Disposition: fix now — reopened cycle 2 at P1; past the two-cycle bound, awaiting human: a) cycle 3 · b) defer to TODO.md
+- Disposition: fix now — reopened cycle 2 at P1; human chose a) cycle 3
 - Resolved: — (cycle 2: fixed at 882b97c for the repository writer, the PDF reader and the three named docs; the same class still has open sites, see C2-1)
 
 ## Pre-existing / environmental
@@ -50,7 +50,7 @@ Independence: cross-vendor (writer GPT-6.1 Sol / OpenAI · reviewer Opus 5.5 / A
 - Evidence: same class as C1-1. (1) `npm run build:evidence` → `writeComparisonEvidence()` with no args reads the owner's manifest but the engine's sources (`scripts/build-comparison-evidence.mjs:84,297`). Probe in a clean worktree: `AGENT_CV_OWNER_ROOT=examples/owner node scripts/build-comparison-evidence.mjs` → exit 1, "overview.focus: missing heading Focus in data/overview.md". On John's root it reads stale engine copies without error. (2) `npm run projects:review` reads `canonicalFiles` from the engine root (`scripts/review-project-sources.mjs:57`), while the refresh skill now says edits go to `<owner root>/data/`; after the next owner edit the review packet shows the old text. (3) Doc: `.agents/skills/review-agent-cv-conversations/SKILL.md:15` still says "currently engine `data/`" (writer noted it, deferred).
 - Breaks no B# and not the Outcome: `sync:data` and `npm run check` pass `sourceRoot` correctly (`scripts/sync-public-data.mjs:42`).
 - Remedy: default `sourceRoot` to the owner root in `writeComparisonEvidence`; read canonical files from `ownerRoot` in `runProjectReview`; fix the skill line and restore its `maintenance-docs` assertion.
-- Disposition: fix now — one decision with C1-1 (cycle bound reached)
+- Disposition: fix now — patch_plan.md C2-T1
 - Resolved: —
 
 ### P3 — default-folders test depends on the working directory
@@ -65,3 +65,4 @@ Independence: cross-vendor (writer GPT-6.1 Sol / OpenAI · reviewer Opus 5.5 / A
 
 ## Cycle 2 verdict
 C1-2 resolved. C1-1 fixed at its named sites but reopened as C2-1: `build:evidence` and `projects:review` still read engine `data/`. Open: 1 P1 (C1-1/C2-1), past the two-cycle bound → human decision. P3: 2 new, deferred. P0/P2: 0. Recommend b) defer to TODO.md: it breaks no B# and not the Outcome, and U8 deletes engine `data/`, which ends this class of bug.
+Cycle 3 approved by human: 2026-10-20 (chat: "run a third fix round please"). Patch cycle 2 in patch_plan.md (C2-T1).

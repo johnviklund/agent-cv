@@ -13,7 +13,6 @@ This repository contains the public implementation of an owner's Agent CV. Keep 
 ## Verification
 
 - Drive the running site with the `verify-agent-cv` skill (`.agents/skills/verify-agent-cv/`); start with its `features/README.md`.
-
 - Run `npm run check` before proposing or committing changes.
 - Run `npm run build` for Worker packaging or deployment changes.
 - Add or update Node tests for behavior-bearing changes.

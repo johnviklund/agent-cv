@@ -10,9 +10,10 @@ Decisions: 1b delete artifacts/qa (unused, not kept anywhere) · 2a port John-on
 Split declined by human: 2026-10-20
 
 ## Execution state
-Current: T3 verified, ready to commit; T1 and T2 complete.
+Current: T4 todo; T1–T3 complete. Engine checkpoint push deferred to the approved T7 operator gate.
 T1 @ 70887fd (engine receipt; private commit 4ec3ba4, pushed).
 T2 @ 129f4c7
+T3 @ cbce676
 writer: GPT-6.1 Sol · high; live catalog confirms the primary is available.
 Session 1: T1 (operator handoff prepared; no private writes).
 Session 2: T1 (1a/2a approved; private write blocked by two permission-review timeouts).
@@ -75,12 +76,13 @@ Delivers: B4 · Blocked by: T2 · Lane: logic
 Budget: code +0 · tests +120 · why: test-only rewrite; John literals become `GRACE`/`ADA` fixture reads
 Seam: `test/fixtures/owners.mjs`; the 11 test files in Verify
 Accept:
-- [ ] `git grep -ciE 'john|viklund'` over `test/fixtures` and the 11 files → no output (B4)
-- [ ] `GRACE` keeps `JOHN`'s field shape (custom domain, 3 hosts, archive id, vars), so wrangler-config still covers a custom-domain owner (B4)
-- [ ] Verify passes with `AGENT_CV_OWNER_ROOT=examples/owner` and with the sibling: 0 failures both (B4)
+- [x] `git grep -ciE 'john|viklund'` over `test/fixtures` and the 11 files → no output (B4)
+- [x] `GRACE` keeps `JOHN`'s field shape (custom domain, 3 hosts, archive id, vars), so wrangler-config still covers a custom-domain owner (B4)
+- [x] Verify passes with `AGENT_CV_OWNER_ROOT=examples/owner` and with the sibling: 0 failures both (B4)
 Verify: `node --test test/worker.test.mjs test/wrangler-config.test.mjs test/owner-runtime.test.mjs test/chat-core.test.mjs test/contact.test.mjs test/setup-admin.test.mjs test/browser-owner.test.mjs test/og-image.test.mjs test/site-rendering.test.mjs test/golden.test.mjs test/cv-pdf.test.mjs` (pre: 120 pass, 2 skipped)
 Skills: none
-Status: todo
+Status: done @ cbce676
+Writer: GPT-6.1 Sol
 
 ### T4 — maintenance and comparison tests carry no John
 Delivers: B4 · Blocked by: T3 · Lane: logic

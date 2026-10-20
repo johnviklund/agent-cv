@@ -1,0 +1,24 @@
+kv
+wrangler kv namespace create failed. Owner directory kept at /tmp/c2-outcome-AxYLGT/owner. Retry:
+  AGENT_CV_OWNER_ROOT='/tmp/c2-outcome-AxYLGT/owner' npx wrangler kv namespace create grace-hopper-agent-cv-archive; copy the returned id into /tmp/c2-outcome-AxYLGT/owner/owner.json deploy.archiveNamespaceId
+  AGENT_CV_OWNER_ROOT='/tmp/c2-outcome-AxYLGT/owner' npx wrangler secret put OPENAI_API_KEY
+  AGENT_CV_OWNER_ROOT='/tmp/c2-outcome-AxYLGT/owner' npm run setup:admin
+Cause: simulated cloud failure
+
+OPENAI_API_KEY
+OPENAI_API_KEY failed. Owner directory kept at /tmp/c2-outcome-XDPnUR/owner. Retry:
+  AGENT_CV_OWNER_ROOT='/tmp/c2-outcome-XDPnUR/owner' npx wrangler secret put OPENAI_API_KEY
+  AGENT_CV_OWNER_ROOT='/tmp/c2-outcome-XDPnUR/owner' npm run setup:admin
+Cause: simulated cloud failure
+
+ADMIN_API_TOKEN
+ADMIN_API_TOKEN failed. Owner directory kept at /tmp/c2-outcome-UewJ0i/owner. Retry:
+  AGENT_CV_OWNER_ROOT='/tmp/c2-outcome-UewJ0i/owner' npm run setup:admin
+Cause: Cloudflare ADMIN_API_TOKEN setup failed. The generated token remains in .dev.vars for a retry.
+
+no-key
+OPENAI_API_KEY failed. Owner directory kept at /tmp/c2-outcome-1mwo2M/owner. Retry:
+  AGENT_CV_OWNER_ROOT='/tmp/c2-outcome-1mwo2M/owner' npx wrangler secret put OPENAI_API_KEY
+  AGENT_CV_OWNER_ROOT='/tmp/c2-outcome-1mwo2M/owner' npm run setup:admin
+Cause: Provide OPENAI_API_KEY or run in a terminal.
+

@@ -9,21 +9,21 @@ Size: code 1,329 · tests 743 · ratio 0.56 · largest touched pages.mjs 453, bu
 Decisions: 1a drop CI git-diff step, accept dirty public/ locally until U8 · 2a admin and 404 get a credit-only footer · 3a leak scan runs only for examples/owner, else prints skipped · 4a tickets approved
 
 ## Execution state
-T1–T4 and both cycle 1 patch tickets done. Next: review.
-Pending: none. C1-T2 checkpoint 5076849 pushed; CI success, receipt c1-t2-verification.md.
+T1–T4 and all patch tickets done. Next: review cycle 3.
+Pending: push C2-T1 and read CI. Receipt c2-t1-verification.md.
 T1 @ 023e92f · private source copy @ 5699413
 T2 @ 95eae04 · private golden exceptions @ ae5d654
 T3 @ 28d4fc6
 T3 @ 150b701 · CI privacy-fixture correction
 T4 @ 83fbf99
-writer: GPT-6.1 Sol · T1 xhigh; T2–T4 and C1-T2 high
+writer: GPT-6.1 Sol · T1 xhigh; T2–T4, C1-T2 and C2-T1 high
 Session 1: T1
 Session 2: T2, T3, T4 handoff
 Session 3: T4
 Session 4: C1-T1
 Session 5: C1-T2
-Verification receipts: t1-verification.md, t2-verification.md, t3-verification.md, t4-push-ci.md, c1-t1-verification.md, c1-t2-verification.md. Private repo untouched in Sessions 4–5.
-
+Session 6: C2-T1
+Verification receipts: t1-verification.md, t2-verification.md, t3-verification.md, t4-push-ci.md, c1-t1-verification.md, c1-t2-verification.md, c2-t1-verification.md. Private repo untouched in Sessions 4–6.
 ## Findings
 | # | What is true | What it changes |
 |---|---|---|

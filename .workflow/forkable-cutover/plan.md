@@ -10,7 +10,7 @@ Decisions: 1b delete artifacts/qa (unused, not kept anywhere) · 2a port John-on
 Split declined by human: 2026-10-20
 
 ## Execution state
-Current: T1–T7 complete; ready for cross-vendor review. T7 CI success: receipts/t7-ci.txt.
+Current: patch cycle 1 in progress; C1-T1 complete, C1-T2 next. See patch_plan.md.
 T1 @ 70887fd (engine receipt; private commit 4ec3ba4, pushed).
 T2 @ 129f4c7
 T3 @ cbce676
@@ -25,6 +25,7 @@ Session 3: T1 (elevated read probe and private copies succeeded; staging timed o
 Session 4: T1, T2, T3 (private commit/push complete; engine cutover and fixture rewrite verified).
 Session 5: T4, T5, T6 (both owners and clean clone pass).
 Session 6: T7 (1a approved; engine pushed, CI build passes).
+Session 7: C1-T1 (credit-line mutation checks pass); C1-T2 next.
 Baseline: npm run check passes outside sandbox, 322 pass / 3 skipped; sandbox child processes hit EPERM.
 Golden baseline: exit 0, 19 accepted file differences; owner approved correction with 2a on 2026-10-20.
 Uncommitted implementation: none; T1 private commit 4ec3ba4; receipts/t1-private-repo.txt.

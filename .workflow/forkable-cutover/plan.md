@@ -10,7 +10,8 @@ Decisions: 1b delete artifacts/qa (unused, not kept anywhere) · 2a port John-on
 Split declined by human: 2026-10-20
 
 ## Execution state
-Current: T1 private commit/push verified; success receipt prepared, then T2.
+Current: T2 todo; T1 complete.
+T1 @ 70887fd (engine receipt; private commit 4ec3ba4, pushed).
 writer: GPT-6.1 Sol · high; live catalog confirms the primary is available.
 Session 1: T1 (operator handoff prepared; no private writes).
 Session 2: T1 (1a/2a approved; private write blocked by two permission-review timeouts).
@@ -45,12 +46,12 @@ Delivers: B6 · Blocked by: none · Lane: operator · Runner: agent after approv
 Budget: code +0 · tests +0
 Seam: `git -C ../agent-cv-private`
 Accept:
-- [ ] private HEAD adds `docs/webmcp-challenge-submission.md` and both `docs/plans/*.md`, byte-equal to engine copies; no `artifacts/` (B6)
-- [ ] private `AGENTS.md` has "When John asks" operator rules: deploy with `AGENT_CV_OWNER_ROOT`, `golden:diff` before engine changes; no "canonical in the public repo" line (B6)
-- [ ] `data/faq.md` still uncommitted; `git status -sb` shows `main...origin/main` with no ahead count (B6)
+- [x] private HEAD adds `docs/webmcp-challenge-submission.md` and both `docs/plans/*.md`, byte-equal to engine copies; no `artifacts/` (B6)
+- [x] private `AGENTS.md` has "When John asks" operator rules: deploy with `AGENT_CV_OWNER_ROOT`, `golden:diff` before engine changes; no "canonical in the public repo" line (B6)
+- [x] `data/faq.md` still uncommitted; `git status -sb` shows `main...origin/main` with no ahead count (B6)
 Verify: receipt: receipts/t1-private-repo.txt — commit sha · 3 docs + AGENTS.md · faq.md ` M` · ahead 0 (pre: no receipt)
 Skills: none
-Status: awaiting-human
+Status: done @ 70887fd
 Writer: GPT-6.1 Sol
 
 ### T2 — the engine tree drops John's sources, outputs and bootstrap

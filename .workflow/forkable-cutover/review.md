@@ -1,7 +1,7 @@
 Command: workflow review forkable-cutover
 Created: 2026-10-20
-Base:    40dd85d
-Inputs:  .workflow/forkable-cutover/plan.md @ fafec6c
+Base:    230538f
+Inputs:  .workflow/forkable-cutover/plan.md @ fafec6c · patch_plan.md @ 40dd85d
 Status:  complete
 
 ## Coverage
@@ -20,17 +20,13 @@ Escape hatches: none added
 Independence: cross-vendor (writer GPT-6.1 Sol / OpenAI · reviewer Opus 5.5 / Anthropic)
 Runs: Ada `npm run check` 320 pass / 3 skipped / 0 fail, Leak scan 0 · sibling `npm test` 321 / 2 / 0
 
-## Cycle 1 findings
-### P1 — C1-1 the credit-line exceptions are not pinned to their exact text
-- Evidence: B2/T6 acceptance 3 ("LICENSE copyright line, README credit line"). In a throwaway worktree, widening scripts/check-leaks.mjs:29 to `/^Maintained by .*$/m` or :28 to `/^Copyright .*$/m` keeps test/check-leaks.test.mjs green. The leak cases at test/check-leaks.test.mjs:81-83 only add the name on a *separate* line, so a credit line carrying extra owner text (`Maintained by … deployment. Viklund`) is never tried. Repeat of memory validate-both-schema-bounds (exact-match guard bound untested)
-- Disposition: fix now
-- Resolved: —
+## Resolved
+| Finding | Sev | Title | Disposition | Resolved |
+|---|---|---|---|---|
+| C1-1 | P1 | credit-line exceptions not pinned to exact text | fix now | @ 009ab1f (cycle 2) |
+| C1-2 | P2 | real employer and role in test fixtures | fix now | @ 648a24d (cycle 2) |
 
-### P2 — C1-2 the owner's real employer and role remain in test fixtures
-- Evidence: Outcome "no trace of John outside an explicit allowlist". The name grep is clean, but John's CV entries survive: test/comparison-evidence.test.mjs:70-88 (`experience.volvo-americas-crm-transformation`, "Volvo Cars › Americas CRM transformation", matching private cv.md:12,26) · test/cv-pdf.test.mjs:46 (`Axient`, private cv.md:58) · `Volvo` used as an owner marker in test/og-image.test.mjs:34 and test/site-rendering.test.mjs:45,135. Pre-existing lines, missed by T3/T4 because the B2/B4 detector only matches the name. Small: about 10 test lines, no contract change
-- Disposition: fix now
-- Resolved: —
-
+## Cycle 1 findings (open only)
 ### P3 — C1-3 output scan now skips NUL-byte files
 - Evidence: scripts/check-leaks.mjs:42 adds the binary skip to `scanForLeaks`, which F8 asked only for the tracked scan; built PNG/PDF text chunks are no longer read. Ada-only scan, low risk
 - Disposition: defer (stays in review.md)
@@ -45,5 +41,18 @@ Runs: Ada `npm run check` 320 pass / 3 skipped / 0 fail, Leak scan 0 · sibling 
 - Two worktrees from other runs remain: /tmp/agent-cv-maintenance-c1 (3d2a653), /tmp/agent-cv-review-cycle2 (4872ec6)
 - After the sibling `golden:diff`, the ignored engine `data/` and `public/` hold John's synced files until the next `sync:data`
 
+## Cycle 2 findings
+Scope: 40dd85d..230538f (5 test files, +11 −9). Independence: cross-vendor (writer GPT-6.1 Sol · reviewer Sonnet 5.5 fallback, Anthropic; primary Opus 5.5 not in this session).
+- C1-1 stamped: both throwaway-worktree mutants (`Copyright .*`, `Maintained by .*`) turn `test/check-leaks.test.mjs` red (1 fail each); only test lines added, code untouched. Same-class sites: the two `allowed` keys are the only exact-text exceptions.
+- C1-2 stamped: `git grep -niE 'volvo|axient|americas crm|tajitsu|saltside|streamserve|opentext'` outside `.workflow/` and WORKLOG.md → rc 1; every private cv.md employer is absent. Assertion counts before/after equal (21/31/12/53).
+- Runs: `npm run check` 321 pass / 2 skipped / 0 fail, static checks pass; escape-hatch scan none; `.workflow/` hits are the two approved skip prefixes; worktree removed.
+### P3 — C2-1 rendered-page owner markers no longer catch the owner's real employer
+- Evidence: test/og-image.test.mjs:34, test/site-rendering.test.mjs:45,135 swapped `Volvo` for `Example Motors`; the negative match now guards a fictional string. The tracked-tree scan covers the source, not rendered output
+- Disposition: defer (stays in review.md)
+- Resolved: —
+
 ## Cycle 1 verdict
-Fix two, then wrap. P0 0 · P1 1 · P2 1 · P3 2. Patch cycle 1 fixes C1-1 and C1-2 (test-only, logic lane); C1-3 and C1-4 stay deferred here.
+Fix two, then wrap. P0 0 · P1 1 · P2 1 · P3 2.
+
+## Cycle 2 verdict
+Ship as-is. Both fix-now findings are resolved with no regressions. Open: P3 C1-3, C1-4, C2-1 (deferred, stay here). P0 0 · P1 0 · P2 0 · P3 3.

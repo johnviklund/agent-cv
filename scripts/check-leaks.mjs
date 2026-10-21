@@ -45,7 +45,7 @@ export async function scanTrackedFiles(dir = process.cwd(), ownerRoot = resolveO
       || hashes.some((hash) => lower.includes(hash))) { findings.push(path); continue; }
     if (file.startsWith(".workflow/") || ["WORKLOG.md", "scripts/check-leaks.mjs"].includes(file)) continue;
     if (file === "LICENSE") text = text.replace(/^Copyright \(c\) 2026 John Viklund\r?$/m, "");
-    if (file === "README.md") text = text.replace(/^Maintained by John Viklund\. johnviklund\.com is one deployment\.\r?$/m, "");
+    if (file === "README.md") text = text.replace(/^Live demo: \[johnviklund\.com\]\(https:\/\/johnviklund\.com\)\.\r?$/m, "");
     if (containsLeak(text)) findings.push(resolve(dir, file));
   }
   return findings;

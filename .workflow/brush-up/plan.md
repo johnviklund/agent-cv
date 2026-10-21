@@ -5,17 +5,20 @@ Inputs:  .workflow/brush-up/brainstorm.md @ 3734878
 Status:  complete
 
 Docs read: none in scope (no PRODUCT.md; README.md in full, USERGUIDE.md and AGENTS.md headings)
+Execute reads: README.md, USERGUIDE.md, AGENTS.md in full; design.md §System; relevant memory pages.
 Size: code 65 · tests 173 · ratio 2.66 · largest touched test/check-leaks.test.mjs 94, scripts/check-leaks.mjs 65 · over 1,000: none
 Decisions: 1a approve T1–T4 · 2a gitleaks release in /tmp, checksum-verified · 3a email stays in history (already public), tree scrub only
 
 ## Execution state
-Current: T2 verified; committing, then T3 ready.
+Current: T3 copy approved with 1a; committing, then repeat clean-clone proof.
 T1 @ 5fe0bfa
+T2 @ c675f95
 writer: GPT-6.1 Sol · high
-Session 1: T1, T2
+Session 1: T1, T2, T3
 Baseline: npm run check passes outside sandbox, 326 pass, 2 skipped; 10 static pages.
 Sandbox-only baseline failures: five test files lose child-process output.
-Pending decision: T3 copy before its commit. Uncommitted: T2 implementation, scrub and receipt.
+Pending decision: none for T3. Uncommitted: approved draft, guards/tests, receipts and ledger.
+T3 proof: receipts/t3-verification.md and receipts/t3-clean-clone.txt; candidate clone passes.
 
 ## Findings
 | # | What is true | What it changes |
@@ -59,17 +62,18 @@ Accept:
 - [x] engine checkout, default owner root → `Leak scan: 0 findings`, exit 0 (B1)
 Verify: `node --test test/check-leaks.test.mjs && node scripts/check-leaks.mjs` (pre: 3 passed · 0 findings)
 Skills: none
-Status: todo
+Status: done @ c675f95
+Writer: GPT-6.1 Sol
 
 ### T3 — README for a hiring engineer, how-this-was-built doc, docs that match the repo
 Delivers: B3, B5, B6, B2 · Blocked by: T2 · Lane: logic (copy approved by the human before commit)
 Budget: code +4 · tests +40 · why: prose is Markdown; content tests are the only code
 Seam: `test/maintenance-docs.test.mjs` reading README.md, docs/how-this-was-built.md, AGENTS.md, USERGUIDE.md
 Accept:
-- [ ] README before `## Create your own Agent CV` → states what it is, links `https://johnviklund.com` as the demo, and lists the design decisions (B3)
-- [ ] `docs/how-this-was-built.md` → names `.workflow/`, `memory/`, `WORKLOG.md`, `.agents/`; README links it; tracked-tree test passes (B5)
-- [ ] every `npm run X` in README, AGENTS, USERGUIDE, how-this-was-built → a `package.json` script; every relative Markdown link → existing file (B6)
-- [ ] README naming the owner on any line besides the single pinned demo line → leak scan finding (B3)
+- [x] README before `## Create your own Agent CV` → states what it is, links `https://johnviklund.com` as the demo, and lists the design decisions (B3)
+- [x] `docs/how-this-was-built.md` → names `.workflow/`, `memory/`, `WORKLOG.md`, `.agents/`; README links it; tracked-tree test passes (B5)
+- [x] every `npm run X` in README, AGENTS, USERGUIDE, how-this-was-built → a `package.json` script; every relative Markdown link → existing file (B6)
+- [x] README naming the owner on any line besides the single pinned demo line → leak scan finding (B3)
 - [ ] fresh clone of HEAD, `AGENT_CV_OWNER_ROOT=examples/owner npm ci && npm run check` → exit 0, receipt `receipts/t3-clean-clone.txt` (B2)
 Verify: `node --test test/maintenance-docs.test.mjs test/tracked-tree.test.mjs test/check-leaks.test.mjs` (pre: 8 passed)
 Skills: none
@@ -105,3 +109,4 @@ No PRODUCT.md or ROADMAP.md. `design.md`: no changes.
 
 ## Deviations
 T1: raw scan flags 29 public analytics beacon tokens; exact findings were checked and baselined. Repeat scan reports no leaks across 337 scanned commits.
+T3: tracked-tree assertion now allows exactly the new guide; four assertions before and after. Candidate clone passes; repeat at the approved primary commit.

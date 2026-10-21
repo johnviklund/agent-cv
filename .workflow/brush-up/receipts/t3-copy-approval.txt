@@ -1,0 +1,10 @@
+Command: workflow execute brush-up
+Created: 2026-10-21
+Base: c675f95
+Inputs: .workflow/brush-up/plan.md @ ef7b4d1
+Status: complete
+
+Owner response: approved, 1a.
+Scope: commit the verified README and how-this-was-built guide with their guards/tests,
+then proceed toward the GitHub metadata ticket.
+The approved copy matches the candidate already verified in t3-clean-clone.txt.

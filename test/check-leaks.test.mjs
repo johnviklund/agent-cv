@@ -104,7 +104,7 @@ test("no-argument CLI scans tracked files with bounded credit exceptions", async
   const surname = "Vik" + "lund";
   const allowed = {
     "LICENSE": `Copyright (c) 2026 ${name} ${surname}\n`,
-    "README.md": `Maintained by ${name} ${surname}. ${name.toLowerCase()}${surname.toLowerCase()}.com is one deployment.\n`,
+    "README.md": `Live demo: [${name.toLowerCase()}${surname.toLowerCase()}.com](https://${name.toLowerCase()}${surname.toLowerCase()}.com).\n`,
     "upstream.txt": UPSTREAM_URL.replace("https://github.com/", ""),
     ".workflow/x.md": name,
     "WORKLOG.md": surname,

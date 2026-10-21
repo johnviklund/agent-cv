@@ -1,0 +1,19 @@
+Command: workflow execute brush-up
+Created: 2026-10-21
+Base: c675f95
+Inputs: .workflow/brush-up/plan.md @ ef7b4d1
+Status: complete
+
+Scope: proposed T3 tree, before the owner's required copy approval.
+The primary checkout has no T3 commit yet.
+Candidate: /tmp/brush-up-t3-bd8nzigl/candidate
+Clean clone: /tmp/brush-up-t3-bd8nzigl/clean
+Candidate HEAD: 450c26693b41d999d269db58755e4651a2c52f68
+Created a disposable clone of c675f95, applied the proposed tracked-file diff,
+committed only in that disposable repository, then cloned its HEAD without hardlinks.
+No ignored files, owner checkout, secrets or local generated bundles were copied.
+Environment: AGENT_CV_OWNER_ROOT=examples/owner
+Commands: npm ci && npm run check
+Exit: 0. Tests: 338 pass, 3 skipped, 0 fail. Static checks: 10 pages pass.
+Full log: /tmp/brush-up-t3-clean-clone.log
+After approval: repeat against the actual primary T3 commit before marking T3 done.

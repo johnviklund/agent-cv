@@ -1,8 +1,17 @@
 # Agent CV
 
-An open-source Agent CV engine for a chat-first conversational résumé. Recruiters, hiring managers, crawlers, and AI agents get reviewed evidence through a slim web interface, stable Markdown resources, and a bounded streaming API.
+Agent CV is an open-source résumé engine with chat, role comparison, and stable Markdown resources. Visitors ask about an owner's work using reviewed evidence.
 
-Maintained by John Viklund. johnviklund.com is one deployment.
+Live demo: [johnviklund.com](https://johnviklund.com).
+
+## Design decisions
+
+- **Grounded claims.** Answers use reviewed Markdown. Visitor transcripts, job descriptions, and repository snapshots are untrusted data and cannot override curated facts.
+- **A small public contract.** The Worker converts provider events into a minimal server-sent event stream. Raw provider events and diagnostics stay private.
+- **Bounded cost and abuse.** Rate limits and atomic monthly budget reservations run at the edge before any model call.
+- **Useful without the model.** Human pages, raw Markdown, JSON-LD, and a sitemap work even when the API is unavailable.
+
+[How this was built](docs/how-this-was-built.md) explains the committed development records, reviews, and agent instructions.
 
 ## How it works
 
@@ -17,13 +26,6 @@ flowchart LR
   sse --> visitor
   worker --> archive["Private 90-day archive<br/>(KV)"]
 ```
-
-Four design ideas carry the project:
-
-- **Grounded claims.** The model answers only from reviewed Markdown. Visitor transcripts, job descriptions, and repository snapshots are treated as untrusted data and cannot override curated facts.
-- **A small public contract.** Upstream provider events are normalized into a minimal server-sent event stream; raw provider events and diagnostics never reach the browser.
-- **Bounded cost and abuse.** Rate limits and atomic monthly budget reservations run at the edge before any model call.
-- **Useful without the model.** Human pages, raw Markdown, JSON-LD, and a sitemap work even when the API is unavailable.
 
 Other capabilities include continuous conversations with bounded rolling context, private 90-day conversation archival with feedback and token-protected JSONL export, expiring role-specific links, and deliberately refreshed snapshots from allowlisted public repositories.
 

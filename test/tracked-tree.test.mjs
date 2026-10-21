@@ -7,7 +7,7 @@ const retired = ["data", "public", "examples/private-data", "docs", "artifacts",
 
 test("the tracked engine tree excludes owner sources, generated output and retired bootstrap files", () => {
   const tracked = execFileSync("git", ["ls-files", "--", ...retired], { encoding: "utf8" });
-  assert.equal(tracked, "");
+  assert.equal(tracked.split("\n").filter((path) => path && path !== "docs/how-this-was-built.md").join("\n"), "");
 });
 
 test("owner data and public outputs stay ignored and bootstrap is retired", async () => {

@@ -9,7 +9,12 @@ Size: code 65 · tests 173 · ratio 2.66 · largest touched test/check-leaks.tes
 Decisions: 1a approve T1–T4 · 2a gitleaks release in /tmp, checksum-verified · 3a email stays in history (already public), tree scrub only
 
 ## Execution state
-<filled by execute>
+Current: T1 verified; committing receipt, then T2 ready.
+writer: GPT-6.1 Sol · high
+Session 1: T1
+Baseline: npm run check passes outside sandbox, 326 pass, 2 skipped; 10 static pages.
+Sandbox-only baseline failures: five test files lose child-process output.
+Pending decision: none. Uncommitted: T1 receipt and this ledger.
 
 ## Findings
 | # | What is true | What it changes |
@@ -35,7 +40,7 @@ Runner: agent after approval · Risk: cheap
 Seam: the receipt file
 Handoff: fetch the pinned gitleaks release to `/tmp` and check its checksum; run `gitleaks git --log-opts=--all --redact` on the engine checkout; write the summary only (no secret values) to the receipt. A real hit stops the run for a history-rewrite decision (D2).
 Accept:
-- [ ] gitleaks over all 235+ commits → receipt shows `no leaks found` and the scanned commit count (B7)
+- [x] gitleaks over all 235+ commits → receipt shows `no leaks found` and the scanned commit count (B7)
 Verify: receipt: receipts/t1-secrets-scan.txt — commits scanned ≥ 235 · leaks 0 (pre: no receipt)
 Skills: none
 Status: todo
@@ -95,3 +100,6 @@ none (brief names no TODO item; C1-2 is out of scope)
 
 ## Product doc impacts
 No PRODUCT.md or ROADMAP.md. `design.md`: no changes.
+
+## Deviations
+T1: raw scan flags 29 public analytics beacon tokens; exact findings were checked and baselined. Repeat scan reports no leaks across 337 scanned commits.

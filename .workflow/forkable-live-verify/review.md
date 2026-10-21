@@ -2,7 +2,7 @@ Command: workflow review forkable-live-verify
 Created: 2026-10-20
 Base:    6e32468
 Inputs:  .workflow/forkable-live-verify/plan.md @ 6614dd1
-Status:  complete
+Status:  done
 
 ## Coverage
 - [x] T1 — acceptance 5/5: self-test 6/6 pass (live-check_test.mjs), receipts/live-baseline.md (8 GETs, 0 POSTs)

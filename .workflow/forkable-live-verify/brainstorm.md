@@ -2,7 +2,7 @@ Command: workflow brainstorm forkable-live-verify
 Created: 2026-10-20
 Base:    90434e2
 Inputs:  none
-Status:  complete
+Status:  done
 
 ## Problem
 The cutover made the engine repo generic, but nothing has shown that the live site still works when built and deployed from the new engine plus `agent-cv-private`. The owner needs that proof before trusting the split.

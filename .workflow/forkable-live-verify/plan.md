@@ -2,26 +2,12 @@ Command: workflow plan forkable-live-verify
 Created: 2026-10-20
 Base:    6614dd1
 Inputs:  .workflow/forkable-live-verify/brainstorm.md @ 90434e2
-Status:  complete
+Status:  done
 
 Docs read: none in scope (no PRODUCT.md/DESIGN.md user surface changes; AGENTS.md §Verification, §Data boundaries, §Generated resources)
 Size: code 100 · tests 175 · ratio 1.75 · largest touched: test/sync-owner.test.mjs 175, scripts/sync-owner.mjs 100, USERGUIDE.md 203 (T3; T1 run-folder only; reused read-only: scripts/owner.mjs 125, scripts/cv-pdf.mjs 123, site/assets/comparison-contract.js) · over 1,000: none
 Decisions: 1a (approve T1, T2 as listed) · re-plan 2026-10-20 after T2 preflight: 1a (approve T3, T2 as listed) · 2a (owner commits or discards data/faq.md before T2)
 
-## Execution state
-Session 1: T1 complete; T2 handoff prepared, awaiting exact-scope approval.
-Session 2: T2 approved via 1a; push succeeded; preflight failed before deployment.
-Session 3: T3 complete; refreshed T2 handoff awaits fresh exact-scope approval.
-Session 4: T2 approved via 1a; push, full preflight, deployment and live verification complete.
-Session 5: C1-T1 complete; owner.json guard case and mutation proven; ready for review cycle 2.
-T1 @ bb6f3f4
-T3 @ baff4c1
-T2 @ f1311ed
-writer: GPT-6.1 Sol · high
-Baseline: npm run build passed outside sandbox; 321 passed, 2 skipped; sandbox test workers failed.
-Final: npm run build passed, including check; 326 tests passed, 2 skipped; clean-clone sync tests 15/15.
-Current: all original and patch tickets done; C1-T1 @ 9c8ee13; receipts/c1-t1-verification.md proves the guard test.
-Pending: cross-vendor review cycle 2; no deployment in session 5; original live proof remains receipts/live-verification.md.
 
 ## Findings
 | # | What is true | What it changes |

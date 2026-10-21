@@ -1,6 +1,16 @@
 # Worklog
 Rolling index of recent work; git is the source of truth.
 
+## 2026-10-21 · forkable-live-verify · live johnviklund.com proven after deploying from the cutover engine and private owner repo · Opus 5.5
+- Read-only live check script (sha, PDF, health, chat, compare, admin 401s) ships in the run folder; deploy guard now scans only deploy inputs.
+- Deployed version c082c445 at 100% and verified live; patch cycle added the missing owner.json guard case.
+- Commits: bb6f3f4 baff4c1 f1311ed 9c8ee13
+- Review: ship as-is @ 6e32468
+- Run: 4 tickets · 5 sessions · 2 review cycles · 1 deviations · 0 findings overturned
+- Seats: 0 none · 2 none · 3 GPT-6.1 Sol · 4 Opus 5.5
+- Skills: workflow@unversioned
+- Why: the owner needed proof the engine/private split still serves the live site byte-for-byte before trusting it.
+
 ## 2026-10-20 · forkable-cutover · the engine tree drops John's sources, docs and test literals; leak check scans every tracked file · Opus 5.5
 - John's public sources and generated files left the engine for the private owner repo; tests, docs and skills run on Ada Example; a clean clone checks green and John's golden diff is unchanged.
 - Patch cycle pinned the leak check's credit-line exceptions to exact text and replaced real employer fixtures with fictional ones.

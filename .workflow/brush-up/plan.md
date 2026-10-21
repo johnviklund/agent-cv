@@ -9,18 +9,19 @@ Size: code 65 · tests 173 · ratio 2.66 · largest touched test/check-leaks.tes
 Decisions: 1a approve T1–T4 · 2a gitleaks release in /tmp, checksum-verified · 3a email stays in history (already public), tree scrub only
 
 ## Execution state
-Current: T1 verified; committing receipt, then T2 ready.
+Current: T2 verified; committing, then T3 ready.
+T1 @ 5fe0bfa
 writer: GPT-6.1 Sol · high
-Session 1: T1
+Session 1: T1, T2
 Baseline: npm run check passes outside sandbox, 326 pass, 2 skipped; 10 static pages.
 Sandbox-only baseline failures: five test files lose child-process output.
-Pending decision: none. Uncommitted: T1 receipt and this ledger.
+Pending decision: T3 copy before its commit. Uncommitted: T2 implementation, scrub and receipt.
 
 ## Findings
 | # | What is true | What it changes |
 |---|---|---|
 | F1 | The owner's email is the live site's published contact (`contact.email` in the owner's `owner.json`) and is the author email on 225 of 235 commits. | Keeping it out of history needs a rewrite, which D2 rules out. The tree scrub is a tidy-up, not a leak fix. "History is clean" holds for secrets only (B7). |
-| F2 | Tree hits: the email in 3 files, a `/home/<user>` path in 10 files (12 lines), all under `.workflow/`. No `/Users/<user>` paths. | T2 scrubs them, including line 14 of this run's own brief, which names both patterns literally. |
+| F2 | Tree hits: the email in 3 files, a Linux home-directory path in 10 files (12 lines), all under `.workflow/`. No macOS home-directory paths. | T2 scrubs them, including line 14 of this run's own brief, which names both patterns literally. |
 | F3 | sha256 values of 3 unpublished owner files (private `AGENTS.md`, `data/faq.md`, `golden-exceptions.json`) sit in 4 `.workflow/forkable-cutover/` files. The other hashes in receipts are of published files (`cv.md`, `og-image.png`, `llms.txt`, …). | Only unpublished owner files count as private. Published-file hashes stay as evidence. |
 | F4 | `scanTrackedFiles` (`scripts/check-leaks.mjs:15`) skips `.workflow/` and `WORKLOG.md` because they name the owner on purpose. | The new email, path and hash patterns must apply to every tracked file, those included. The name rule keeps its exemption. |
 | F5 | In CI the owner is `examples/owner`, whose `contact.email` is `null` and which has no private files. | The email and hash guards run only on the owner's machine. CI covers them through fixtures, and the path and `*.proposed` rules run everywhere. |
@@ -43,18 +44,19 @@ Accept:
 - [x] gitleaks over all 235+ commits → receipt shows `no leaks found` and the scanned commit count (B7)
 Verify: receipt: receipts/t1-secrets-scan.txt — commits scanned ≥ 235 · leaks 0 (pre: no receipt)
 Skills: none
-Status: todo
+Status: done @ 5fe0bfa
+Writer: GPT-6.1 Sol
 
 ### T2 — Leak scan blocks owner email, home paths, private-file hashes and `*.proposed`; history scrubbed
 Delivers: B1, B8 · Blocked by: T1 · Lane: logic
 Budget: code +40 · tests +55 · why: each of four rules needs a hit and a miss fixture
 Seam: `node scripts/check-leaks.mjs` (CLI, default arguments) and `scanTrackedFiles`
 Accept:
-- [ ] tracked `.workflow/x.md` containing the selected owner's `contact.email` → exit 1, path printed; `null` email → rule skipped (B1)
-- [ ] tracked `WORKLOG.md` with a `/home/<user>/` path, then with a `/Users/<user>/` path → exit 1 each, path printed (B1)
-- [ ] fixture owner root: first 12 hex of sha256(`data/faq.md`) in a tracked file → exit 1; same for `data/cv.md` → exit 0 (B1)
-- [ ] a tracked `notes.proposed` → exit 1 naming it (B8)
-- [ ] engine checkout, default owner root → `Leak scan: 0 findings`, exit 0 (B1)
+- [x] tracked `.workflow/x.md` containing the selected owner's `contact.email` → exit 1, path printed; `null` email → rule skipped (B1)
+- [x] tracked `WORKLOG.md` with a Linux home-directory path, then with a macOS home-directory path → exit 1 each, path printed (B1)
+- [x] fixture owner root: first 12 hex of sha256(`data/faq.md`) in a tracked file → exit 1; same for `data/cv.md` → exit 0 (B1)
+- [x] a tracked `notes.proposed` → exit 1 naming it (B8)
+- [x] engine checkout, default owner root → `Leak scan: 0 findings`, exit 0 (B1)
 Verify: `node --test test/check-leaks.test.mjs && node scripts/check-leaks.mjs` (pre: 3 passed · 0 findings)
 Skills: none
 Status: todo

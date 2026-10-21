@@ -4,11 +4,53 @@ import { mkdtemp, mkdir, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { scanForLeaks, LEAK_SCAN_DIRS } from "../scripts/check-leaks.mjs";
 import { UPSTREAM_URL } from "../site/templates/html.mjs";
 
 test("leak scan defaults cover every engine output folder", () => {
   assert.deepEqual(LEAK_SCAN_DIRS, ["build/site", "public", "src/data"].map((dir) => resolve(dir)));
+});
+
+test("no-argument CLI blocks private owner evidence and stray proposals in all tracked files", async (context) => {
+  const dir = await mkdtemp(resolve(tmpdir(), "agent-cv-private-leaks-"));
+  context.after(() => rm(dir, { recursive: true, force: true }));
+  const cli = resolve("scripts/check-leaks.mjs");
+  const git = (...args) => {
+    const result = spawnSync("git", args, { cwd: dir, encoding: "utf8" });
+    assert.equal(result.status, 0, result.stderr);
+  };
+  await mkdir(resolve(dir, "data"));
+  await mkdir(resolve(dir, ".workflow"));
+  git("init", "--quiet");
+  const email = "fixture@example.invalid";
+  const bodies = { "data/faq.md": "unpublished FAQ", "AGENTS.md": "private agent rules",
+    "golden-exceptions.json": "private exceptions", "data/cv.md": "published CV" };
+  for (const [file, body] of Object.entries(bodies)) await writeFile(resolve(dir, file), body);
+  const digest = (file) => createHash("sha256").update(bodies[file]).digest("hex").slice(0, 12);
+  for (const [label, file, text, contact, status] of [
+    ["owner email", ".workflow/x.md", email, email, 1],
+    ["null email", ".workflow/x.md", email, null, 0],
+    ["Linux home", "WORKLOG.md", "/" + "home/fixture/repo", null, 1],
+    ["macOS home", "WORKLOG.md", "/" + "Users/fixture/repo", null, 1],
+    ...["data/faq.md", "AGENTS.md", "golden-exceptions.json"].map((file) =>
+      [file, ".workflow/x.md", digest(file), null, 1]),
+    ["published hash", ".workflow/x.md", digest("data/cv.md"), null, 0],
+    ["proposal", "notes.proposed", "draft", null, 1],
+    ["clean", ".workflow/x.md", "ordinary public evidence", null, 0],
+  ]) await context.test(label, async () => {
+    await writeFile(resolve(dir, "owner.json"), JSON.stringify({ contact: { email: contact } }));
+    await writeFile(resolve(dir, file), text);
+    git("add", file);
+    const result = spawnSync(process.execPath, [cli], {
+      cwd: dir, encoding: "utf8", env: { ...process.env, AGENT_CV_OWNER_ROOT: dir },
+    });
+    assert.equal(result.status, status, result.stderr);
+    assert.match(result.stdout, new RegExp(`Leak scan: ${status} findings`));
+    if (status) assert.ok(result.stderr.includes(resolve(dir, file)), result.stderr);
+    git("rm", "--cached", "--", file);
+    await rm(resolve(dir, file));
+  });
 });
 
 test("leak scan allows the upstream URL and rejects owner names in every output folder", async (context) => {

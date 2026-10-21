@@ -74,7 +74,7 @@ Accept:
 - [x] Discovery resources retain API/tool names and limits; site.json.updatedAt drives freshness; owner origin/slug drive canonical URLs, sitemap, robots and PDF headers. (B4)
 - [x] Public output includes four approved Markdown files and excludes six private sources, deploy settings, admin secrets and operator notes. (B4)
 Verify: `node --test test/site-rendering.test.mjs && node --test test/static-contract.test.mjs` (pre: new file; static tests 12 passed)
-Skills: /home/john/.codex/skills/agent-docs/SKILL.md
+Skills: <home>/.codex/skills/agent-docs/SKILL.md
 Status: done @ 7a9f61a
 Writer: Opus 5.5
 
@@ -99,7 +99,7 @@ Accept:
 - [x] PDF and OG commands retain John's content and working paths; generated output stays ignored; rebuild removes stale files without erasing source assets. (B6)
 - [x] Golden verification accepts only recorded technical differences; browser receipts show unchanged desktop/mobile appearance and working chat, comparison and application flows. (B1, B6)
 Verify: `npm run check && npm run build && npm run golden:diff` (pre: check 224 passed, 1 skipped; build passed; golden empty)
-Skills: /home/john/.codex/skills/agent-docs/SKILL.md, /home/john/.codex/skills/.system/skill-creator/SKILL.md
+Skills: <home>/.codex/skills/agent-docs/SKILL.md, <home>/.codex/skills/.system/skill-creator/SKILL.md
 Status: done @ 161c9db
 Writer: Opus 5.5
 

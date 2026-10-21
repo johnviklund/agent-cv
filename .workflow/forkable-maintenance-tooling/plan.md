@@ -63,7 +63,7 @@ Accept:
 - [x] both skills contain "currently engine `data/`" for the four public sources (B7, decision 1a)
 - [x] AGENTS.md names `<owner root>/project-sources.json` and no longer names `config/project-sources.private.json` (B7)
 Verify: `node --test test/maintenance-docs.test.mjs test/codex-conversation-review.test.mjs test/codex-project-refresh.test.mjs` (pre: 2 passed; new maintenance-docs file absent)
-Skills: /home/john/.claude/skills/agent-docs/SKILL.md
+Skills: <home>/.claude/skills/agent-docs/SKILL.md
 Status: done @ 10bff27
 Writer: GPT-6.1 Sol
 

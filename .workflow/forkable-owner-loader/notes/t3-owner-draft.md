@@ -25,7 +25,7 @@ Judgement calls: `headline` is the home hero deck's first sentence; `deploy.vars
     "x": "https://x.com/johnviklund",
     "github": "https://github.com/johnviklund"
   },
-  "contact": { "email": "johnwik@gmail.com" },
+  "contact": { "email": "<owner contact email>" },
   "analytics": { "cloudflareBeaconToken": "c7d9e434c60a4ce794a639192a5247ff" },
   "deploy": {
     "workerName": "john-viklund-agent-cv",

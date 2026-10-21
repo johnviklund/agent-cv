@@ -53,7 +53,7 @@ Accept:
 - [x] Header email equals contact.email; null removes its link and separator; metadata, footer, origin and profile links use the owner. (B3)
 - [x] Real PDFs have 1–2 pages, extractable owner text, zero Type 3 fonts and zero local file paths; existing download links resolve. (B3)
 Verify: `node --test test/cv-pdf.test.mjs` (pre: 4 passed; real PDF verification added during execution)
-Skills: /home/john/.codex/plugins/cache/openai-primary-runtime/pdf/26.1011.11113/skills/pdf/SKILL.md
+Skills: <home>/.codex/plugins/cache/openai-primary-runtime/pdf/26.1011.11113/skills/pdf/SKILL.md
 Status: done @ d11fca9
 Writer: Opus 5.5
 Receipt: receipts/t2-verification.md

@@ -135,7 +135,7 @@ T2 is riskiest: a missed engine-root read fails only on a clean clone (T6), so T
 ## Deviations
 T6 scans tracked symlinks as their stored target text, because the engine tracks a skill directory symlink. Receipt: receipts/t6-verification.md.
 T4 retires the personal career-subrole and repository-list snapshots under decision 2a, ports project layout and privacy tests to Ada, and drops three privacy phrases absent from Ada. Assertion changes and counts: receipts/t4-verification.md.
-T2 baseline discrepancy: owner approved 2a on 2026-10-20, correcting eight to 19 existing accepted file differences. Exception set unchanged; sha256 8fb34630ba97f44e0ae48f9a8f084efaec54ddce42ba60c894b58a2cd98660bd.
+T2 baseline discrepancy: owner approved 2a on 2026-10-20, correcting eight to 19 existing accepted file differences. Exception set unchanged; sha256 <private-file hash>.
 T2 also fixes owner-manifests.test.mjs's engine-data copy found by npm run check. Existing assertion changes and counts are recorded in receipts/t2-verification.md; retired document assertions follow F4, while CV assertions use the selected owner and repository prose permits Ada's placeholder source.
 T3 updates four T4 test files that import the renamed fixture, so every ticket commit keeps npm run check passing. Their remaining personal literals stay for T4; receipts/t3-verification.md records assertion counts and the snapshot removals approved by decision 2a.
 

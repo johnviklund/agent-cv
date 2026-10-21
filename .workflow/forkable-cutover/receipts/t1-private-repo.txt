@@ -8,8 +8,8 @@ Approval: owner replied "1a, 2a" on 2026-10-20; T1 scope and T2 count correction
 Private commit: 4ec3ba4ab53e8dc9a4d02282694bf2d14f61504a
 Committed paths: AGENTS.md; docs/webmcp-challenge-submission.md; docs/plans/2026-08-29-1737-feat-webmcp-role-comparison-plan.md; docs/plans/2026-10-18-1358-feat-forkable-agent-cv-plan.md.
 Three cmp checks against the engine copies: exit 0, byte-equal. No artifacts/ tracked in private repo.
-AGENTS.md matches approved draft sha256 b397ae32e3ad0fce99d22faf4cf0e4dedab1f144dadfc9c162f8485260a146f6; contains "When John asks", AGENT_CV_OWNER_ROOT deploy and golden:diff before engine edits; obsolete canonical-public-repo line removed.
-FAQ sha256 unchanged: 9fe9708f6326ac4bdabb8efc5e291942fcf433b66935483fd462f55166fb5aec.
+AGENTS.md matches approved draft sha256 <private-file hash>; contains "When John asks", AGENT_CV_OWNER_ROOT deploy and golden:diff before engine edits; obsolete canonical-public-repo line removed.
+FAQ sha256 unchanged: <private-file hash>.
 Private git status -sb: ## main...origin/main followed only by " M data/faq.md"; ahead 0.
 git push origin main: exit 0, ae5d654..4ec3ba4 main -> main.
 Session baseline npm run check: exit 0, 322 passed, 3 skipped, static checks pass for 10 pages. Log: /tmp/forkable-cutover-session4-baseline.log.

@@ -11,7 +11,7 @@ John will link this public repo from his CV. A hiring engineer who opens it shou
 On github.com/johnviklund/agent-cv a stranger reads the README first, finds what it is, a live demo link and the decisions behind it, and runs the example owner locally. A scrub scan of the tree and history finds no email, local path or private hash.
 
 ## Behaviours
-- B1 — scan of tracked files for `johnwik`, `/home/john`, and the sha256 of private files → zero hits; the contact email is allowed only where the site publishes it (owner contact page, examples)
+- B1 — scan of tracked files for the selected owner contact email, home-directory paths, and the sha256 of private files → zero hits; the contact email is allowed only where the site publishes it (owner contact page, examples)
 - B2 — a clean clone with `AGENT_CV_OWNER_ROOT=examples/owner` → `npm ci && npm run check` exits 0 (also green in CI)
 - B3 — README first screen → states what the project is, links johnviklund.com as the demo, and names the key design decisions before the fork guide
 - B4 — `gh repo view` → description describes the engine (not "for John Viklund"), topics are set, homepage is the live site

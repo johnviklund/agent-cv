@@ -18,7 +18,7 @@ Deploy the current committed engine, including T3 at baff4c1, plus the clean ../
 - No deployment, paid request or rollback ran during T3. Live results remain unverified after the cutover.
 
 ## Commands after approval
-Run in /home/john/agent-cv and stop on any failure. Keep raw logs outside Git under /tmp/forkable-live-verify-t2-v2/. Record approval and the exact engine and owner commits in the receipt.
+Run in <home>/agent-cv and stop on any failure. Keep raw logs outside Git under /tmp/forkable-live-verify-t2-v2/. Record approval and the exact engine and owner commits in the receipt.
 
 ```bash
 set -e

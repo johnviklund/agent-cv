@@ -13,7 +13,7 @@ Deploy the current cutover engine plus `../agent-cv-private` to Worker `john-vik
 T1 is committed at bb6f3f4. The read-only live baseline passed. `npm run build` exited 0 with all checks and Worker dry-run packaging passing. No live deployment or paid request ran. Full logs stay in `/tmp/forkable-live-verify-build.log`.
 
 ## Commands after approval
-Run in `/home/john/agent-cv`, stopping on any failure. Export the owner root for every command below.
+Run in `<home>/agent-cv`, stopping on any failure. Export the owner root for every command below.
 
 ```bash
 export AGENT_CV_OWNER_ROOT=../agent-cv-private

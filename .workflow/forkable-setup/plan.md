@@ -82,7 +82,7 @@ Accept:
 - [x] USERGUIDE "Set up a local checkout" and "Deploy your fork" contain `npm run setup` and the content-rewrite prompt (B8)
 - [x] README "Run it locally", "Create your own Agent CV", and those two USERGUIDE sections contain no `bootstrap:data` (B8)
 Verify: `node --test test/maintenance-docs.test.mjs` (pre: 1 passed)
-Skills: /home/john/.claude/skills/plain/SKILL.md
+Skills: <home>/.claude/skills/plain/SKILL.md
 Status: done @ 55ac8cb
 Writer: GPT-6.1 Sol
 

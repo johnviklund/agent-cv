@@ -10,10 +10,11 @@ Size: code 65 · tests 173 · ratio 2.66 · largest touched test/check-leaks.tes
 Decisions: 1a approve T1–T4 · 2a gitleaks release in /tmp, checksum-verified · 3a email stays in history (already public), tree scrub only
 
 ## Execution state
-Current: T4 approved with 1a, applied and verified; committing receipt, then review ready.
+Current: all four tickets done; ready for independent review.
 T1 @ 5fe0bfa
 T2 @ c675f95
 T3 @ ced78db
+T4 @ 5b1be4e
 writer: GPT-6.1 Sol · high
 Session 1: T1, T2, T3
 Session 2: T4
@@ -21,7 +22,7 @@ Baseline: npm run check passes outside sandbox, 326 pass, 2 skipped; 10 static p
 Sandbox-only baseline failures: five test files lose child-process output.
 Pending decision: none. T4 proof: receipts/t4-github.txt; exact metadata and four topics verified.
 T3 proof: receipts/t3-verification.md and receipts/t3-clean-clone.txt; actual commit clone passes.
-CI at ced78db and latest main 050f7b8: success. Uncommitted: T4 receipt and ledger.
+CI at ced78db and main 050f7b8: success. Uncommitted: none after this checkpoint.
 
 ## Findings
 | # | What is true | What it changes |
@@ -93,7 +94,8 @@ Accept:
 - [x] latest CI run on main at T3's pushed sha → conclusion `success` (B2)
 Verify: receipt: receipts/t4-github.txt — homepageUrl https://johnviklund.com · topics ≥ 3 · CI success (pre: no receipt)
 Skills: none
-Status: todo
+Status: done @ 5b1be4e
+Writer: GPT-6.1 Sol
 
 ## Coverage
 - Outcome → T3 (README, doc, clean clone) + T4 (GitHub page) + T2 (tree scrub) + T1 (history secrets)

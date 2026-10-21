@@ -1,0 +1,16 @@
+Command: workflow execute brush-up
+Created: 2026-10-21
+Base: ced78db
+Inputs: .workflow/brush-up/plan.md @ ef7b4d1
+Status: complete
+
+T4 CI proof only; GitHub metadata changes still await exact-copy approval.
+Repository: johnviklund/agent-cv
+Branch: main
+HEAD: ced78dba1c3821cf2b18ad4b8d3f318fc89c9cf9
+Workflow: CI
+Run: 39562707111
+URL: https://github.com/johnviklund/agent-cv/actions/runs/39562707111
+Command: gh run watch 39562707111 --repo johnviklund/agent-cv --exit-status --interval 10
+Result: completed with success; exit 0.
+CI uses Node.js 24, npm ci, and AGENT_CV_OWNER_ROOT=examples/owner npm run build.

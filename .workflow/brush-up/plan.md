@@ -10,15 +10,17 @@ Size: code 65 · tests 173 · ratio 2.66 · largest touched test/check-leaks.tes
 Decisions: 1a approve T1–T4 · 2a gitleaks release in /tmp, checksum-verified · 3a email stays in history (already public), tree scrub only
 
 ## Execution state
-Current: T3 copy approved with 1a; committing, then repeat clean-clone proof.
+Current: T3 done; T4 handoff prepared, exact GitHub copy approval pending.
 T1 @ 5fe0bfa
 T2 @ c675f95
+T3 @ ced78db
 writer: GPT-6.1 Sol · high
 Session 1: T1, T2, T3
 Baseline: npm run check passes outside sandbox, 326 pass, 2 skipped; 10 static pages.
 Sandbox-only baseline failures: five test files lose child-process output.
-Pending decision: none for T3. Uncommitted: approved draft, guards/tests, receipts and ledger.
-T3 proof: receipts/t3-verification.md and receipts/t3-clean-clone.txt; candidate clone passes.
+Pending decision: T4 GitHub description/topics; receipts/t4-github-handoff.md has exact command.
+T3 proof: receipts/t3-verification.md and receipts/t3-clean-clone.txt; actual commit clone passes.
+CI at ced78db: success, run 39562707111; receipts/t4-ci.txt. No code left uncommitted.
 
 ## Findings
 | # | What is true | What it changes |
@@ -74,10 +76,11 @@ Accept:
 - [x] `docs/how-this-was-built.md` → names `.workflow/`, `memory/`, `WORKLOG.md`, `.agents/`; README links it; tracked-tree test passes (B5)
 - [x] every `npm run X` in README, AGENTS, USERGUIDE, how-this-was-built → a `package.json` script; every relative Markdown link → existing file (B6)
 - [x] README naming the owner on any line besides the single pinned demo line → leak scan finding (B3)
-- [ ] fresh clone of HEAD, `AGENT_CV_OWNER_ROOT=examples/owner npm ci && npm run check` → exit 0, receipt `receipts/t3-clean-clone.txt` (B2)
+- [x] fresh clone of HEAD, `AGENT_CV_OWNER_ROOT=examples/owner npm ci && npm run check` → exit 0, receipt `receipts/t3-clean-clone.txt` (B2)
 Verify: `node --test test/maintenance-docs.test.mjs test/tracked-tree.test.mjs test/check-leaks.test.mjs` (pre: 8 passed)
 Skills: none
-Status: todo
+Status: done @ ced78db
+Writer: GPT-6.1 Sol
 
 ### T4 — GitHub page describes the engine; CI green on main
 Delivers: B4, B2 · Blocked by: T3 · Lane: operator
@@ -86,10 +89,10 @@ Runner: agent after approval · Risk: cheap (reversible with another `gh repo ed
 Handoff: `gh repo edit johnviklund/agent-cv --description "<approved text>" --homepage https://johnviklund.com --add-topic <approved list>`; then `gh repo view --json description,homepageUrl,repositoryTopics` and `gh run list --branch main --limit 1` into the receipt.
 Accept:
 - [ ] `gh repo view` → description without the owner's name, homepage `https://johnviklund.com`, ≥ 3 topics (B4)
-- [ ] latest CI run on main at T3's pushed sha → conclusion `success` (B2)
+- [x] latest CI run on main at T3's pushed sha → conclusion `success` (B2)
 Verify: receipt: receipts/t4-github.txt — homepageUrl https://johnviklund.com · topics ≥ 3 · CI success (pre: no receipt)
 Skills: none
-Status: todo
+Status: awaiting-human
 
 ## Coverage
 - Outcome → T3 (README, doc, clean clone) + T4 (GitHub page) + T2 (tree scrub) + T1 (history secrets)
@@ -109,4 +112,4 @@ No PRODUCT.md or ROADMAP.md. `design.md`: no changes.
 
 ## Deviations
 T1: raw scan flags 29 public analytics beacon tokens; exact findings were checked and baselined. Repeat scan reports no leaks across 337 scanned commits.
-T3: tracked-tree assertion now allows exactly the new guide; four assertions before and after. Candidate clone passes; repeat at the approved primary commit.
+T3: tracked-tree assertion now allows exactly the new guide; four assertions before and after. Both candidate and approved primary commit clones pass.

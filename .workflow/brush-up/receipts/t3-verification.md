@@ -4,7 +4,7 @@ Base: c675f95
 Inputs: .workflow/brush-up/plan.md @ ef7b4d1
 Status: complete
 
-T3 copy approved by the owner with 1a; see t3-copy-approval.txt. Commit: not yet.
+T3 copy approved by the owner with 1a; see t3-copy-approval.txt. Commit: ced78db.
 README puts the demo and four design decisions before the architecture and fork guide.
 The new guide explains workflow records, memory, worklog, local skills and data boundaries.
 No website page, route or owner content changes.
@@ -25,5 +25,5 @@ Check-leaks retains 21 assertion statements. No existing assertion was removed.
 Reuse: existing document tests, tracked-tree guard, and bounded-credit CLI fixture.
 Noticed: no unrequested visible changes; one existing tracked-tree expectation narrowed.
 
-Pending: commit T3, repeat clean-clone proof at that commit,
-record T3 done, and continue to T4's GitHub metadata and CI receipt.
+Approved commit fresh clone: 338 pass, 3 skipped, 0 fail; 10 static pages pass.
+T3 done. T4's GitHub metadata and CI receipt remain.

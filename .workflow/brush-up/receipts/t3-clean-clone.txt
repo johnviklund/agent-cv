@@ -17,3 +17,12 @@ Commands: npm ci && npm run check
 Exit: 0. Tests: 338 pass, 3 skipped, 0 fail. Static checks: 10 pages pass.
 Full log: /tmp/brush-up-t3-clean-clone.log
 After approval: repeat against the actual primary T3 commit before marking T3 done.
+
+Approved primary commit proof:
+HEAD: ced78dba1c3821cf2b18ad4b8d3f318fc89c9cf9
+Clean clone: /tmp/brush-up-t3-approved-otkz3vv9/clean
+Command: git clone --quiet --no-hardlinks <engine checkout> <clean clone>
+Environment: AGENT_CV_OWNER_ROOT=examples/owner
+Commands: npm ci && npm run check
+Exit: 0. Tests: 338 pass, 3 skipped, 0 fail. Static checks: 10 pages pass.
+Full log: /tmp/brush-up-t3-approved-clean-clone.log

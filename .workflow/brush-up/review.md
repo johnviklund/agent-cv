@@ -2,7 +2,7 @@ Command: workflow review brush-up
 Created: 2026-10-21
 Base:    6c334e6
 Inputs:  .workflow/brush-up/plan.md @ ef7b4d1
-Status:  complete
+Status:  done
 
 ## Coverage
 - [x] T1 — acceptance 1/1 · receipts/t1-secrets-scan.txt: gitleaks v8.30.1, checksum matched, 337 commits scanned, 0 leaks after an exact 29-finding baseline of public Cloudflare beacon tokens

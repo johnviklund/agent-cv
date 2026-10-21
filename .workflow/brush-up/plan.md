@@ -2,27 +2,12 @@ Command: workflow plan brush-up
 Created: 2026-10-21
 Base:    ef7b4d1
 Inputs:  .workflow/brush-up/brainstorm.md @ 3734878
-Status:  complete
+Status:  done
 
 Docs read: none in scope (no PRODUCT.md; README.md in full, USERGUIDE.md and AGENTS.md headings)
 Execute reads: README.md, USERGUIDE.md, AGENTS.md in full; design.md §System; relevant memory pages.
 Size: code 65 · tests 173 · ratio 2.66 · largest touched test/check-leaks.test.mjs 94, scripts/check-leaks.mjs 65 · over 1,000: none
 Decisions: 1a approve T1–T4 · 2a gitleaks release in /tmp, checksum-verified · 3a email stays in history (already public), tree scrub only
-
-## Execution state
-Current: all four tickets done; ready for independent review.
-T1 @ 5fe0bfa
-T2 @ c675f95
-T3 @ ced78db
-T4 @ 5b1be4e
-writer: GPT-6.1 Sol · high
-Session 1: T1, T2, T3
-Session 2: T4
-Baseline: npm run check passes outside sandbox, 326 pass, 2 skipped; 10 static pages.
-Sandbox-only baseline failures: five test files lose child-process output.
-Pending decision: none. T4 proof: receipts/t4-github.txt; exact metadata and four topics verified.
-T3 proof: receipts/t3-verification.md and receipts/t3-clean-clone.txt; actual commit clone passes.
-CI at ced78db and main 050f7b8: success. Uncommitted: none after this checkpoint.
 
 ## Findings
 | # | What is true | What it changes |

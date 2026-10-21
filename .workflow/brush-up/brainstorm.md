@@ -2,7 +2,7 @@ Command: workflow brainstorm brush-up
 Created: 2026-10-21
 Base:    3734878
 Inputs:  none
-Status:  complete
+Status:  done
 
 ## Problem
 John will link this public repo from his CV. A hiring engineer who opens it should see a working, well-explained project that shows his judgment. Today the tracked run history exposes his email, local paths and private-file hashes, and the GitHub metadata and README framing do not match.

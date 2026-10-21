@@ -1,6 +1,16 @@
 # Worklog
 Rolling index of recent work; git is the source of truth.
 
+## 2026-10-21 · brush-up · public repo scrubbed, documented and verified before the CV links it · GPT-6.1 Sol
+- Full-history secrets scan recorded; leak scan now blocks owner email, home paths, private-file hashes and `*.proposed`; README and how-this-was-built doc rewritten for a hiring engineer; GitHub description, homepage and topics set.
+- Clean clone on the example owner passes `npm run check`; CI green on main.
+- Commits: 5fe0bfa c675f95 ced78db 5b1be4e
+- Review: ship as-is @ 7232e7c
+- Run: 4 tickets · 2 sessions · 1 review cycles · 2 deviations · 0 findings overturned
+- Seats: 0 none · 2 GPT-6.1 Sol · 3 GPT-6.1 Sol · 4 Claude Opus 5.5
+- Skills: workflow@unversioned
+- Why: the owner will link this repo from the CV, so nothing private may show and the engine must read as a working, explained project.
+
 ## 2026-10-21 · forkable-live-verify · live johnviklund.com proven after deploying from the cutover engine and private owner repo · Opus 5.5
 - Read-only live check script (sha, PDF, health, chat, compare, admin 401s) ships in the run folder; deploy guard now scans only deploy inputs.
 - Deployed version c082c445 at 100% and verified live; patch cycle added the missing owner.json guard case.

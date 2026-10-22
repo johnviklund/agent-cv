@@ -1,0 +1,8 @@
+# Secret scan config (gitleaks). Extends the default rules.
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Cloudflare Web Analytics beacon token: public by design, served in every page"
+regexTarget = "line"
+regexes = ['''data-cf-beacon|cloudflareBeaconToken''']

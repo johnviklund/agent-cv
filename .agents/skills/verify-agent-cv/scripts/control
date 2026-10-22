@@ -26,7 +26,7 @@ const HELP = `control — drive the Agent CV site (JSON output)
   control api PATH [--method M] [--body JSON]     call the local server directly (second view of state)
   control wait --text T [--timeout 10]            wait until visible text contains T
 
-Example: control up && control open / && control fill --role textbox --name "Ask a question" --value hi && control shot home
+Example: control up && control open / && control fill --role textbox --name "Ask about" --value hi && control shot home
 --out defaults to ${DEFAULT_OUT}. Chat answers need OPENAI_API_KEY in .dev.vars; without it, ask returns an error.`;
 
 const argv = process.argv.slice(2);
@@ -116,6 +116,10 @@ const evalJS = async (expr) => {
   return r.result.value;
 };
 
+// Evidence is copied into committed receipts, so secret field values never reach output.
+const SECRET = `(e) => e.type==='password' || /token|secret|password|api.?key/i.test([e.name, e.id, e.placeholder, e.getAttribute('aria-label')].join(' '))`;
+const masked = (expr) => `(() => { const e = ${expr}; return (${SECRET})(e) ? '***' : e.value; })()`;
+
 // In-page finder: explicit/implicit role + accessible name; visible only.
 const FIND = `(role, name, nth) => {
   const implicit = (e) => e.getAttribute('role') || ({A:'link',BUTTON:'button',TEXTAREA:'textbox',SELECT:'combobox',SUMMARY:'button',H1:'heading',H2:'heading',H3:'heading'}[e.tagName]) ||
@@ -156,18 +160,18 @@ async function drive() {
     const t = await locate(flags.role, flags.name); await mouse(t.x, t.y);
     await evalJS("document.activeElement.select && document.activeElement.select()");
     await send("Input.insertText", { text: String(flags.value) });
-    out({ ok: true, filled: `${flags.role} "${flags.name}"`, now: await evalJS("document.activeElement.value") });
+    out({ ok: true, filled: `${flags.role} "${flags.name}"`, now: await evalJS(masked("document.activeElement")) });
   } else if (cmd === "press") {
     const key = pos[0]; const codes = { Enter: 13, Tab: 9, Escape: 27 };
     if (!codes[key]) fail("press supports Enter, Tab, Escape");
     for (const type of ["keyDown", "keyUp"]) await send("Input.dispatchKeyEvent", { type, key, code: key, windowsVirtualKeyCode: codes[key], ...(key === "Enter" && type === "keyDown" ? { text: "\r" } : {}) });
     await sleep(500); out({ ok: true, pressed: key });
   } else if (cmd === "snapshot") {
-    const snap = await evalJS(`(() => { const f = ${FIND}; const vis = (e)=>{const r=e.getBoundingClientRect();return r.width>0&&r.height>0&&!e.closest('[hidden]')&&getComputedStyle(e).visibility!=='hidden'};
+    const snap = await evalJS(`(() => { const f = ${FIND}; const secret = ${SECRET}; const vis = (e)=>{const r=e.getBoundingClientRect();return r.width>0&&r.height>0&&!e.closest('[hidden]')&&getComputedStyle(e).visibility!=='hidden'};
       const txt = (e)=> (e.getAttribute('aria-label')||e.textContent||e.placeholder||'').replace(/\\s+/g,' ').trim().slice(0,100);
       const pick = (sel)=>[...document.querySelectorAll(sel)].filter(vis).map(txt).filter(Boolean);
       return { url: location.href, title: document.title, headings: pick('h1,h2,h3'), buttons: pick('button,summary'), links: pick('a[href]'),
-        fields: [...document.querySelectorAll('input,textarea,select')].filter(vis).map(e=>({label:txt(e)||e.name||e.id, value:e.value})),
+        fields: [...document.querySelectorAll('input,textarea,select')].filter(vis).map(e=>({label:txt(e)||e.name||e.id, value:secret(e)?'***':e.value})),
         status: pick('[role=status],[role=alert],[aria-live]') }; })()`);
     mkdirSync(outDir, { recursive: true }); writeFileSync(resolve(outDir, `snapshot-${Date.now()}.json`), JSON.stringify(snap, null, 2));
     out({ ok: true, ...snap });
